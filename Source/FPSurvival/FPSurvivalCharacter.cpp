@@ -214,7 +214,7 @@ bool AFPSurvivalCharacter::CanSprint()
 {
 	if(ButtonPressed["Sprint"])
 	{
-		return !GetCharacterMovement()->IsFalling() && CanStand();
+		return CanStand();
 	}
 	return false;
 }
