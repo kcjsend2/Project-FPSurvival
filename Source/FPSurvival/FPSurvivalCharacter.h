@@ -83,20 +83,30 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* SmoothCrouchingCurveFloat;
 	
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* CameraTiltCurveFloat;
+	
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
+	FOnTimelineFloat CameraTiltTimelineFunction;;
 
 	UFUNCTION()
 	void SmoothCrouchTimelineReturn(float Value);
 	
 	UFUNCTION()
 	void SlideTimelineReturn();
+
+	UFUNCTION()
+	void CameraTiltReturn(float Value);
 	
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
 
 	UPROPERTY()
 	UTimelineComponent* SmoothCrouchingTimeline;
+	
+	UPROPERTY()
+	UTimelineComponent* CameraTiltTimeline;
 	
 protected:
 	
@@ -108,9 +118,6 @@ protected:
 
 	void BeginSlide();
 	void EndSlide();
-
-	void BeginCameraTilt();
-	void EndCameraTilt();
 
 	void SetMovementState(EMovementState NewMovementState);
 	void ResolveMovementState();

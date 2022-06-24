@@ -56,7 +56,8 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	PrevMovementState = EMovementState::Walking;
 	
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
-	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TimelineFront"));
+	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchingTimeline"));
+	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
 	
 	StandingCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	StandingCameraZOffset = GetFirstPersonCameraComponent()->GetRelativeLocation().Z;
@@ -76,11 +77,18 @@ void AFPSurvivalCharacter::BeginPlay()
 	SlideTimeline->AddEvent(0, SlideTimelineFunction);
 	SlideTimeline->SetTimelineLength(1.0);
 	SlideTimeline->SetLooping(true);
-
-
+	
+	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
+	if(CameraTiltCurveFloat)
+	{
+		CameraTiltTimeline->AddInterpFloat(CameraTiltCurveFloat, CameraTiltTimelineFunction);
+		CameraTiltTimeline->SetTimelineLength(0.3);
+		CameraTiltTimeline->SetLooping(false);
+	}
+	
+	SmoothCrouchTimelineFunction.BindUFunction(this, FName("SmoothCrouchTimelineReturn"));
 	if(SmoothCrouchingCurveFloat)
 	{
-		SmoothCrouchTimelineFunction.BindUFunction(this, FName("SmoothCrouchTimelineReturn"));
 		SmoothCrouchingTimeline->AddInterpFloat(SmoothCrouchingCurveFloat, SmoothCrouchTimelineFunction);
 		SmoothCrouchingTimeline->SetTimelineLength(0.3);
 		SmoothCrouchingTimeline->SetLooping(false);
@@ -185,6 +193,12 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 	}
 }
 
+void AFPSurvivalCharacter::CameraTiltReturn(float Value)
+{
+	const auto ControlRotation = GetController()->GetControlRotation();
+	GetController()->SetControlRotation(FRotator(Value, ControlRotation.Pitch, ControlRotation.Yaw));
+}
+
 void AFPSurvivalCharacter::OnPrimaryAction()
 {
 	// Trigger the OnItemUsed Event
@@ -221,7 +235,7 @@ bool AFPSurvivalCharacter::CanSprint()
 
 void AFPSurvivalCharacter::BeginSlide()
 {
-	BeginCameraTilt();
+	CameraTiltTimeline->Play();
 	SlideTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * SpeedMap[EMovementState::Sprinting];
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
@@ -230,18 +244,10 @@ void AFPSurvivalCharacter::BeginSlide()
 
 void AFPSurvivalCharacter::EndSlide()
 {
-	EndCameraTilt();
+	CameraTiltTimeline->Reverse();
 	SlideTimeline->Stop();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
-}
-
-void AFPSurvivalCharacter::BeginCameraTilt()
-{
-}
-
-void AFPSurvivalCharacter::EndCameraTilt()
-{
 }
 
 void AFPSurvivalCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
