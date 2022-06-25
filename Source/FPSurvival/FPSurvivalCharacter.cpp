@@ -226,7 +226,7 @@ bool AFPSurvivalCharacter::CanSprint()
 {
 	if(ButtonPressed["Sprint"])
 	{
-		return CanStand();
+		return !GetCharacterMovement()->IsFalling() && CanStand();
 	}
 	return false;
 }
@@ -278,7 +278,7 @@ void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)
 	if(Pressed)
 	{
 		ButtonPressed["Sprint"] = true;
-		if(MovementState == EMovementState::Walking && CanStand())
+		if(MovementState == EMovementState::Walking && CanSprint())
 			SetMovementState(EMovementState::Sprinting);
 	}
 	else
@@ -302,7 +302,14 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 
 		if(MovementState == EMovementState::Sprinting)
 		{
-			SetMovementState(EMovementState::Sliding);
+			if (!GetCharacterMovement()->IsFalling())
+			{
+				SetMovementState(EMovementState::Sliding);
+			}
+			else
+			{
+				SetMovementState(EMovementState::Crouching);
+			}
 		}
 	}
 	else
