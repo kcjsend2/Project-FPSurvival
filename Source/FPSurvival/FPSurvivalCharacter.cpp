@@ -54,9 +54,9 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	MovementState = EMovementState::Walking;
 	PrevMovementState = EMovementState::Walking;
-	
+
+	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SmoothCrouchingTimeline"));
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
-	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchingTimeline"));
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
 	
 	StandingCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -64,19 +64,12 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 
 	DefaultGroundFriction = GetCharacterMovement()->GroundFriction;
 	DefaultBrakingDeceleration = GetCharacterMovement()->BrakingDecelerationWalking;
-
-
 }
 
 void AFPSurvivalCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	
-	SlideTimelineFunction.BindUFunction(this, FName("SlideTimelineReturn"));
-	SlideTimeline->AddEvent(0, SlideTimelineFunction);
-	SlideTimeline->SetTimelineLength(1.0);
-	SlideTimeline->SetLooping(true);
 	
 	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
 	if(CameraTiltCurveFloat)
@@ -93,6 +86,11 @@ void AFPSurvivalCharacter::BeginPlay()
 		SmoothCrouchingTimeline->SetTimelineLength(0.3);
 		SmoothCrouchingTimeline->SetLooping(false);
 	}
+	
+	SlideTimelineFunction.BindUFunction(this, FName("SlideTimelineReturn"));
+	SlideTimeline->AddEvent(0, SlideTimelineFunction);
+	SlideTimeline->SetTimelineLength(1.0);
+	SlideTimeline->SetLooping(true);
 }
 
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
@@ -171,7 +169,7 @@ void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
 	GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(CrouchedHeight, StandingCapsuleHalfHeight, Value));
 
 	const auto RelativeLocation = FirstPersonCameraComponent->GetRelativeLocation();
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(RelativeLocation.X, RelativeLocation.Y, (FMath::Lerp(CrouchedHeight, StandingCameraZOffset, Value))));
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(RelativeLocation.X, RelativeLocation.Y, (FMath::Lerp(CrouchedEyeHeight, StandingCameraZOffset, Value))));
 }
 
 void AFPSurvivalCharacter::SlideTimelineReturn()
@@ -195,8 +193,8 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 
 void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 {
-	const auto ControlRotation = GetController()->GetControlRotation();
-	GetController()->SetControlRotation(FRotator(Value, ControlRotation.Pitch, ControlRotation.Yaw));
+	auto ControlRotation = GetController()->GetControlRotation();
+	GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value));
 }
 
 void AFPSurvivalCharacter::OnPrimaryAction()
@@ -235,8 +233,8 @@ bool AFPSurvivalCharacter::CanSprint()
 
 void AFPSurvivalCharacter::BeginSlide()
 {
-	CameraTiltTimeline->Play();
 	SlideTimeline->Play();
+	CameraTiltTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * SpeedMap[EMovementState::Sprinting];
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
@@ -244,8 +242,8 @@ void AFPSurvivalCharacter::BeginSlide()
 
 void AFPSurvivalCharacter::EndSlide()
 {
-	CameraTiltTimeline->Reverse();
 	SlideTimeline->Stop();
+	CameraTiltTimeline->Reverse();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
 }
@@ -296,6 +294,7 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 	if(Pressed)
 	{
 		ButtonPressed["Crouch"] = true;
+		SmoothCrouchingTimeline->Play();
 		if(MovementState == EMovementState::Walking)
 		{
 			SetMovementState(EMovementState::Crouching);
@@ -305,7 +304,6 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 		{
 			SetMovementState(EMovementState::Sliding);
 		}
-		SmoothCrouchingTimeline->Play();
 	}
 	else
 	{

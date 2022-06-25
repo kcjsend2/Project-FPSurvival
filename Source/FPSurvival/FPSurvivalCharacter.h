@@ -88,17 +88,17 @@ public:
 	
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
-	FOnTimelineFloat CameraTiltTimelineFunction;;
+	FOnTimelineFloat CameraTiltTimelineFunction;
 
 	UFUNCTION()
 	void SmoothCrouchTimelineReturn(float Value);
 	
 	UFUNCTION()
-	void SlideTimelineReturn();
-
-	UFUNCTION()
 	void CameraTiltReturn(float Value);
 	
+	UFUNCTION()
+	void SlideTimelineReturn();
+
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
 
