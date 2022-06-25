@@ -73,6 +73,8 @@ public:
 
 	float SlideGroundFriction = 0;
 	float SlideBrakingDeceleration = 500;
+
+	float GroundSmashForce = -5000;
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;

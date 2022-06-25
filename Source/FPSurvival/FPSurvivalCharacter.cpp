@@ -295,6 +295,7 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 	{
 		ButtonPressed["Crouch"] = true;
 		SmoothCrouchingTimeline->Play();
+
 		if(MovementState == EMovementState::Walking)
 		{
 			SetMovementState(EMovementState::Crouching);
@@ -311,6 +312,12 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 				SetMovementState(EMovementState::Crouching);
 			}
 		}
+
+		if (GetCharacterMovement()->IsFalling())
+		{
+			GetCharacterMovement()->Velocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, GroundSmashForce);
+		}
+
 	}
 	else
 	{
