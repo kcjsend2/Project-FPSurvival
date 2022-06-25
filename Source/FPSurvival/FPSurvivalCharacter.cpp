@@ -235,7 +235,7 @@ void AFPSurvivalCharacter::BeginSlide()
 {
 	SlideTimeline->Play();
 	CameraTiltTimeline->Play();
-	GetCharacterMovement()->Velocity = GetActorForwardVector() * SpeedMap[EMovementState::Sprinting];
+	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length();
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
 }
