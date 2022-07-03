@@ -26,7 +26,7 @@ void UVaultingComponent::BeginPlay()
 
 FVaultingInfo UVaultingComponent::CheckCanVault() const
 {
-	if(VaultingState != EVaultingState::Idle)
+	if(IsVaulting)
 	{
 		return FVaultingInfo{false, FVector(0, 0, 0)};
 	}
@@ -130,8 +130,7 @@ void UVaultingComponent::Vault()
 {
 	VaultProgress = 0;
 	VaultStartingLocation = OwningCharacter->GetActorLocation();
-	VaultingState = EVaultingState::Vaulting;
-	
+	IsVaulting = true;
 }
 
 // Called every frame
@@ -139,7 +138,7 @@ void UVaultingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(VaultingState == EVaultingState::Idle)
+	if(!IsVaulting)
 	{
 		const auto [bCanVault, EndingLocation] = CheckCanVault();
 		
@@ -149,7 +148,7 @@ void UVaultingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 			VaultEndingLocation = EndingLocation;
 		}
 	}
-	if(VaultingState == EVaultingState::Vaulting)
+	else
 	{
 		TickVault(DeltaTime);
 	}
@@ -162,7 +161,7 @@ void UVaultingComponent::TickVault(float DeltaTime)
 
 	if(VaultProgress >= 1)
 	{
-		VaultingState = EVaultingState::Idle;
+		IsVaulting = false;
 	}
 }
 

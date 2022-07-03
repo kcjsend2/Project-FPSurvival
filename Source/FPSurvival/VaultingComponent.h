@@ -57,7 +57,7 @@ public:
 	bool CanVault = false;
 
 	UPROPERTY(BlueprintReadOnly, Category="Vaulting")
-	EVaultingState VaultingState = EVaultingState::Idle;
+	bool IsVaulting = false;
 	
 private:
 	void TickVault(float DeltaTime);
@@ -69,7 +69,7 @@ private:
 	FVector VaultStartingLocation;
 
 	float MinVaultingHeight = 50;
-	float MaxVaultingHeight = 170;
+	float MaxVaultingHeight = 200;
 
 	float VaultProgress = 0;
 	float VaultSpeed = 0.2;
