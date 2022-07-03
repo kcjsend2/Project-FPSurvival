@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/InputSettings.h"
+#include "VaultingComponent.h"
 
 
 AFPSurvivalCharacter::AFPSurvivalCharacter()
@@ -58,6 +59,8 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SmoothCrouchingTimeline"));
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
+
+	VaultingComponent = CreateDefaultSubobject<UVaultingComponent>(TEXT("VaultingObject"));
 	
 	StandingCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	StandingCameraZOffset = GetFirstPersonCameraComponent()->GetRelativeLocation().Z;
@@ -112,16 +115,23 @@ void AFPSurvivalCharacter::Landed(const FHitResult& Hit)
 
 void AFPSurvivalCharacter::Jump()
 {
-	if(CurrentJumpCount == 0)
+	if(VaultingComponent->CanVault)
 	{
-		Super::Jump();
-		CurrentJumpCount++;
+		VaultingComponent->Vault();
 	}
-	else if (CurrentJumpCount < MaxJumpCount)
+	else
 	{
-		const FVector LaunchDir = FVector(0, 0, GetCharacterMovement()->JumpZVelocity);
-		LaunchCharacter(LaunchDir, false, true);
-		CurrentJumpCount++;
+		if(CurrentJumpCount == 0)
+		{
+			Super::Jump();
+			CurrentJumpCount++;
+		}
+		else if (CurrentJumpCount < MaxJumpCount)
+		{
+			const FVector LaunchDir = FVector(0, 0, GetCharacterMovement()->JumpZVelocity);
+			LaunchCharacter(LaunchDir, false, true);
+			CurrentJumpCount++;
+		}
 	}
 }
 //////////////////////////////////////////////////////////////////////////// Input

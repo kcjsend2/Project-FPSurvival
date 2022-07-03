@@ -13,12 +13,14 @@ class USceneComponent;
 class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
+class UVaultingComponent;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseItem);
 
-enum class EMovementState
+UENUM(BlueprintType)
+enum class EMovementState : uint8
 {
 	Walking,
 	Sprinting,
@@ -109,6 +111,9 @@ public:
 	
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
+
+	UPROPERTY(BlueprintReadWrite, Category="Vaulting")
+	UVaultingComponent* VaultingComponent;
 	
 protected:
 	
