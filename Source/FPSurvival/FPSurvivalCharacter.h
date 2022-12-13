@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
 class UInputComponent;
@@ -14,6 +15,7 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 class UVaultingComponent;
+class UWallRunningComponent;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
@@ -73,9 +75,19 @@ public:
 	float DefaultGroundFriction;
 	float DefaultBrakingDeceleration;
 
+	float SlideCoolTime = 0.0f;
 	float SlideGroundFriction = 0;
+	bool SlideHot = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sliding")
+	float SlideInterval = 0.5f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sliding")
 	float SlideBrakingDeceleration = 500;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sliding")
+	float SlidePower = 5;
+	
 	float GroundSmashForce = -5000;
 	
 	TMap<EMovementState, float> SpeedMap;
@@ -114,11 +126,14 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category="Vaulting")
 	UVaultingComponent* VaultingComponent;
+
+	UPROPERTY(BlueprintReadWrite, Category="WallRunning")
+	UWallRunningComponent* WallRunningComponent;
 	
 protected:
 	
 	/** Fires a projectile. */
-	void OnPrimaryAction();
+	void OnPrimaryAction();	
 
 	bool CanStand();
 	bool CanSprint();
@@ -183,6 +198,11 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
+	
+	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
+	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
+	void GainJumpCount() { JumpCurrentCount++; }
+	
+	EMovementState GetMovementState() { return MovementState; }
 };
 

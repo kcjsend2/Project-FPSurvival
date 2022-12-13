@@ -23,6 +23,13 @@ public:
 	FOnPickUp OnPickUp;
 
 	UTP_PickUpComponent();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
+	FRotator WeaponRelativeRotation = {0, 0, 0};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
+	FVector WeaponRelativeLocation = {0, 0, 0};
+	
 protected:
 
 	/** Called when the game starts */

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "FPSurvivalCharacter.h"
 #include "WallRunningComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -22,6 +23,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	void ClampHorizontalVelocity() const;
 
-		
+	bool IsWallRunning = false;
+
+private:
+	UPROPERTY()
+	AFPSurvivalCharacter* OwningCharacter;
 };

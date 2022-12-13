@@ -49,3 +49,6 @@ Session.vim
 
 # Visual Studio
 .vs
+
+# External Assets
+/Content/Scifi_Arsenal_Vol2

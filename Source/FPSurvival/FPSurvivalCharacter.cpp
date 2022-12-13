@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "VaultingComponent.h"
+#include "WallRunningComponent.h"
 
 
 AFPSurvivalCharacter::AFPSurvivalCharacter()
@@ -25,7 +26,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
+	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
@@ -61,12 +62,15 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
 
 	VaultingComponent = CreateDefaultSubobject<UVaultingComponent>(TEXT("VaultingObject"));
+	WallRunningComponent = CreateDefaultSubobject<UWallRunningComponent>(TEXT("WallRunningObject"));
 	
 	StandingCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	StandingCameraZOffset = GetFirstPersonCameraComponent()->GetRelativeLocation().Z;
 
 	DefaultGroundFriction = GetCharacterMovement()->GroundFriction;
 	DefaultBrakingDeceleration = GetCharacterMovement()->BrakingDecelerationWalking;
+	
+	SlideCoolTime = SlideInterval;
 }
 
 void AFPSurvivalCharacter::BeginPlay()
@@ -99,6 +103,17 @@ void AFPSurvivalCharacter::BeginPlay()
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if(SlideHot)
+	{
+		if(SlideCoolTime > 0.0f)
+			SlideCoolTime -= DeltaSeconds;
+		else
+		{
+			SlideCoolTime = SlideInterval;
+			SlideHot = false;
+		}
+	}
 
 	if(MovementState == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
@@ -188,13 +203,13 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 
 	GetCharacterMovement()->AddForce(SlideDirection);
 
-	if(GetVelocity().Length() > SpeedMap[EMovementState::Sprinting])
-	{
-		auto velocity = GetVelocity();
-		velocity.Normalize();
-		
-		GetCharacterMovement()->Velocity = velocity * SpeedMap[EMovementState::Sprinting];
-	}
+	// if(GetVelocity().Length() > SpeedMap[EMovementState::Sprinting])
+	// {
+	// 	auto velocity = GetVelocity();
+	// 	velocity.Normalize();
+	// 	
+	// 	GetCharacterMovement()->Velocity = velocity * SpeedMap[EMovementState::Sprinting];
+	// }
 	if(GetVelocity().Length() < SpeedMap[EMovementState::Crouching])
 	{
 		ResolveMovementState();
@@ -245,7 +260,7 @@ void AFPSurvivalCharacter::BeginSlide()
 {
 	SlideTimeline->Play();
 	CameraTiltTimeline->Play();
-	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length();
+	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
 }
@@ -256,6 +271,7 @@ void AFPSurvivalCharacter::EndSlide()
 	CameraTiltTimeline->Reverse();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
+	SlideHot = true;
 }
 
 void AFPSurvivalCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
@@ -313,7 +329,7 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 
 		if(MovementState == EMovementState::Sprinting)
 		{
-			if (!GetCharacterMovement()->IsFalling())
+			if (!GetCharacterMovement()->IsFalling() && !SlideHot)
 			{
 				SetMovementState(EMovementState::Sliding);
 			}
@@ -332,7 +348,14 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 	else
 	{
 		ButtonPressed["Crouch"] = false;
-		ResolveMovementState();
+		if(MovementState != EMovementState::Sliding)
+		{
+			ResolveMovementState();
+		}
+		else if(GetVelocity().Length() <= SpeedMap[EMovementState::Sprinting])
+		{
+			ResolveMovementState();
+		}
 	}
 }
 
@@ -436,4 +459,10 @@ bool AFPSurvivalCharacter::EnableTouchscreenMovement(class UInputComponent* Play
 	}
 	
 	return false;
+}
+
+void AFPSurvivalCharacter::SetHorizontalVelocity(float VelocityX, float VelocityY) const
+{
+	GetCharacterMovement()->Velocity.X = VelocityX;
+	GetCharacterMovement()->Velocity.Y = VelocityY;
 }
