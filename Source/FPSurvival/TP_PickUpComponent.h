@@ -25,10 +25,10 @@ public:
 	UTP_PickUpComponent();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
-	FRotator WeaponRelativeRotation = {0, 0, 0};
+	FRotator WeaponRelativeRotation;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
-	FVector WeaponRelativeLocation = {0, 0, 0};
+	FVector WeaponRelativeLocation;
 	
 protected:
 
