@@ -13,9 +13,6 @@ UTP_WeaponComponent::UTP_WeaponComponent()
 {
 	// Default offset from the character location for projectiles to spawn
 	MuzzleOffset = FVector(100.0f, 0.0f, 10.0f);
-
-	//WeaponMesh->SetRelativeLocation(FVector(0, 0, 0));
-	//WeaponMesh->SetRelativeRotation(FRotator(0, 0, 0));
 }
 
 
@@ -82,6 +79,9 @@ void UTP_WeaponComponent::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
 		GetOwner()->AttachToComponent(Character->GetMesh1P(), AttachmentRules);
 		
+		GetOwner()->SetActorRelativeLocation(WeaponRelativeLocation);
+		GetOwner()->SetActorRelativeRotation(WeaponRelativeRotation);
+
 		// Register so that Fire is called every time the character tries to use the item being held
 		Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
 	}

@@ -41,6 +41,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh")
+	FRotator WeaponRelativeRotation;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh")
+	FVector WeaponRelativeLocation;
+	
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()

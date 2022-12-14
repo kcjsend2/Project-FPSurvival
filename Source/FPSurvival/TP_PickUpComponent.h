@@ -17,18 +17,11 @@ class FPSURVIVAL_API UTP_PickUpComponent : public USphereComponent
 	GENERATED_BODY()
 
 public:
-	
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnPickUp OnPickUp;
 
 	UTP_PickUpComponent();
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
-	FRotator WeaponRelativeRotation;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
-	FVector WeaponRelativeLocation;
 	
 protected:
 
