@@ -203,13 +203,14 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 
 	GetCharacterMovement()->AddForce(SlideDirection);
 
-	// if(GetVelocity().Length() > SpeedMap[EMovementState::Sprinting])
-	// {
-	// 	auto velocity = GetVelocity();
-	// 	velocity.Normalize();
-	// 	
-	// 	GetCharacterMovement()->Velocity = velocity * SpeedMap[EMovementState::Sprinting];
-	// }
+	if(GetVelocity().Length() > SpeedMap[EMovementState::Sprinting] && GetCharacterMovement()->IsFalling())
+	{
+		auto velocity = GetVelocity();
+		velocity.Normalize();
+		
+		GetCharacterMovement()->Velocity = velocity * SpeedMap[EMovementState::Sprinting];
+	}
+	
 	if(GetVelocity().Length() < SpeedMap[EMovementState::Crouching])
 	{
 		ResolveMovementState();
