@@ -36,7 +36,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeLocation(FVector(24.0f, 8.0f, -160.0f));
 	Mesh1P->SetRelativeRotation(FRotator(-3.6f, -92.0f, -12.5f));
-
+	
 	SprintMultiplier = 1.7f;
 	CrouchMultiplier = 0.6f;
 
@@ -158,6 +158,7 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	check(PlayerInputComponent);
 
 	DECLARE_DELEGATE_OneParam(FActionKeyDelegate, bool)
+	DECLARE_DELEGATE_OneParam(FWeaponChangeDelegate, int)
 	
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
@@ -172,6 +173,9 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Pressed, this, &AFPSurvivalCharacter::OnCrouchAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Released, this, &AFPSurvivalCharacter::OnCrouchAction, false);
+
+	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
+	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
 	
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
@@ -357,6 +361,30 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 		else if(GetVelocity().Length() <= SpeedMap[EMovementState::Sprinting])
 		{
 			ResolveMovementState();
+		}
+	}
+}
+
+void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
+{
+	if(CollectedWeapon.Num() > WeaponNum)
+	{
+		if(CurrentWeapon != CollectedWeapon[WeaponNum])
+		{
+			CurrentWeapon->GetOwner()->SetActorHiddenInGame(true); 
+			CurrentWeapon->GetOwner()->SetActorEnableCollision(false); 
+			CurrentWeapon->GetOwner()->SetActorTickEnabled(false);
+		
+			CollectedWeapon[WeaponNum]->GetOwner()->SetActorHiddenInGame(false); 
+			CollectedWeapon[WeaponNum]->GetOwner()->SetActorEnableCollision(true); 
+			CollectedWeapon[WeaponNum]->GetOwner()->SetActorTickEnabled(true);
+			
+			CurrentWeapon = CollectedWeapon[WeaponNum];
+			
+			Mesh1P->SetRelativeLocation(CurrentWeapon->WeaponRelativePosition);
+
+			const FVector LookPoint = FirstPersonCameraComponent->GetForwardVector() * 500;
+			Mesh1P->SetRelativeRotation(LookPoint.Rotation());
 		}
 	}
 }

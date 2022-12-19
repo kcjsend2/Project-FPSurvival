@@ -181,6 +181,7 @@ protected:
 	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void OnSprintAction(bool Pressed);
 	void OnCrouchAction(bool Pressed);
+	void OnWeaponChange(int WeaponNum);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	
 	FVector CalculateFloorInfluence(FVector FloorNormal);

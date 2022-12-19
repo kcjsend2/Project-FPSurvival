@@ -44,6 +44,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FName SocketName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
+	FVector WeaponRelativePosition;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
+	FRotator WeaponRelativeRotation;
+	
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	int WeaponID;
 	

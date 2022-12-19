@@ -20,7 +20,7 @@ void UTP_PickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCo
 {
 	// Checking if it is a First Person Character overlapping
 	AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
-	if(Character != nullptr)
+	if(Character != nullptr && Character->CollectedWeapon.Num() < 2)
 	{
 		// Notify that the actor is being picked up
 		OnPickUp.Broadcast(Character);

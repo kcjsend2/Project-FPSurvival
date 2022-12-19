@@ -82,5 +82,14 @@ void UTP_WeaponComponent::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		// Register so that Fire is called every time the character tries to use the item being held
 		Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
 		Character->CollectedWeapon.Add(this);
+		if(Character->CurrentWeapon != nullptr)
+		{
+			Character->CurrentWeapon->GetOwner()->SetActorHiddenInGame(true); 
+			Character->CurrentWeapon->GetOwner()->SetActorEnableCollision(false); 
+			Character->CurrentWeapon->GetOwner()->SetActorTickEnabled(false);
+		}
+		Character->CurrentWeapon = this;
+		Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
+		Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
 	}
 }
