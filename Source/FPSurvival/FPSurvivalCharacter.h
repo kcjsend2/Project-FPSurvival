@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
+class UTP_WeaponComponent;
 class UInputComponent;
 class USkeletalMeshComponent;
 class USceneComponent;
@@ -129,9 +130,14 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category="WallRunning")
 	UWallRunningComponent* WallRunningComponent;
+
+	UPROPERTY()
+	TArray<UTP_WeaponComponent*> CollectedWeapon;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Weapon")
+	UTP_WeaponComponent* CurrentWeapon;
 	
 protected:
-	
 	/** Fires a projectile. */
 	void OnPrimaryAction();	
 
@@ -192,7 +198,7 @@ protected:
 	 * @returns true if touch controls were enabled.
 	 */
 	bool EnableTouchscreenMovement(UInputComponent* InputComponent);
-
+	
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
@@ -204,5 +210,6 @@ public:
 	void GainJumpCount() { JumpCurrentCount++; }
 	
 	EMovementState GetMovementState() { return MovementState; }
+	int GetCurrentWeaponID() const;
 };
 

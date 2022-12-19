@@ -41,19 +41,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh")
-	FRotator WeaponRelativeRotation;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh")
-	FVector WeaponRelativeLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
+	FName SocketName;
+
+	UPROPERTY(BlueprintReadOnly, Category="Weapon")
+	int WeaponID;
 	
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-		
+	
 
 private:
 	/** The Character holding this weapon*/
+	UPROPERTY()
 	AFPSurvivalCharacter* Character;
 };

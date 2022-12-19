@@ -76,14 +76,11 @@ void UTP_WeaponComponent::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	if(Character != nullptr)
 	{
 		// Attach the weapon to the First Person Character
-		FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
-		GetOwner()->AttachToComponent(Character->GetMesh1P(), AttachmentRules);
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		GetOwner()->AttachToComponent(Character->GetMesh1P(), AttachmentRules, SocketName);
 		
-		GetOwner()->SetActorRelativeLocation(WeaponRelativeLocation);
-		GetOwner()->SetActorRelativeRotation(WeaponRelativeRotation);
-
 		// Register so that Fire is called every time the character tries to use the item being held
 		Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+		Character->CollectedWeapon.Add(this);
 	}
 }
-
