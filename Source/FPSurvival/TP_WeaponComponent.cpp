@@ -18,6 +18,8 @@ UTP_WeaponComponent::UTP_WeaponComponent()
 
 void UTP_WeaponComponent::Fire()
 {
+	IsFiring = true;
+	
 	if(Character == nullptr || Character->GetController() == nullptr)
 	{
 		return;
@@ -61,12 +63,18 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
+void UTP_WeaponComponent::FireEnd()
+{
+	UE_LOG(LogTemp, Log, TEXT("FireEnd"));
+	IsFiring = false;
+}
+
 void UTP_WeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if(Character != nullptr)
 	{
 		// Unregister from the OnUseItem Event
-		Character->OnUseItem.RemoveDynamic(this, &UTP_WeaponComponent::Fire);
+		Character->OnFire.RemoveDynamic(this, &UTP_WeaponComponent::Fire);
 	}
 }
 
@@ -80,7 +88,8 @@ void UTP_WeaponComponent::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		GetOwner()->AttachToComponent(Character->GetMesh1P(), AttachmentRules, SocketName);
 		
 		// Register so that Fire is called every time the character tries to use the item being held
-		Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+		Character->OnFire.AddDynamic(this, &UTP_WeaponComponent::Fire);
+		Character->OnFireEnd.AddDynamic(this, &UTP_WeaponComponent::FireEnd);
 		Character->CollectedWeapon.Add(this);
 		if(Character->CurrentWeapon != nullptr)
 		{
@@ -91,5 +100,6 @@ void UTP_WeaponComponent::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		Character->CurrentWeapon = this;
 		Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
 		Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
+		IsAttached = true;
 	}
 }

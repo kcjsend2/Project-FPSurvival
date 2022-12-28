@@ -20,7 +20,8 @@ class UWallRunningComponent;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFire);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFireEnd);
 
 UENUM(BlueprintType)
 enum class EMovementState : uint8
@@ -60,7 +61,8 @@ public:
 
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnUseItem OnUseItem;
+	FOnFire OnFire;
+	FOnFireEnd OnFireEnd;
 
 	float SprintMultiplier;
 	float CrouchMultiplier;
@@ -139,7 +141,7 @@ public:
 	
 protected:
 	/** Fires a projectile. */
-	void OnPrimaryAction();	
+	void OnPrimaryAction(const bool Pressed);	
 
 	bool CanStand();
 	bool CanSprint();

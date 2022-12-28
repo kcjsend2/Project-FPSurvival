@@ -41,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
 	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void FireEnd();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FName SocketName;
 
@@ -50,8 +53,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FRotator WeaponRelativeRotation;
 	
-	UPROPERTY(BlueprintReadOnly, Category="Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	int WeaponID;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Weapon")
+	bool IsFiring;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+    bool IsAttached;
 	
 protected:
 	/** Ends gameplay for this component. */

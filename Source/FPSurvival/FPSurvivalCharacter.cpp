@@ -165,7 +165,8 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	// Bind fire event
-	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFPSurvivalCharacter::OnPrimaryAction);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("PrimaryAction", IE_Pressed, this, &AFPSurvivalCharacter::OnPrimaryAction, true);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("PrimaryAction", IE_Released, this, &AFPSurvivalCharacter::OnPrimaryAction, false);
 
 	// Bind Run event
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sprint", IE_Pressed, this, &AFPSurvivalCharacter::OnSprintAction, true);
@@ -228,10 +229,17 @@ void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 	GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value));
 }
 
-void AFPSurvivalCharacter::OnPrimaryAction()
+void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
 	// Trigger the OnItemUsed Event
-	OnUseItem.Broadcast();
+	if(Pressed)
+	{
+		OnFire.Broadcast();
+	}
+	else
+	{
+		OnFireEnd.Broadcast();
+	}
 }
 
 bool AFPSurvivalCharacter::CanStand()
@@ -288,7 +296,7 @@ void AFPSurvivalCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const
 	}
 	if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
 	{
-		OnPrimaryAction();
+		OnPrimaryAction(true);
 	}
 	TouchItem.bIsPressed = true;
 	TouchItem.FingerIndex = FingerIndex;
@@ -382,9 +390,7 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CurrentWeapon = CollectedWeapon[WeaponNum];
 			
 			Mesh1P->SetRelativeLocation(CurrentWeapon->WeaponRelativePosition);
-
-			const FVector LookPoint = FirstPersonCameraComponent->GetForwardVector() * 500;
-			Mesh1P->SetRelativeRotation(LookPoint.Rotation());
+			Mesh1P->SetRelativeRotation(CurrentWeapon->WeaponRelativeRotation);
 		}
 	}
 }
