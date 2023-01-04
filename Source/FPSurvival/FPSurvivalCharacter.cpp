@@ -11,7 +11,7 @@
 #include "GameFramework/InputSettings.h"
 #include "VaultingComponent.h"
 #include "WallRunningComponent.h"
-#include "TP_WeaponComponent.h"
+#include "WeaponBase.h"
 
 
 AFPSurvivalCharacter::AFPSurvivalCharacter()
@@ -25,7 +25,8 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(0.f, 0.f, 70.f));
+	//FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
@@ -34,9 +35,9 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	Mesh1P->SetRelativeLocation(FVector(24.0f, 8.0f, -160.0f));
-	Mesh1P->SetRelativeRotation(FRotator(-3.6f, -92.0f, -12.5f));
-	
+	Mesh1P->SetRelativeLocation(FVector(7.0f, 2.0f, -167.0f));
+	Mesh1P->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+
 	SprintMultiplier = 1.7f;
 	CrouchMultiplier = 0.6f;
 
@@ -379,18 +380,15 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 	{
 		if(CurrentWeapon != CollectedWeapon[WeaponNum])
 		{
-			CurrentWeapon->GetOwner()->SetActorHiddenInGame(true); 
-			CurrentWeapon->GetOwner()->SetActorEnableCollision(false); 
-			CurrentWeapon->GetOwner()->SetActorTickEnabled(false);
+			CurrentWeapon->SetActorHiddenInGame(true); 
+			CurrentWeapon->SetActorEnableCollision(false); 
+			CurrentWeapon->SetActorTickEnabled(false);
 		
-			CollectedWeapon[WeaponNum]->GetOwner()->SetActorHiddenInGame(false); 
-			CollectedWeapon[WeaponNum]->GetOwner()->SetActorEnableCollision(true); 
-			CollectedWeapon[WeaponNum]->GetOwner()->SetActorTickEnabled(true);
+			CollectedWeapon[WeaponNum]->SetActorHiddenInGame(false); 
+			CollectedWeapon[WeaponNum]->SetActorEnableCollision(true); 
+			CollectedWeapon[WeaponNum]->SetActorTickEnabled(true);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
-			
-			Mesh1P->SetRelativeLocation(CurrentWeapon->WeaponRelativePosition);
-			Mesh1P->SetRelativeRotation(CurrentWeapon->WeaponRelativeRotation);
 		}
 	}
 }
@@ -506,4 +504,13 @@ void AFPSurvivalCharacter::SetHorizontalVelocity(float VelocityX, float Velocity
 int AFPSurvivalCharacter::GetCurrentWeaponID() const
 {
 	return CurrentWeapon->WeaponID;
+}
+
+bool AFPSurvivalCharacter::IsSprinting() const
+{
+	if(MovementState == EMovementState::Sprinting)
+	{
+		return true;
+	}
+	return false;
 }

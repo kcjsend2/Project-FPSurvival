@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "TP_WeaponComponent.generated.h"
+#include "WeaponBase.generated.h"
 
 class AFPSurvivalCharacter;
+class UPickUpComponent;
 
-UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class FPSURVIVAL_API UTP_WeaponComponent : public UActorComponent
+UCLASS()
+class FPSURVIVAL_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
 
@@ -31,7 +31,9 @@ public:
 	FVector MuzzleOffset;
 
 	/** Sets default values for this component's properties */
-	UTP_WeaponComponent();
+	AWeaponBase();
+	
+	virtual void BeginPlay() override;
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
@@ -72,4 +74,10 @@ private:
 	/** The Character holding this weapon*/
 	UPROPERTY()
 	AFPSurvivalCharacter* Character;
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere, Category="Weapon", meta = (AllowPrivateAccess = "true"))
+	UPickUpComponent* PickUpComponent;
 };

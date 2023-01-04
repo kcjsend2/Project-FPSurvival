@@ -6,9 +6,10 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
-class UTP_WeaponComponent;
+class AWeaponBase;
 class UInputComponent;
 class USkeletalMeshComponent;
 class USceneComponent;
@@ -38,11 +39,11 @@ class AFPSurvivalCharacter : public ACharacter
 	GENERATED_BODY()
 
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	UPROPERTY(VisibleDefaultsOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
 
 	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
 public:
@@ -134,10 +135,10 @@ public:
 	UWallRunningComponent* WallRunningComponent;
 
 	UPROPERTY()
-	TArray<UTP_WeaponComponent*> CollectedWeapon;
+	TArray<AWeaponBase*> CollectedWeapon;
 	
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
-	UTP_WeaponComponent* CurrentWeapon;
+	AWeaponBase* CurrentWeapon;
 	
 protected:
 	/** Fires a projectile. */
@@ -214,5 +215,8 @@ public:
 	
 	EMovementState GetMovementState() { return MovementState; }
 	int GetCurrentWeaponID() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsSprinting() const;
 };
 
