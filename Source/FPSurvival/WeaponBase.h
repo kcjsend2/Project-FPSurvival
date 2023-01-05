@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WeaponBase.generated.h"
 
+class UCameraComponent;
 class AFPSurvivalCharacter;
 class UPickUpComponent;
 
@@ -78,6 +79,9 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditAnywhere, Category="Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	UPickUpComponent* PickUpComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* SightCameraComponent;
 };

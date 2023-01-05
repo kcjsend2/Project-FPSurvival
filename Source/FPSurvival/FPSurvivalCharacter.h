@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CrossHairWidget.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
 class AWeaponBase;
@@ -17,7 +17,9 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 class UVaultingComponent;
+class UCrossHairWidget;
 class UWallRunningComponent;
+class UWidgetComponent;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
@@ -93,6 +95,8 @@ public:
 	float SlidePower = 5;
 	
 	float GroundSmashForce = -5000;
+
+	bool IsInSight = false;
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;
@@ -184,6 +188,7 @@ protected:
 	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void OnSprintAction(bool Pressed);
 	void OnCrouchAction(bool Pressed);
+	void OnSightAction(bool Pressed);
 	void OnWeaponChange(int WeaponNum);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	
@@ -208,6 +213,9 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	UPROPERTY(VisibleAnywhere, Category="UI")
+	UCrossHairWidget* CrossHairWidget;
 	
 	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
 	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;

@@ -11,6 +11,8 @@
 #include "GameFramework/InputSettings.h"
 #include "VaultingComponent.h"
 #include "WallRunningComponent.h"
+#include "Components/WidgetComponent.h"
+#include "CrossHairWidget.h"
 #include "WeaponBase.h"
 
 
@@ -31,7 +33,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
+	Mesh1P->SetOnlyOwnerSee(false);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
@@ -48,10 +50,11 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SpeedMap.Add(EMovementState::Crouching, GetCharacterMovement()->MaxWalkSpeed * CrouchMultiplier);
 	SpeedMap.Add(EMovementState::Sliding, NULL);
 	
-	ButtonPressed.Reserve(2);
+	ButtonPressed.Reserve(3);
 
 	ButtonPressed.Add("Sprint", false);
 	ButtonPressed.Add("Crouch", false);
+	ButtonPressed.Add("Sight", false);
 	
 	CurrentJumpCount = 0;
 	MaxJumpCount = 2;
@@ -73,6 +76,14 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	DefaultBrakingDeceleration = GetCharacterMovement()->BrakingDecelerationWalking;
 	
 	SlideCoolTime = SlideInterval;
+	
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_CrossHair(TEXT("/Game/FirstPerson/Widgets/DynamicCrossHair.WBCrosshair_C"));
+	if(UI_CrossHair.Succeeded())
+	{
+		CrossHairWidget = CreateWidget<UCrossHairWidget>(GetWorld(), UI_CrossHair.Class, TEXT("CrossHair"));
+		if(CrossHairWidget != nullptr)
+			CrossHairWidget->AddToViewport();
+	}
 }
 
 void AFPSurvivalCharacter::BeginPlay()
@@ -117,6 +128,9 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 		}
 	}
 
+	if(CrossHairWidget != nullptr)
+		CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length());
+	
 	if(MovementState == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
 		ResolveMovementState();
@@ -176,6 +190,9 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Pressed, this, &AFPSurvivalCharacter::OnCrouchAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Released, this, &AFPSurvivalCharacter::OnCrouchAction, false);
 
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Released, this, &AFPSurvivalCharacter::OnSightAction, false);
+
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
 	
@@ -218,7 +235,7 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 		GetCharacterMovement()->Velocity = velocity * SpeedMap[EMovementState::Sprinting];
 	}
 	
-	if(GetVelocity().Length() < SpeedMap[EMovementState::Crouching])
+	if(GetVelocity().Length() < SpeedMap[EMovementState::Crouching] || GetCharacterMovement()->IsFalling())
 	{
 		ResolveMovementState();
 	}
@@ -312,6 +329,39 @@ void AFPSurvivalCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const F
 		return;
 	}
 	TouchItem.bIsPressed = false;
+}
+
+
+void AFPSurvivalCharacter::OnSightAction(bool Pressed)
+{
+	if(Pressed)
+	{
+		ButtonPressed["Sight"] = true;
+		if(MovementState != EMovementState::Sprinting)
+		{
+			IsInSight = true;
+
+			const auto PlayerController = GetWorld()->GetFirstLocalPlayerFromController()->GetPlayerController(GetWorld());
+			if(PlayerController != nullptr && CurrentWeapon != nullptr)
+			{
+				PlayerController->SetViewTargetWithBlend(CurrentWeapon, 0.2);
+				bUseControllerRotationPitch = true;
+			}
+		}
+	}
+	else
+	{
+		ButtonPressed["Sight"] = false;
+		IsInSight = false;
+
+		const auto PlayerController = GetWorld()->GetFirstLocalPlayerFromController()->GetPlayerController(GetWorld());
+		if(PlayerController != nullptr && CurrentWeapon != nullptr)
+		{
+			PlayerController->SetViewTargetWithBlend(this, 0.2);
+			bUseControllerRotationPitch = false;
+			GetCapsuleComponent()->SetRelativeRotation(FRotator(0, 0, 0));
+		}
+	}
 }
 
 void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)

@@ -8,6 +8,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "PickUpComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values for this component's properties
 AWeaponBase::AWeaponBase()
@@ -18,6 +19,9 @@ AWeaponBase::AWeaponBase()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
 	PickUpComponent->SetupAttachment(WeaponMesh);
+
+	SightCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("SightCamera"));
+	SightCameraComponent->SetupAttachment(WeaponMesh);
 }
 
 void AWeaponBase::BeginPlay()
