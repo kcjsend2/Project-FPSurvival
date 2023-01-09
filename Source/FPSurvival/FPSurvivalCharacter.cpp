@@ -313,13 +313,16 @@ void AFPSurvivalCharacter::AdsTimelineReturn(float Value)
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
 	// Trigger the OnItemUsed Event
-	if(Pressed)
+	if(CurrentWeapon != nullptr)
 	{
-		OnFire.Broadcast();
-	}
-	else
-	{
-		OnFireEnd.Broadcast();
+		if(Pressed)
+		{
+			OnFire.Broadcast();
+		}
+		else
+		{
+			OnFireEnd.Broadcast();
+		}
 	}
 }
 

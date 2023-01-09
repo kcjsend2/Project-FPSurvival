@@ -64,6 +64,18 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
     bool IsAttached;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	int CurrentAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	int MagazineLimit;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* ArmShootingMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* WeaponShootingMontage;
 	
 protected:
 	/** Ends gameplay for this component. */
