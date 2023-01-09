@@ -66,7 +66,26 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnFire OnFire;
 	FOnFireEnd OnFireEnd;
+	
+	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	FTransform DefaultArmRelativeTransform;
+	FTransform DefaultWeaponRelativeTransform;
+	
+	UPROPERTY(VisibleAnywhere, Category="UI")
+	UCrossHairWidget* CrossHairWidget;
+	
+	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
+	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
+	void GainJumpCount() { JumpCurrentCount++; }
+	
+	EMovementState GetMovementState() { return MovementState; }
+	int GetCurrentWeaponID() const;
+	
+	UFUNCTION(BlueprintCallable)
+	bool IsSprinting() const;
+	
 	float SprintMultiplier;
 	float CrouchMultiplier;
 
@@ -96,6 +115,7 @@ public:
 	
 	float GroundSmashForce = -5000;
 
+	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	bool IsInSight = false;
 	
 	TMap<EMovementState, float> SpeedMap;
@@ -110,15 +130,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* CameraTiltCurveFloat;
 	
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* AdsCurveFloat;
+	
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
 	FOnTimelineFloat CameraTiltTimelineFunction;
+	FOnTimelineFloat AdsTimelineFunction;
 
 	UFUNCTION()
 	void SmoothCrouchTimelineReturn(float Value);
 	
 	UFUNCTION()
 	void CameraTiltReturn(float Value);
+
+	UFUNCTION()
+	void AdsTimelineReturn(float Value);
 	
 	UFUNCTION()
 	void SlideTimelineReturn();
@@ -131,6 +158,9 @@ public:
 	
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
+	
+	UPROPERTY()
+	UTimelineComponent* AdsTimeline;
 
 	UPROPERTY(BlueprintReadWrite, Category="Vaulting")
 	UVaultingComponent* VaultingComponent;
@@ -207,24 +237,5 @@ protected:
 	 * @returns true if touch controls were enabled.
 	 */
 	bool EnableTouchscreenMovement(UInputComponent* InputComponent);
-	
-public:
-	/** Returns Mesh1P subobject **/
-	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-	UPROPERTY(VisibleAnywhere, Category="UI")
-	UCrossHairWidget* CrossHairWidget;
-	
-	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
-	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
-	void GainJumpCount() { JumpCurrentCount++; }
-	
-	EMovementState GetMovementState() { return MovementState; }
-	int GetCurrentWeaponID() const;
-
-	UFUNCTION(BlueprintCallable)
-	bool IsSprinting() const;
 };
 

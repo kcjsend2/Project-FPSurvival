@@ -82,6 +82,6 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	UPickUpComponent* PickUpComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* SightCameraComponent;
+public:
+	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
 };

@@ -28,7 +28,6 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(0.f, 0.f, 70.f));
-	//FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
@@ -65,6 +64,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SmoothCrouchingTimeline"));
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
+	AdsTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AdsTimeline"));
 
 	VaultingComponent = CreateDefaultSubobject<UVaultingComponent>(TEXT("VaultingObject"));
 	WallRunningComponent = CreateDefaultSubobject<UWallRunningComponent>(TEXT("WallRunningObject"));
@@ -90,6 +90,8 @@ void AFPSurvivalCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	DefaultArmRelativeTransform = Mesh1P->GetRelativeTransform();
 	
 	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
 	if(CameraTiltCurveFloat)
@@ -105,6 +107,13 @@ void AFPSurvivalCharacter::BeginPlay()
 		SmoothCrouchingTimeline->AddInterpFloat(SmoothCrouchingCurveFloat, SmoothCrouchTimelineFunction);
 		SmoothCrouchingTimeline->SetTimelineLength(0.3);
 		SmoothCrouchingTimeline->SetLooping(false);
+	}
+	AdsTimelineFunction.BindUFunction(this, FName("AdsTimelineReturn"));
+	if(AdsCurveFloat)
+	{
+		AdsTimeline->AddInterpFloat(AdsCurveFloat, AdsTimelineFunction);
+		AdsTimeline->SetTimelineLength(1.0);
+		AdsTimeline->SetLooping(false);
 	}
 	
 	SlideTimelineFunction.BindUFunction(this, FName("SlideTimelineReturn"));
@@ -190,8 +199,9 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Pressed, this, &AFPSurvivalCharacter::OnCrouchAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Released, this, &AFPSurvivalCharacter::OnCrouchAction, false);
 
-	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
-	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Released, this, &AFPSurvivalCharacter::OnSightAction, false);
+    //Implement Later
+	//PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
+	//PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Released, this, &AFPSurvivalCharacter::OnSightAction, false);
 
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
@@ -245,6 +255,59 @@ void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 {
 	auto ControlRotation = GetController()->GetControlRotation();
 	GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value));
+}
+
+void AFPSurvivalCharacter::AdsTimelineReturn(float Value)
+{
+	FTransform AdsTransform;
+	FTransform TargetTransform;
+	FTransform ArmToAimTransform;
+	auto CurrentWeaponMesh = CurrentWeapon->GetMesh();
+	if(CurrentWeaponMesh != nullptr)
+	{
+		FTransform CameraTransform = FirstPersonCameraComponent->GetComponentTransform();
+		FTransform AimPoint = CurrentWeaponMesh->GetSocketTransform(TEXT("aimPoint"));
+		FTransform ArmTransform = Mesh1P->GetComponentTransform();
+
+		// FVector3d Temp;
+		// if(Value == 1.0f)
+		// {
+		// 	AdsTransform = AimPoint.GetRelativeTransform(CameraTransform);
+		// 	Temp = AdsTransform.Rotator().Euler();
+		// }
+		AdsTransform = AimPoint.GetRelativeTransform(CameraTransform);
+        ArmToAimTransform = AimPoint.GetRelativeTransform(ArmTransform);
+		
+		FRotator TargetRotation;
+		FVector3d DefaultRotator = DefaultArmRelativeTransform.Rotator().Euler();
+		FVector3d ArmToAimRotator = ArmToAimTransform.Rotator().Euler();
+		FVector3d TargetRotator = DefaultRotator - ArmToAimRotator;
+	
+		TargetRotation = FRotator::MakeFromEuler(TargetRotator);
+
+		TargetTransform.SetLocation(DefaultArmRelativeTransform.GetLocation() - DefaultWeaponRelativeTransform.GetLocation());
+		TargetTransform.SetRotation(TargetRotation.Quaternion());
+		TargetTransform.SetScale3D(FVector3d(1, 1, 1));
+	}
+
+	FTransform NewTransform;
+	if(IsInSight)
+	{
+		FTransform MeshTransform = Mesh1P->GetRelativeTransform();
+		
+		NewTransform.SetLocation(FMath::Lerp(MeshTransform.GetLocation(), TargetTransform.GetLocation(), Value));
+		NewTransform.SetScale3D(FMath::Lerp(MeshTransform.GetScale3D(), TargetTransform.GetScale3D(), Value));
+		NewTransform.SetRotation(FMath::Lerp(MeshTransform.GetRotation(), TargetTransform.GetRotation(), Value));
+		Mesh1P->SetRelativeTransform(NewTransform);
+	}
+	else
+	{
+		NewTransform.SetLocation(FMath::Lerp(DefaultArmRelativeTransform.GetLocation(), TargetTransform.GetLocation(), Value));
+		NewTransform.SetScale3D(FMath::Lerp(DefaultArmRelativeTransform.GetScale3D(), TargetTransform.GetScale3D(), Value));
+		NewTransform.SetRotation(FMath::Lerp(DefaultArmRelativeTransform.GetRotation(), TargetTransform.GetRotation(), Value));
+		Mesh1P->SetRelativeTransform(NewTransform);
+	}
+	
 }
 
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
@@ -334,32 +397,26 @@ void AFPSurvivalCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const F
 
 void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 {
-	if(Pressed)
+	if(CurrentWeapon != nullptr)
 	{
-		ButtonPressed["Sight"] = true;
-		if(MovementState != EMovementState::Sprinting)
+		if(Pressed)
 		{
-			IsInSight = true;
-
-			const auto PlayerController = GetWorld()->GetFirstLocalPlayerFromController()->GetPlayerController(GetWorld());
-			if(PlayerController != nullptr && CurrentWeapon != nullptr)
+			const FTransform AimPoint = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
+			const FTransform CameraTransform = FirstPersonCameraComponent->GetComponentTransform();
+			DefaultWeaponRelativeTransform = AimPoint.GetRelativeTransform(CameraTransform);
+			
+			ButtonPressed["Sight"] = true;
+			if(MovementState != EMovementState::Sprinting)
 			{
-				PlayerController->SetViewTargetWithBlend(CurrentWeapon, 0.2);
-				bUseControllerRotationPitch = true;
+				IsInSight = true;
+				AdsTimeline->Play();
 			}
 		}
-	}
-	else
-	{
-		ButtonPressed["Sight"] = false;
-		IsInSight = false;
-
-		const auto PlayerController = GetWorld()->GetFirstLocalPlayerFromController()->GetPlayerController(GetWorld());
-		if(PlayerController != nullptr && CurrentWeapon != nullptr)
+		else
 		{
-			PlayerController->SetViewTargetWithBlend(this, 0.2);
-			bUseControllerRotationPitch = false;
-			GetCapsuleComponent()->SetRelativeRotation(FRotator(0, 0, 0));
+			ButtonPressed["Sight"] = false;
+			IsInSight = false;
+			AdsTimeline->Reverse();
 		}
 	}
 }

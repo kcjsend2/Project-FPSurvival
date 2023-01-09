@@ -19,9 +19,6 @@ AWeaponBase::AWeaponBase()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
 	PickUpComponent->SetupAttachment(WeaponMesh);
-
-	SightCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("SightCamera"));
-	SightCameraComponent->SetupAttachment(WeaponMesh);
 }
 
 void AWeaponBase::BeginPlay()
