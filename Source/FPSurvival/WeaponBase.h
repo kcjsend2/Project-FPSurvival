@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BulletProjectile.h"
 #include "WeaponBase.generated.h"
 
 class UCameraComponent;
@@ -23,14 +24,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
 	
-	/** AnimMontage to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FireAnimation;
-
-	/** Gun muzzle's offset from the characters location */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	FVector MuzzleOffset;
-
 	/** Sets default values for this component's properties */
 	AWeaponBase();
 	
@@ -45,8 +38,11 @@ public:
 	void Fire();
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void FireEnd();
+	void FireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void Reload();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FName SocketName;
 
@@ -77,6 +73,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponShootingMontage;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* ArmReloadMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* WeaponReloadMontage;
+	
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
@@ -93,7 +95,11 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	UPickUpComponent* PickUpComponent;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* Muzzle;
 
+	TSubclassOf<ABulletProjectile> BulletProjectileClass;
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
 };

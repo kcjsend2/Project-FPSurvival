@@ -198,6 +198,9 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Pressed, this, &AFPSurvivalCharacter::OnCrouchAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Crouch", IE_Released, this, &AFPSurvivalCharacter::OnCrouchAction, false);
+	
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Reload", IE_Pressed, this, &AFPSurvivalCharacter::OnReloadAction, true);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Reload", IE_Released, this, &AFPSurvivalCharacter::OnReloadAction, false);
 
     //Implement Later
 	//PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
@@ -319,10 +322,14 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 		{
 			OnFire.Broadcast();
 		}
-		else
-		{
-			OnFireEnd.Broadcast();
-		}
+	}
+}
+
+void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
+{
+	if(CurrentWeapon != nullptr)
+	{
+		CurrentWeapon->Reload();
 	}
 }
 
@@ -490,6 +497,9 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 	{
 		if(CurrentWeapon != CollectedWeapon[WeaponNum])
 		{
+			OnFire.Clear();
+
+			OnFire.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::Fire);
 			CurrentWeapon->SetActorHiddenInGame(true); 
 			CurrentWeapon->SetActorEnableCollision(false); 
 			CurrentWeapon->SetActorTickEnabled(false);

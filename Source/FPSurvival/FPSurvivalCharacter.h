@@ -65,7 +65,6 @@ public:
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnFire OnFire;
-	FOnFireEnd OnFireEnd;
 	
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
@@ -177,7 +176,8 @@ public:
 protected:
 	/** Fires a projectile. */
 	void OnPrimaryAction(const bool Pressed);	
-
+	void OnReloadAction(const bool Pressed);
+	
 	bool CanStand();
 	bool CanSprint();
 
