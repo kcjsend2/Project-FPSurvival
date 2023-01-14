@@ -191,7 +191,7 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	// Bind fire event
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("PrimaryAction", IE_Pressed, this, &AFPSurvivalCharacter::OnPrimaryAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("PrimaryAction", IE_Released, this, &AFPSurvivalCharacter::OnPrimaryAction, false);
-
+	
 	// Bind Run event
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sprint", IE_Pressed, this, &AFPSurvivalCharacter::OnSprintAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sprint", IE_Released, this, &AFPSurvivalCharacter::OnSprintAction, false);
@@ -442,6 +442,14 @@ void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)
 		ButtonPressed["Sprint"] = true;
 		if(MovementState == EMovementState::Walking && CanSprint())
 		{
+			if(CurrentWeapon != nullptr)
+			{
+				if(CurrentWeapon->GetFireAnimationEnd())
+				{
+					return;
+				}
+			}
+			
 			if(IsReloading)
 			{
 				IsReloading = false;
@@ -505,9 +513,9 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 
 void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 {
-	if(CollectedWeapon.Num() > WeaponNum && !CurrentWeapon->GetIsFiring())
+	if(CollectedWeapon.Num() > WeaponNum)
 	{
-		if(CurrentWeapon != CollectedWeapon[WeaponNum])
+		if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
 		{
 			if(IsReloading)
 			{
@@ -516,9 +524,6 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 				CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, CurrentWeapon->WeaponReloadMontage);
 			}
 			
-			OnFire.Clear();
-
-			OnFire.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::Fire);
 			CurrentWeapon->SetActorHiddenInGame(true); 
 			CurrentWeapon->SetActorEnableCollision(false); 
 			CurrentWeapon->SetActorTickEnabled(false);
@@ -530,6 +535,8 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CollectedWeapon[WeaponNum]->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::MontageEnded);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
+			OnFire.Clear();
+			OnFire.AddDynamic(CurrentWeapon, &AWeaponBase::Fire);
 		}
 	}
 }

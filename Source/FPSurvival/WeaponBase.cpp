@@ -40,6 +40,7 @@ void AWeaponBase::Fire()
 	if(!IsFiring && CurrentAmmo > 0)
 	{
 		IsFiring = true;
+		IsFireAnimationEnd = false;
 	
 		if(Character == nullptr || Character->GetController() == nullptr)
 		{
@@ -99,7 +100,10 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	if(Montage == WeaponShootingMontage)
 	{
 		IsFiring = false;
-		return;
+	}
+	else if(Montage == ArmShootingMontage && !bInterrupted)
+	{
+		IsFireAnimationEnd = true;
 	}
 }
 
@@ -148,6 +152,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		}
 		Character->CurrentWeapon = this;
 		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+		Character->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 		//Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
 		//Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
 		IsAttached = true;

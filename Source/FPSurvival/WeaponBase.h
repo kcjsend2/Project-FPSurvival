@@ -106,9 +106,11 @@ private:
 	
 	bool IsFiring = false;
 	bool IsAttached = false;
+	bool IsFireAnimationEnd = true;
 	
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
 	bool GetIsFiring() const { return IsFiring; }
 	bool GetIsAttached() const { return IsAttached; }
+	bool GetFireAnimationEnd() const { return IsFireAnimationEnd; }
 };
