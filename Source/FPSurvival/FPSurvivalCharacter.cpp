@@ -316,7 +316,7 @@ void AFPSurvivalCharacter::AdsTimelineReturn(float Value)
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
 	// Trigger the OnItemUsed Event
-	if(CurrentWeapon != nullptr)
+	if(CurrentWeapon != nullptr && MovementState != EMovementState::Sprinting)
 	{
 		if(Pressed)
 		{
@@ -329,7 +329,10 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
 	if(CurrentWeapon != nullptr)
 	{
-		CurrentWeapon->Reload();
+		if(CurrentWeapon->CurrentAmmo < CurrentWeapon->MagazineLimit)
+		{
+			CurrentWeapon->Reload();
+		}
 	}
 }
 
@@ -437,7 +440,15 @@ void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)
 	{
 		ButtonPressed["Sprint"] = true;
 		if(MovementState == EMovementState::Walking && CanSprint())
+		{
+			if(IsReloading)
+			{
+				IsReloading = false;
+				Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
+				CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
+			}
 			SetMovementState(EMovementState::Sprinting);
+		}
 	}
 	else
 	{
@@ -508,7 +519,7 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CollectedWeapon[WeaponNum]->SetActorHiddenInGame(false); 
 			CollectedWeapon[WeaponNum]->SetActorEnableCollision(true); 
 			CollectedWeapon[WeaponNum]->SetActorTickEnabled(true);
-			CollectedWeapon[WeaponNum]->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::FireMontageEnded);
+			CollectedWeapon[WeaponNum]->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::MontageEnded);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
 		}

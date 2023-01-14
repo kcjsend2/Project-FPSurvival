@@ -10,6 +10,13 @@ class UCameraComponent;
 class AFPSurvivalCharacter;
 class UPickUpComponent;
 
+UENUM(BlueprintType)
+enum class EReloadType : uint8
+{
+	WholeAtOnce,
+	OneByOne
+};
+
 UCLASS()
 class FPSURVIVAL_API AWeaponBase : public AActor
 {
@@ -26,17 +33,20 @@ public:
 	virtual void BeginPlay() override;
 
 	/** Attaches the actor to a FirstPersonCharacter */
-	UFUNCTION(BlueprintCallable, Category="Weapon")
+	UFUNCTION()
 	void AttachWeapon(AFPSurvivalCharacter* TargetCharacter);
 
 	/** Make the weapon Fire a Projectile */
-	UFUNCTION(BlueprintCallable, Category="Weapon")
+	UFUNCTION()
 	void Fire();
 	
-	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void FireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION()
+	void ResolveReload(bool bInterrupted);
 
-	UFUNCTION(BlueprintCallable, Category="Weapon")
+	UFUNCTION()
+	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
 	void Reload();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
@@ -63,6 +73,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	int MagazineLimit;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	EReloadType ReloadType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* ArmShootingMontage;
 	

@@ -116,6 +116,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	bool IsInSight = false;
+
+	bool IsReloading;
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;

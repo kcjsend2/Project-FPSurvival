@@ -37,7 +37,7 @@ void AWeaponBase::BeginPlay()
 
 void AWeaponBase::Fire()
 {
-	if(!IsFiring)
+	if(!IsFiring && CurrentAmmo > 0)
 	{
 		IsFiring = true;
 	
@@ -60,6 +60,9 @@ void AWeaponBase::Fire()
 		MuzzleTransform.SetScale3D(FVector3d(1, 1, 1));
 		
 		const ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
+
+		CurrentAmmo--;
+		UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
 		if(SpawnedBullet == nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Spawn Failed"));
@@ -67,24 +70,49 @@ void AWeaponBase::Fire()
 	}
 }
 
-void AWeaponBase::FireMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AWeaponBase::ResolveReload(bool bInterrupted)
 {
-	if(WeaponShootingMontage == Montage)
+	if(!bInterrupted)
+	{
+		if(ReloadType == EReloadType::OneByOne)
+		{
+			CurrentAmmo++;
+			if(MagazineLimit == CurrentAmmo && ArmReloadMontage != nullptr)
+			{
+				Character->GetMesh1P()->GetAnimInstance()->Montage_JumpToSection("ReturnPose", ArmReloadMontage);
+				if(WeaponReloadMontage != nullptr)
+					WeaponMesh->GetAnimInstance()->Montage_JumpToSection("ReturnPose", WeaponReloadMontage);
+			}
+		}
+		else if(ReloadType == EReloadType::WholeAtOnce)
+		{
+			CurrentAmmo = MagazineLimit;
+		}
+		UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
+	}
+}
+
+void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if(Montage == WeaponShootingMontage)
+	{
 		IsFiring = false;
+		return;
+	}
 }
 
 void AWeaponBase::Reload()
 {
-	if(ArmReloadMontage != nullptr)
+	if(ArmReloadMontage != nullptr && CurrentAmmo < MagazineLimit
+		&& !Character->GetMesh1P()->GetAnimInstance()->Montage_IsPlaying(nullptr))
 	{
+	
 		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmReloadMontage);
 		if(WeaponReloadMontage != nullptr)
 			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
 		
-		UE_LOG(LogTemp, Log, TEXT("Fire"));
+		UE_LOG(LogTemp, Log, TEXT("Reload"));
 	}
-	
-	CurrentAmmo = MagazineLimit;
 }
 
 void AWeaponBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -117,7 +145,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 			Character->CurrentWeapon->SetActorTickEnabled(false);
 		}
 		Character->CurrentWeapon = this;
-		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::FireMontageEnded);
+		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 		//Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
 		//Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
 		IsAttached = true;
