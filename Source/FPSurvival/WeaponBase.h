@@ -61,12 +61,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	int WeaponID;
 	
-	UPROPERTY(BlueprintReadOnly, Category="Weapon")
-	bool IsFiring;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-    bool IsAttached;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	int CurrentAmmo;
 
@@ -109,6 +103,12 @@ private:
 	USceneComponent* Muzzle;
 
 	TSubclassOf<ABulletProjectile> BulletProjectileClass;
+	
+	bool IsFiring = false;
+	bool IsAttached = false;
+	
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
+	bool GetIsFiring() const { return IsFiring; }
+	bool GetIsAttached() const { return IsAttached; }
 };

@@ -113,11 +113,6 @@ public:
 	float SlidePower = 5;
 	
 	float GroundSmashForce = -5000;
-
-	UPROPERTY(BlueprintReadOnly, Category="Weapon")
-	bool IsInSight = false;
-
-	bool IsReloading;
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;
@@ -125,6 +120,9 @@ public:
 	EMovementState MovementState;
 	EMovementState PrevMovementState;
 
+	bool IsInSight = false;
+	bool IsReloading = false;
+	
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* SmoothCrouchingCurveFloat;
 	

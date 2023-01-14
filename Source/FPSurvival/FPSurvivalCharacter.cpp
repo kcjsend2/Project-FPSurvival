@@ -504,7 +504,7 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 
 void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 {
-	if(CollectedWeapon.Num() > WeaponNum)
+	if(CollectedWeapon.Num() > WeaponNum && !IsReloading && !CurrentWeapon->GetIsFiring())
 	{
 		if(CurrentWeapon != CollectedWeapon[WeaponNum])
 		{
