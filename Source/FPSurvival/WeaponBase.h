@@ -16,10 +16,6 @@ class FPSURVIVAL_API AWeaponBase : public AActor
 	GENERATED_BODY()
 
 public:
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class AFPSurvivalProjectile> ProjectileClass;
-
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
@@ -90,9 +86,9 @@ private:
 	UPROPERTY()
 	AFPSurvivalCharacter* Character;
 
-	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* WeaponMesh;
-
+	
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	UPickUpComponent* PickUpComponent;
 	

@@ -15,6 +15,8 @@
 AWeaponBase::AWeaponBase()
 {
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	SetRootComponent(WeaponMesh);
+	
 	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
 	PickUpComponent->SetupAttachment(WeaponMesh);
 
@@ -27,8 +29,11 @@ AWeaponBase::AWeaponBase()
 
 void AWeaponBase::BeginPlay()
 {
+    Super::BeginPlay();
+
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
 }
+
 
 void AWeaponBase::Fire()
 {
@@ -64,7 +69,8 @@ void AWeaponBase::Fire()
 
 void AWeaponBase::FireMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	IsFiring = false;
+	if(WeaponShootingMontage == Montage)
+		IsFiring = false;
 }
 
 void AWeaponBase::Reload()
@@ -83,6 +89,7 @@ void AWeaponBase::Reload()
 
 void AWeaponBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    Super::EndPlay(EndPlayReason);
 	if(Character != nullptr)
 	{
 		// Unregister from the OnUseItem Event
@@ -100,6 +107,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		AttachToComponent(Character->GetMesh1P(), AttachmentRules, SocketName);
 		
 		// Register so that Fire is called every time the character tries to use the item being held
+		Character->OnFire.Clear();
 		Character->OnFire.AddDynamic(this, &AWeaponBase::Fire);
 		Character->CollectedWeapon.Add(this);
 		if(Character->CurrentWeapon != nullptr)
@@ -109,7 +117,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 			Character->CurrentWeapon->SetActorTickEnabled(false);
 		}
 		Character->CurrentWeapon = this;
-		Character->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::FireMontageEnded);
+		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::FireMontageEnded);
 		//Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
 		//Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
 		IsAttached = true;

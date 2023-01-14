@@ -503,10 +503,12 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CurrentWeapon->SetActorHiddenInGame(true); 
 			CurrentWeapon->SetActorEnableCollision(false); 
 			CurrentWeapon->SetActorTickEnabled(false);
+			CurrentWeapon->GetMesh()->GetAnimInstance()->OnMontageEnded.Clear();
 		
 			CollectedWeapon[WeaponNum]->SetActorHiddenInGame(false); 
 			CollectedWeapon[WeaponNum]->SetActorEnableCollision(true); 
 			CollectedWeapon[WeaponNum]->SetActorTickEnabled(true);
+			CollectedWeapon[WeaponNum]->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::FireMontageEnded);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
 		}
