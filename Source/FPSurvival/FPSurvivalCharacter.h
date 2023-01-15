@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
+#define WEAPON_MAX 2
+
 class AWeaponBase;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -24,8 +26,8 @@ class AFPSurvivalCharacter;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReload, UAnimInstance*, CharacterAnimInstance);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnReload, UAnimInstance*, CharacterAnimInstance);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFireEnd);
 
 UENUM(BlueprintType)
@@ -65,11 +67,11 @@ public:
 	float TurnRateGamepad;
 
 	/** Delegate to whom anyone can subscribe to receive this event */
-	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnFire OnFire;
+	UPROPERTY()
+	FOnFire OnFire[WEAPON_MAX];
 
-	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnReload OnReload;
+	UPROPERTY()
+	FOnReload OnReload[WEAPON_MAX];
 	
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
@@ -127,6 +129,8 @@ public:
 
 	bool IsInSight = false;
 	bool IsReloading = false;
+
+	int CurrentWeaponSlot = -1;
 	
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* SmoothCrouchingCurveFloat;

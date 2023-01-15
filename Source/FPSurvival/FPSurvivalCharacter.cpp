@@ -322,8 +322,7 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
         {
         	SetMovementState(EMovementState::Walking);
         }
-        
-        OnFire.Broadcast(this);
+        OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
     }
 }
 
@@ -334,7 +333,7 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 		if(CurrentWeapon->CurrentAmmo < CurrentWeapon->MagazineLimit)
 		{
 			IsReloading = true;
-			OnReload.Broadcast(Mesh1P->GetAnimInstance());
+			OnReload[CurrentWeaponSlot].ExecuteIfBound(Mesh1P->GetAnimInstance());
 		}
 	}
 }
@@ -520,28 +519,23 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 		if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
 		{
 			if(IsReloading)
-			{
 				IsReloading = false;
-				Mesh1P->GetAnimInstance()->Montage_Stop(0.1f, CurrentWeapon->ArmReloadMontage);
-				CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, CurrentWeapon->WeaponReloadMontage);
-			}
+
+			// 혹시 모르니까...
+			Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
+			CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
 			
 			CurrentWeapon->SetActorHiddenInGame(true); 
 			CurrentWeapon->SetActorEnableCollision(false); 
 			CurrentWeapon->SetActorTickEnabled(false);
-			CurrentWeapon->GetMesh()->GetAnimInstance()->OnMontageEnded.Clear();
 		
 			CollectedWeapon[WeaponNum]->SetActorHiddenInGame(false); 
 			CollectedWeapon[WeaponNum]->SetActorEnableCollision(true); 
 			CollectedWeapon[WeaponNum]->SetActorTickEnabled(true);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
-			
-			CurrentWeapon->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CurrentWeapon, &AWeaponBase::MontageEnded);
-			OnFire.Clear();
-			OnFire.AddDynamic(CurrentWeapon, &AWeaponBase::Fire);
-			OnReload.Clear();
-			OnReload.AddDynamic(CurrentWeapon, &AWeaponBase::Reload);
+
+			CurrentWeaponSlot = WeaponNum;
 		}
 	}
 }

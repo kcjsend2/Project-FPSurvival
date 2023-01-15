@@ -32,6 +32,7 @@ void AWeaponBase::BeginPlay()
     Super::BeginPlay();
 
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
+	WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 }
 
 
@@ -129,11 +130,13 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
 		
 		// Register so that Fire is called every time the character tries to use the item being held
-		TargetCharacter->OnFire.Clear();
-		TargetCharacter->OnFire.AddDynamic(this, &AWeaponBase::Fire);
-
-		TargetCharacter->OnReload.Clear();
-		TargetCharacter->OnReload.AddDynamic(this, &AWeaponBase::Reload);
+		const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
+		
+		TargetCharacter->OnFire[WeaponSlot].Clear();
+		TargetCharacter->OnFire[WeaponSlot].BindDynamic(this, &AWeaponBase::Fire);
+		
+		TargetCharacter->OnReload[WeaponSlot].Clear();
+		TargetCharacter->OnReload[WeaponSlot].BindDynamic(this, &AWeaponBase::Reload);
 		
 		TargetCharacter->CollectedWeapon.Add(this);
 		if(TargetCharacter->CurrentWeapon != nullptr)
@@ -143,8 +146,11 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 			TargetCharacter->CurrentWeapon->SetActorTickEnabled(false);
 		}
 		TargetCharacter->CurrentWeapon = this;
-		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+		
 		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+
+		TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
+		
 		IsAttached = true;
 	}
 }
