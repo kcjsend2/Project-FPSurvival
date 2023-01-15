@@ -145,8 +145,6 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		TargetCharacter->CurrentWeapon = this;
 		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
-		//Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
-		//Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
 		IsAttached = true;
 	}
 }

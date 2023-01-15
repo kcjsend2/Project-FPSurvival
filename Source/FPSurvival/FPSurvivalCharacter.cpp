@@ -316,13 +316,15 @@ void AFPSurvivalCharacter::AdsTimelineReturn(float Value)
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
 	// Trigger the OnItemUsed Event
-	if(CurrentWeapon != nullptr && MovementState != EMovementState::Sprinting)
-	{
-		if(Pressed)
-		{
-			OnFire.Broadcast(this);
-		}
-	}
+    if(Pressed && CurrentWeapon != nullptr)
+    {
+        if(MovementState == EMovementState::Sprinting)
+        {
+        	SetMovementState(EMovementState::Walking);
+        }
+        
+        OnFire.Broadcast(this);
+    }
 }
 
 void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
@@ -444,7 +446,7 @@ void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)
 		{
 			if(CurrentWeapon != nullptr)
 			{
-				if(CurrentWeapon->GetFireAnimationEnd())
+				if(!CurrentWeapon->GetFireAnimationEnd())
 				{
 					return;
 				}
@@ -532,10 +534,10 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CollectedWeapon[WeaponNum]->SetActorHiddenInGame(false); 
 			CollectedWeapon[WeaponNum]->SetActorEnableCollision(true); 
 			CollectedWeapon[WeaponNum]->SetActorTickEnabled(true);
-			CollectedWeapon[WeaponNum]->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::MontageEnded);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
 			
+			CurrentWeapon->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CurrentWeapon, &AWeaponBase::MontageEnded);
 			OnFire.Clear();
 			OnFire.AddDynamic(CurrentWeapon, &AWeaponBase::Fire);
 			OnReload.Clear();
