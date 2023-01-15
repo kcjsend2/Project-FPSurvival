@@ -35,5 +35,5 @@ void UFPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UFPAnimInstance::AnimNotify_Reload()
 {
-    OwningPlayer->CurrentWeapon->ResolveReload(false);
+    OwningPlayer->CurrentWeapon->ResolveReload(false, OwningPlayer);
 }

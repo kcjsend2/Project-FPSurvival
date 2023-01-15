@@ -320,7 +320,7 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 	{
 		if(Pressed)
 		{
-			OnFire.Broadcast();
+			OnFire.Broadcast(this);
 		}
 	}
 }
@@ -332,7 +332,7 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 		if(CurrentWeapon->CurrentAmmo < CurrentWeapon->MagazineLimit)
 		{
 			IsReloading = true;
-			CurrentWeapon->Reload();
+			OnReload.Broadcast(Mesh1P->GetAnimInstance());
 		}
 	}
 }
@@ -535,8 +535,11 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CollectedWeapon[WeaponNum]->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(CollectedWeapon[WeaponNum], &AWeaponBase::MontageEnded);
 			
 			CurrentWeapon = CollectedWeapon[WeaponNum];
+			
 			OnFire.Clear();
 			OnFire.AddDynamic(CurrentWeapon, &AWeaponBase::Fire);
+			OnReload.Clear();
+			OnReload.AddDynamic(CurrentWeapon, &AWeaponBase::Reload);
 		}
 	}
 }

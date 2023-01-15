@@ -38,16 +38,16 @@ public:
 
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION()
-	void Fire();
+	void Fire(AFPSurvivalCharacter* Character);
 	
 	UFUNCTION()
-	void ResolveReload(bool bInterrupted);
+	void ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Character);
 
 	UFUNCTION()
 	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
-	void Reload();
+	void Reload(UAnimInstance* CharacterAnimInstance);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FName SocketName;
@@ -89,10 +89,6 @@ protected:
 	
 
 private:
-	/** The Character holding this weapon*/
-	UPROPERTY()
-	AFPSurvivalCharacter* Character;
-
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* WeaponMesh;
 	

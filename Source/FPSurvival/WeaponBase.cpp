@@ -35,18 +35,13 @@ void AWeaponBase::BeginPlay()
 }
 
 
-void AWeaponBase::Fire()
+void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 {
 	if(!IsFiring && CurrentAmmo > 0)
 	{
 		IsFiring = true;
 		IsFireAnimationEnd = false;
-	
-		if(Character == nullptr || Character->GetController() == nullptr)
-		{
-			return;
-		}
-
+		
 		if(ArmShootingMontage != nullptr && WeaponShootingMontage != nullptr)
 		{
 			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmShootingMontage);
@@ -71,7 +66,7 @@ void AWeaponBase::Fire()
 	}
 }
 
-void AWeaponBase::ResolveReload(bool bInterrupted)
+void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Character)
 {
 	if(!bInterrupted)
 	{
@@ -107,13 +102,12 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	}
 }
 
-void AWeaponBase::Reload()
+void AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 {
 	if(ArmReloadMontage != nullptr && CurrentAmmo < MagazineLimit
-		&& !Character->GetMesh1P()->GetAnimInstance()->Montage_IsPlaying(nullptr))
+		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr))
 	{
-	
-		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmReloadMontage);
+		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 		if(WeaponReloadMontage != nullptr)
 			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
 		
@@ -124,35 +118,33 @@ void AWeaponBase::Reload()
 void AWeaponBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     Super::EndPlay(EndPlayReason);
-	if(Character != nullptr)
-	{
-		// Unregister from the OnUseItem Event
-		Character->OnFire.RemoveDynamic(this, &AWeaponBase::Fire);
-	}
 }
 
 void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 {
-	Character = TargetCharacter;
-	if(Character != nullptr)
+	if(TargetCharacter != nullptr)
 	{
 		// Attach the weapon to the First Person Character
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		AttachToComponent(Character->GetMesh1P(), AttachmentRules, SocketName);
+		AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
 		
 		// Register so that Fire is called every time the character tries to use the item being held
-		Character->OnFire.Clear();
-		Character->OnFire.AddDynamic(this, &AWeaponBase::Fire);
-		Character->CollectedWeapon.Add(this);
-		if(Character->CurrentWeapon != nullptr)
+		TargetCharacter->OnFire.Clear();
+		TargetCharacter->OnFire.AddDynamic(this, &AWeaponBase::Fire);
+
+		TargetCharacter->OnReload.Clear();
+		TargetCharacter->OnReload.AddDynamic(this, &AWeaponBase::Reload);
+		
+		TargetCharacter->CollectedWeapon.Add(this);
+		if(TargetCharacter->CurrentWeapon != nullptr)
 		{
-			Character->CurrentWeapon->SetActorHiddenInGame(true); 
-			Character->CurrentWeapon->SetActorEnableCollision(false); 
-			Character->CurrentWeapon->SetActorTickEnabled(false);
+			TargetCharacter->CurrentWeapon->SetActorHiddenInGame(true); 
+			TargetCharacter->CurrentWeapon->SetActorEnableCollision(false); 
+			TargetCharacter->CurrentWeapon->SetActorTickEnabled(false);
 		}
-		Character->CurrentWeapon = this;
+		TargetCharacter->CurrentWeapon = this;
 		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
-		Character->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 		//Character->GetMesh1P()->SetRelativeLocation(WeaponRelativePosition);
 		//Character->GetMesh1P()->SetRelativeRotation(WeaponRelativeRotation);
 		IsAttached = true;
