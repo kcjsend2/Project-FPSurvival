@@ -27,7 +27,7 @@ class AFPSurvivalCharacter;
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnReload, UAnimInstance*, CharacterAnimInstance);
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFireEnd);
 
 UENUM(BlueprintType)

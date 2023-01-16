@@ -330,11 +330,7 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
 	if(CurrentWeapon != nullptr)
 	{
-		if(CurrentWeapon->CurrentAmmo < CurrentWeapon->MagazineLimit)
-		{
-			IsReloading = true;
-			OnReload[CurrentWeaponSlot].ExecuteIfBound(Mesh1P->GetAnimInstance());
-		}
+		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
 	}
 }
 

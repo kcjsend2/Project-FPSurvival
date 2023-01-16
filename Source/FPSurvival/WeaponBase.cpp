@@ -103,17 +103,20 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	}
 }
 
-void AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
+bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 {
 	if(ArmReloadMontage != nullptr && CurrentAmmo < MagazineLimit
-		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr))
+		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr) && IsFireAnimationEnd)
 	{
 		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 		if(WeaponReloadMontage != nullptr)
 			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
 		
 		UE_LOG(LogTemp, Log, TEXT("Reload"));
+
+		return true;
 	}
+	return false;
 }
 
 void AWeaponBase::EndPlay(const EEndPlayReason::Type EndPlayReason)

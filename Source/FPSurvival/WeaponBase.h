@@ -47,7 +47,7 @@ public:
 	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
-	void Reload(UAnimInstance* CharacterAnimInstance);
+	bool Reload(UAnimInstance* CharacterAnimInstance);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FName SocketName;
