@@ -7,6 +7,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "StateMachine.h"
 #include "FPSurvivalCharacter.generated.h"
 
 #define WEAPON_MAX 2
@@ -233,6 +234,8 @@ protected:
 	
 	FVector CalculateFloorInfluence(FVector FloorNormal);
 	TouchData	TouchItem;
+
+	TStateMachine<EMovementState> StateMachine;
 	
 protected:
 	// APawn interface

@@ -25,22 +25,39 @@ void TStateMachine<StateEnum>::AddTransitionFunc(FStateTransition TransitionFunc
 template <typename StateEnum>
 void TStateMachine<StateEnum>::AddInitFunc(FStateInit InitFunc, StateEnum State)
 {
+	StateInitFuncTable[State] = InitFunc;
 }
 
 template <typename StateEnum>
 void TStateMachine<StateEnum>::AddOutFunc(FStateOut OutFunc, StateEnum State)
 {
+	StateOutFuncTable[State] = OutFunc;
 }
 
 template <typename StateEnum>
 void TStateMachine<StateEnum>::CheckStateTransition()
 {
-	for(int i = 0; i < TransitionFuncTable[CurrentState].Num(); ++i)
+	for(TPair<StateEnum, FStateTransition>& TransitionInfo : TransitionFuncTable[CurrentState])
 	{
-		if(TransitionFuncTable[CurrentState][i].Execute())
+		if(TransitionInfo.Value.Execute())
 		{
-			
+			CurrentState = TransitionInfo.Key;
+			break;
 		}
+	}
+}
+
+template <typename StateEnum>
+void TStateMachine<StateEnum>::CheckStateTransition(StateEnum StateTo)
+{
+	if(!TransitionFuncTable[CurrentState][StateTo].IsBound())
+	{
+		return;
+	}
+	
+	if(TransitionFuncTable[CurrentState][StateTo].Execute())
+	{
+		CurrentState = StateTo;
 	}
 }
 

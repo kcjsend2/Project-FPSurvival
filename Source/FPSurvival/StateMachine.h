@@ -30,16 +30,17 @@ public:
 	// CurrentState가 State에서 다른 값으로 변경될 때 수행할 OutFunc을 추가하는 함수
 	void AddOutFunc(FStateOut OutFunc, StateEnum State);
 
-	// 액터의 Tick에서 반드시 호출해야함
-	// CurrentState에서 다른 State로 변경될 수 있는지 검사하는 함수
+	// 액터의 Tick에서 호출해야하는 함수
+	// CurrentState에서 다른 State로 변경될 수 있는지 검사하고 그렇다면 변경을 수행하는 함수
 	void CheckStateTransition();
 
-	
+	// StateTo에 대한 검사가 매 프레임 필요하지 않을 때 사용할 수 있는 함수
+	void CheckStateTransition(StateEnum StateTo);
 	
 private:
 	StateEnum CurrentState;
 	TMap<StateEnum, TArray<StateEnum>> StateConnected;
-	TMap<StateEnum, TArray<FStateTransition>> TransitionFuncTable;
+	TMap<StateEnum, TMap<StateEnum, FStateTransition>> TransitionFuncTable;
 	TMap<StateEnum, FStateInit> StateInitFuncTable;
 	TMap<StateEnum, FStateOut> StateOutFuncTable;
 };
