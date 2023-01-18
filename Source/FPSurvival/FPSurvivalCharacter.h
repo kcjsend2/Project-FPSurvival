@@ -7,7 +7,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "StateMachine.h"
+#include "MovementStateMachine.h"
 #include "FPSurvivalCharacter.generated.h"
 
 #define WEAPON_MAX 2
@@ -31,15 +31,6 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFireEnd);
 
-UENUM(BlueprintType)
-enum class EMovementState : uint8
-{
-	Walking,
-	Sprinting,
-	Crouching,
-	Sliding
-};
-
 UCLASS(config=Game)
 class AFPSurvivalCharacter : public ACharacter
 {
@@ -61,7 +52,57 @@ protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Jump() override;
+	
+	UFUNCTION()
+	bool WalkToCrouchTransition();
+	
+	UFUNCTION()
+	bool WalkToSprintTransition();
 
+	UFUNCTION()
+	bool CrouchToWalkTransition();
+	
+	UFUNCTION()
+    bool SprintToSlideTransition();
+
+	UFUNCTION()
+	bool SprintToWalkTransition();
+    
+    UFUNCTION()
+	bool SlideToCrouchTransition();
+
+	UFUNCTION()
+	bool SlideToWalkTransition();
+
+	UFUNCTION()
+	bool SlideToSprintTransition();
+	
+	UFUNCTION()
+	void SprintInit();
+
+	UFUNCTION()
+	void WalkInit();
+	
+	UFUNCTION()
+	void SlideInit();
+	
+	UFUNCTION()
+	void CrouchInit();
+
+	UFUNCTION()
+	void SprintEnd() {}
+
+	UFUNCTION()
+	void WalkEnd() {}
+	
+	UFUNCTION()
+	void SlideEnd();
+	
+	UFUNCTION()
+	void CrouchEnd();
+	
+	void SetStateMachineTransition();
+	
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -87,7 +128,6 @@ public:
 	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
 	void GainJumpCount() { JumpCurrentCount++; }
 	
-	EMovementState GetMovementState() { return MovementState; }
 	int GetCurrentWeaponID() const;
 	
 	UFUNCTION(BlueprintCallable)
@@ -124,9 +164,6 @@ public:
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;
-	
-	EMovementState MovementState;
-	EMovementState PrevMovementState;
 
 	bool IsInSight = false;
 	bool IsReloading = false;
@@ -194,10 +231,6 @@ protected:
 	void BeginSlide();
 	void EndSlide();
 
-	void SetMovementState(EMovementState NewMovementState);
-	void ResolveMovementState();
-	void OnMovementStateChanged();
-
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -235,7 +268,8 @@ protected:
 	FVector CalculateFloorInfluence(FVector FloorNormal);
 	TouchData	TouchItem;
 
-	TStateMachine<EMovementState> StateMachine;
+	UPROPERTY()
+	UMovementStateMachine* StateMachine;
 	
 protected:
 	// APawn interface
