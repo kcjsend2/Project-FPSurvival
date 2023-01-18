@@ -140,7 +140,6 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	if(StateMachine->GetCurrentState() == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
 		StateMachine->CheckStateTransition(EMovementState::Walking);
-		//ResolveMovementState();
 	}
 }
 
@@ -184,7 +183,7 @@ bool AFPSurvivalCharacter::WalkToCrouchTransition()
 
 bool AFPSurvivalCharacter::CrouchToWalkTransition()
 {
-	if(!ButtonPressed["Crouch"])
+	if(!ButtonPressed["Crouch"] && CanStand())
 	{
 		return true;
 	}
@@ -193,16 +192,16 @@ bool AFPSurvivalCharacter::CrouchToWalkTransition()
 
 bool AFPSurvivalCharacter::WalkToSprintTransition()
 {
+	if(CurrentWeapon != nullptr)
+	{
+		if(!CurrentWeapon->GetFireAnimationEnd() || CurrentWeapon->GetIsFiring() || IsReloading)
+		{
+			return false;
+		}
+	}
+	
 	if(CanSprint() && ButtonPressed["Sprint"])
 	{
-		if(CurrentWeapon != nullptr)
-		{
-			if(!CurrentWeapon->GetFireAnimationEnd())
-			{
-				return false;
-			}
-		}
-		
 		return true;
 	}
 
@@ -211,7 +210,15 @@ bool AFPSurvivalCharacter::WalkToSprintTransition()
 
 bool AFPSurvivalCharacter::SprintToWalkTransition()
 {
-	if(!ButtonPressed["Sprint"] || CurrentWeapon->GetIsFiring() || IsReloading)
+	if(CurrentWeapon != nullptr)
+	{
+		if(CurrentWeapon->GetIsFiring() || IsReloading || !CurrentWeapon->GetFireAnimationEnd())
+		{
+			return true;
+		}
+	}
+	
+	if(!ButtonPressed["Sprint"])
 	{
 		return true;
 	}
@@ -247,7 +254,7 @@ bool AFPSurvivalCharacter::SlideToWalkTransition()
 
 bool AFPSurvivalCharacter::SlideToSprintTransition()
 {
-	if(CanSprint())
+	if(CanSprint() && GetVelocity().Length() < SpeedMap[EMovementState::Sprinting])
 	{
 		return true;
 	}
@@ -292,6 +299,7 @@ void AFPSurvivalCharacter::CrouchInit()
 
 void AFPSurvivalCharacter::SlideEnd()
 {
+	SmoothCrouchingTimeline->Reverse();
 	SlideTimeline->Stop();
 	CameraTiltTimeline->Reverse();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
@@ -524,11 +532,11 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 	// Trigger the OnItemUsed Event
     if(Pressed && CurrentWeapon != nullptr)
     {
-        // if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
-        // {
-        // 	SetMovementState(EMovementState::Walking);
-        // }
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
+        if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+        {
+        	StateMachine->CheckStateTransition(EMovementState::Walking);
+        }
     }
 }
 
@@ -536,6 +544,10 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
 	if(CurrentWeapon != nullptr)
 	{
+		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+		{
+			StateMachine->CheckStateTransition(EMovementState::Walking);
+		}
 		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
 	}
 }
@@ -644,31 +656,11 @@ void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)
 	{
 		ButtonPressed["Sprint"] = true;
 		StateMachine->CheckStateTransition(EMovementState::Sprinting);
-		// if(MovementState == EMovementState::Walking && CanSprint())
-		// {
-		// 	if(CurrentWeapon != nullptr)
-		// 	{
-		// 		if(!CurrentWeapon->GetFireAnimationEnd())
-		// 		{
-		// 			return;
-		// 		}
-		// 	}
-		// 	
-		// 	if(IsReloading)
-		// 	{
-		// 		IsReloading = false;
-		// 		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
-		// 		CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
-		// 	}
-		// 	SetMovementState(EMovementState::Sprinting);
-		// }
 	}
 	else
 	{
 		ButtonPressed["Sprint"] = false;
 		StateMachine->CheckStateTransition(EMovementState::Walking);
-		// if(MovementState == EMovementState::Sprinting)
-		// 	ResolveMovementState();
 	}
 }
 
@@ -681,30 +673,6 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 			StateMachine->CheckStateTransition(EMovementState::Crouching);
 		else
 			StateMachine->CheckStateTransition(EMovementState::Sliding);
-		
-		// SmoothCrouchingTimeline->Play();
-		//
-		// if(MovementState == EMovementState::Walking)
-		// {
-		// 	SetMovementState(EMovementState::Crouching);
-		// }
-		//
-		// if(MovementState == EMovementState::Sprinting)
-		// {
-		// 	if (!GetCharacterMovement()->IsFalling() && !SlideHot)
-		// 	{
-		// 		SetMovementState(EMovementState::Sliding);
-		// 	}
-		// 	else
-		// 	{
-		// 		SetMovementState(EMovementState::Crouching);
-		// 	}
-		// }
-		//
-		// if (GetCharacterMovement()->IsFalling())
-		// {
-		// 	GetCharacterMovement()->Velocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, GroundSmashForce);
-		// }
 
 	}
 	else
@@ -712,15 +680,6 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 		ButtonPressed["Crouch"] = false;
 		if(StateMachine->GetCurrentState() == EMovementState::Crouching)
 			StateMachine->CheckStateTransition(EMovementState::Walking);
-
-		// if(MovementState != EMovementState::Sliding)
-		// {
-		// 	ResolveMovementState();
-		// }
-		// else if(GetVelocity().Length() <= SpeedMap[EMovementState::Sprinting])
-		// {
-		// 	ResolveMovementState();
-		// }
 	}
 }
 
