@@ -195,7 +195,7 @@ bool AFPSurvivalCharacter::WalkToSprintTransition()
 {
 	if(CurrentWeapon != nullptr)
 	{
-		if(CurrentWeapon->GetIsFiring() || IsReloading)
+		if(CurrentWeapon->GetIsFiring())
 		{
 			return false;
 		}
@@ -272,6 +272,7 @@ void AFPSurvivalCharacter::SprintInit()
 	if(IsReloading)
 	{
 		IsReloading = false;
+		UE_LOG(LogTemp, Log, TEXT("SprintInit: %s"), IsReloading ? TEXT("true") : TEXT("false"));
 		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 		CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
 	}
@@ -552,13 +553,14 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 
 void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
-	if(CurrentWeapon != nullptr && !IsWeaponChanging)
+	if(CurrentWeapon != nullptr && !IsWeaponChanging && Pressed && !IsReloading)
 	{
 		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
 		{
 			StateMachine->CheckStateTransition(EMovementState::Walking);
 		}
 		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
+		UE_LOG(LogTemp, Log, TEXT("OnReloadAction: %s"), IsReloading ? TEXT("true") : TEXT("false") );
 	}
 }
 
@@ -700,7 +702,10 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 		if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
 		{
 			if(IsReloading)
+			{
 				IsReloading = false;
+				UE_LOG(LogTemp, Log, TEXT("OnWeaponChange: %s"), IsReloading ? TEXT("true") : TEXT("false"));
+			}
 			
 			Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 			CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);

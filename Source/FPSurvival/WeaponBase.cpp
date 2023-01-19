@@ -80,11 +80,13 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 				if(WeaponReloadMontage != nullptr)
 					WeaponMesh->GetAnimInstance()->Montage_JumpToSection("ReturnPose", WeaponReloadMontage);
 				Character->IsReloading = false;
+				UE_LOG(LogTemp, Log, TEXT("ResolveReload: %s"), Character->IsReloading ? TEXT("true") : TEXT("false"));
 			}
 		}
 		else if(ReloadType == EReloadType::WholeAtOnce)
 		{
 			Character->IsReloading = false;
+			UE_LOG(LogTemp, Log, TEXT("ResolveReload: %s"), Character->IsReloading ? TEXT("true") : TEXT("false"));
 			CurrentAmmo = MagazineLimit;
 		}
 		UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
