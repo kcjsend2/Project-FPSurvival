@@ -160,7 +160,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 
 		TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
 
-		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::OnFireOrReloadEnd);
+		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::SprintCheck);
 		
 		IsAttached = true;
 	}

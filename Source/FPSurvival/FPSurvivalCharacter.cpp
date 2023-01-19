@@ -117,8 +117,7 @@ void AFPSurvivalCharacter::BeginPlay()
 	SlideTimeline->AddEvent(0, SlideTimelineFunction);
 	SlideTimeline->SetTimelineLength(1.0);
 	SlideTimeline->SetLooping(true);
-	
-	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnWeaponChangeMontageEnd);
+	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnMontageEnd);
 }
 
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
@@ -472,7 +471,7 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 	}
 }
 
-void AFPSurvivalCharacter::OnFireOrReloadEnd()
+void AFPSurvivalCharacter::SprintCheck()
 {
 	if(ButtonPressed["Sprint"])
 	{
@@ -696,7 +695,7 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 
 void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 {
-	if(CollectedWeapon.Num() > WeaponNum)
+	if(CollectedWeapon.Num() > WeaponNum && !IsWeaponChanging)
 	{
 		if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
 		{
@@ -718,10 +717,12 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 	}
 }
 
-void AFPSurvivalCharacter::OnWeaponChangeMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+void AFPSurvivalCharacter::OnWeaponChangeNotify(UAnimMontage* Montage)
 {
 	if(Montage == CurrentWeapon->WeaponPutDownMontage)
 	{
+		Mesh1P->GetAnimInstance()->Montage_Stop(0.0f, CurrentWeapon->WeaponPutDownMontage);
+		
 		CurrentWeapon->SetActorHiddenInGame(true); 
 		CurrentWeapon->SetActorEnableCollision(false); 
 		CurrentWeapon->SetActorTickEnabled(false);
@@ -735,6 +736,15 @@ void AFPSurvivalCharacter::OnWeaponChangeMontageEnd(UAnimMontage* Montage, bool 
 		CurrentWeaponSlot = ChangingWeaponSlot;
 		ChangingWeaponSlot = -1;
 		Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponTakeOutMontage);
+	}
+}
+
+void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+{
+	if(Montage == CurrentWeapon->WeaponTakeOutMontage)
+	{
+		IsWeaponChanging = false;
+		SprintCheck();
 	}
 }
 

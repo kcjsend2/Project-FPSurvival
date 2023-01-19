@@ -22,6 +22,9 @@ class FPSURVIVAL_API UFPAnimInstance : public UAnimInstance
 public:
 	UFUNCTION()
 	void AnimNotify_Reload();
+	
+	UFUNCTION()
+	void AnimNotify_WeaponChange();
 
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	AFPSurvivalCharacter* OwningPlayer;

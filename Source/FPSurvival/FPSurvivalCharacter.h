@@ -198,10 +198,13 @@ public:
 	void SlideTimelineReturn();
 
 	UFUNCTION()
-	void OnFireOrReloadEnd();
+	void SprintCheck();
 
 	UFUNCTION()
-	void OnWeaponChangeMontageEnd(UAnimMontage* Montage, bool bInterrupted);
+	void OnWeaponChangeNotify(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void OnMontageEnd(UAnimMontage* Montage, bool bInterrupted);
 
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
