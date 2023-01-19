@@ -194,7 +194,7 @@ bool AFPSurvivalCharacter::WalkToSprintTransition()
 {
 	if(CurrentWeapon != nullptr)
 	{
-		if(!CurrentWeapon->GetFireAnimationEnd() || CurrentWeapon->GetIsFiring() || IsReloading)
+		if(CurrentWeapon->GetIsFiring() || IsReloading)
 		{
 			return false;
 		}
@@ -468,6 +468,14 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 	}
 }
 
+void AFPSurvivalCharacter::OnFireOrReloadEnded()
+{
+	if(ButtonPressed["Sprint"])
+	{
+		Mesh1P->GetAnimInstance()->Montage_Stop(0.0f);
+		OnSprintAction(true);
+	}
+}
 void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 {
 	auto ControlRotation = GetController()->GetControlRotation();

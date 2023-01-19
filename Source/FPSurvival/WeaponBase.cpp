@@ -100,6 +100,12 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	else if(Montage == ArmShootingMontage && !bInterrupted)
 	{
 		IsFireAnimationEnd = true;
+		
+		FireOrReloadEnd.Execute();
+	}
+	else if(Montage == WeaponReloadMontage && !bInterrupted)
+	{
+		FireOrReloadEnd.Execute();
 	}
 }
 
@@ -153,6 +159,8 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 
 		TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
+
+		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::OnFireOrReloadEnded);
 		
 		IsAttached = true;
 	}

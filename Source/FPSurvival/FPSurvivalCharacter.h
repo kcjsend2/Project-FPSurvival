@@ -29,7 +29,6 @@ class AFPSurvivalCharacter;
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFireEnd);
 
 UCLASS(config=Game)
 class AFPSurvivalCharacter : public ACharacter
@@ -195,6 +194,9 @@ public:
 	
 	UFUNCTION()
 	void SlideTimelineReturn();
+
+	UFUNCTION()
+	void OnFireOrReloadEnded();
 
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;

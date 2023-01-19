@@ -10,6 +10,8 @@ class UCameraComponent;
 class AFPSurvivalCharacter;
 class UPickUpComponent;
 
+DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
+
 UENUM(BlueprintType)
 enum class EReloadType : uint8
 {
@@ -103,6 +105,9 @@ private:
 	bool IsFiring = false;
 	bool IsAttached = false;
 	bool IsFireAnimationEnd = true;
+	
+	UPROPERTY()
+	FOnFireEnd FireOrReloadEnd;
 	
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
