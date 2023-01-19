@@ -117,6 +117,8 @@ void AFPSurvivalCharacter::BeginPlay()
 	SlideTimeline->AddEvent(0, SlideTimelineFunction);
 	SlideTimeline->SetTimelineLength(1.0);
 	SlideTimeline->SetLooping(true);
+	
+	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnWeaponChangeMontageEnd);
 }
 
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
@@ -199,6 +201,8 @@ bool AFPSurvivalCharacter::WalkToSprintTransition()
 			return false;
 		}
 	}
+	if(IsWeaponChanging)
+		return false;
 	
 	if(CanSprint() && ButtonPressed["Sprint"])
 	{
@@ -212,7 +216,7 @@ bool AFPSurvivalCharacter::SprintToWalkTransition()
 {
 	if(CurrentWeapon != nullptr)
 	{
-		if(CurrentWeapon->GetIsFiring() || IsReloading || !CurrentWeapon->GetFireAnimationEnd())
+		if(CurrentWeapon->GetIsFiring() || IsReloading || !CurrentWeapon->GetFireAnimationEnd() || IsWeaponChanging)
 		{
 			return true;
 		}
@@ -468,7 +472,7 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 	}
 }
 
-void AFPSurvivalCharacter::OnFireOrReloadEnded()
+void AFPSurvivalCharacter::OnFireOrReloadEnd()
 {
 	if(ButtonPressed["Sprint"])
 	{
@@ -537,8 +541,7 @@ void AFPSurvivalCharacter::AdsTimelineReturn(float Value)
 
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
-	// Trigger the OnItemUsed Event
-    if(Pressed && CurrentWeapon != nullptr)
+    if(Pressed && CurrentWeapon != nullptr && !IsWeaponChanging)
     {
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
         if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
@@ -550,7 +553,7 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 
 void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
-	if(CurrentWeapon != nullptr)
+	if(CurrentWeapon != nullptr && !IsWeaponChanging)
 	{
 		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
 		{
@@ -699,23 +702,39 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 		{
 			if(IsReloading)
 				IsReloading = false;
-
-			// 혹시 모르니까...
+			
 			Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 			CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
 			
-			CurrentWeapon->SetActorHiddenInGame(true); 
-			CurrentWeapon->SetActorEnableCollision(false); 
-			CurrentWeapon->SetActorTickEnabled(false);
-		
-			CollectedWeapon[WeaponNum]->SetActorHiddenInGame(false); 
-			CollectedWeapon[WeaponNum]->SetActorEnableCollision(true); 
-			CollectedWeapon[WeaponNum]->SetActorTickEnabled(true);
+			IsWeaponChanging = true;
+			if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+			{
+				StateMachine->CheckStateTransition(EMovementState::Walking);
+			}
 			
-			CurrentWeapon = CollectedWeapon[WeaponNum];
-
-			CurrentWeaponSlot = WeaponNum;
+			Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPutDownMontage);
+			ChangingWeaponSlot = WeaponNum;
 		}
+	}
+}
+
+void AFPSurvivalCharacter::OnWeaponChangeMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+{
+	if(Montage == CurrentWeapon->WeaponPutDownMontage)
+	{
+		CurrentWeapon->SetActorHiddenInGame(true); 
+		CurrentWeapon->SetActorEnableCollision(false); 
+		CurrentWeapon->SetActorTickEnabled(false);
+
+		CollectedWeapon[ChangingWeaponSlot]->SetActorHiddenInGame(false); 
+		CollectedWeapon[ChangingWeaponSlot]->SetActorEnableCollision(true); 
+		CollectedWeapon[ChangingWeaponSlot]->SetActorTickEnabled(true);
+	
+		CurrentWeapon = CollectedWeapon[ChangingWeaponSlot];
+
+		CurrentWeaponSlot = ChangingWeaponSlot;
+		ChangingWeaponSlot = -1;
+		Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponTakeOutMontage);
 	}
 }
 

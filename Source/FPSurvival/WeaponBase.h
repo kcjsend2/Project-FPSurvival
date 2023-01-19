@@ -10,7 +10,7 @@ class UCameraComponent;
 class AFPSurvivalCharacter;
 class UPickUpComponent;
 
-DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
+DECLARE_DYNAMIC_DELEGATE(FOnFireOrReloadEnd);
 
 UENUM(BlueprintType)
 enum class EReloadType : uint8
@@ -83,6 +83,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponReloadMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* WeaponPutDownMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* WeaponTakeOutMontage;
 	
 protected:
 	/** Ends gameplay for this component. */
@@ -107,7 +113,7 @@ private:
 	bool IsFireAnimationEnd = true;
 	
 	UPROPERTY()
-	FOnFireEnd FireOrReloadEnd;
+	FOnFireOrReloadEnd FireOrReloadEnd;
 	
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }

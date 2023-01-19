@@ -166,8 +166,10 @@ public:
 
 	bool IsInSight = false;
 	bool IsReloading = false;
-
+	bool IsWeaponChanging = false;
+	
 	int CurrentWeaponSlot = -1;
+	int ChangingWeaponSlot = -1;
 	
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* SmoothCrouchingCurveFloat;
@@ -196,7 +198,10 @@ public:
 	void SlideTimelineReturn();
 
 	UFUNCTION()
-	void OnFireOrReloadEnded();
+	void OnFireOrReloadEnd();
+
+	UFUNCTION()
+	void OnWeaponChangeMontageEnd(UAnimMontage* Montage, bool bInterrupted);
 
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
@@ -263,8 +268,8 @@ protected:
 	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void OnSprintAction(bool Pressed);
 	void OnCrouchAction(bool Pressed);
-	void OnSightAction(bool Pressed);
 	void OnWeaponChange(int WeaponNum);
+	void OnSightAction(bool Pressed);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	
 	FVector CalculateFloorInfluence(FVector FloorNormal);
