@@ -136,11 +136,9 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 {
 	if(TargetCharacter != nullptr)
 	{
-		// Attach the weapon to the First Person Character
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 		AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
-		
-		// Register so that Fire is called every time the character tries to use the item being held
+
 		const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
 		
 		TargetCharacter->OnFire[WeaponSlot].Clear();
@@ -150,17 +148,20 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		TargetCharacter->OnReload[WeaponSlot].BindDynamic(this, &AWeaponBase::Reload);
 		
 		TargetCharacter->CollectedWeapon.Add(this);
-		if(TargetCharacter->CurrentWeapon != nullptr)
-		{
-			TargetCharacter->CurrentWeapon->SetActorHiddenInGame(true); 
-			TargetCharacter->CurrentWeapon->SetActorEnableCollision(false); 
-			TargetCharacter->CurrentWeapon->SetActorTickEnabled(false);
-		}
-		TargetCharacter->CurrentWeapon = this;
+
+		TargetCharacter->OnWeaponChange(TargetCharacter->CollectedWeapon.Num() - 1);
+		
+		// if(TargetCharacter->CurrentWeapon != nullptr)
+		// {
+		// 	TargetCharacter->CurrentWeapon->SetActorHiddenInGame(true); 
+		// 	TargetCharacter->CurrentWeapon->SetActorEnableCollision(false); 
+		// 	TargetCharacter->CurrentWeapon->SetActorTickEnabled(false);
+		// }
+		// TargetCharacter->CurrentWeapon = this;
 		
 		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 
-		TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
+		//TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
 
 		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::SprintCheck);
 		

@@ -41,6 +41,9 @@ public:
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION()
 	void Fire(AFPSurvivalCharacter* Character);
+
+	UFUNCTION(BlueprintCallable)
+	USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
 	
 	UFUNCTION()
 	void ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Character);

@@ -113,13 +113,13 @@ public:
 
 	UPROPERTY()
 	FOnReload OnReload[WEAPON_MAX];
-	
+
+	UFUNCTION(BlueprintCallable)
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+
+	UFUNCTION(BlueprintCallable)
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-	FTransform DefaultArmRelativeTransform;
-	FTransform DefaultWeaponRelativeTransform;
-	
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UCrossHairWidget* CrossHairWidget;
 	
@@ -145,7 +145,7 @@ public:
 	
 	float DefaultGroundFriction;
 	float DefaultBrakingDeceleration;
-
+	
 	float SlideCoolTime = 0.0f;
 	float SlideGroundFriction = 0;
 	bool SlideHot = false;
@@ -166,10 +166,33 @@ public:
 
 	bool IsInSight = false;
 	bool IsReloading = false;
+	
+	UPROPERTY(BlueprintReadOnly)
+	bool AimSocketInfoSet = false;
+
+	UPROPERTY(BlueprintReadOnly)
 	bool IsWeaponChanging = false;
 	
 	int CurrentWeaponSlot = -1;
 	int ChangingWeaponSlot = -1;
+
+	UFUNCTION()
+	void SetAimSocket();
+	
+	UFUNCTION()
+	void SetAimPoint();
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector AimSocketLocation;
+	
+	UPROPERTY(BlueprintReadOnly)
+	FRotator AimSocketRotator;
+	
+	UPROPERTY(BlueprintReadOnly)
+	FVector AimPointLocation;
+	
+	UPROPERTY(BlueprintReadOnly)
+	FRotator AimPointRotator;
 	
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* SmoothCrouchingCurveFloat;
@@ -177,22 +200,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* CameraTiltCurveFloat;
 	
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	UCurveFloat* AdsCurveFloat;
-	
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
 	FOnTimelineFloat CameraTiltTimelineFunction;
-	FOnTimelineFloat AdsTimelineFunction;
 
 	UFUNCTION()
 	void SmoothCrouchTimelineReturn(float Value);
 	
 	UFUNCTION()
 	void CameraTiltReturn(float Value);
-
-	UFUNCTION()
-	void AdsTimelineReturn(float Value);
 	
 	UFUNCTION()
 	void SlideTimelineReturn();
@@ -202,6 +218,9 @@ public:
 
 	UFUNCTION()
 	void OnWeaponChangeNotify(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void OnWeaponChange(int WeaponNum);
 
 	UFUNCTION()
 	void OnMontageEnd(UAnimMontage* Montage, bool bInterrupted);
@@ -215,16 +234,13 @@ public:
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
 	
-	UPROPERTY()
-	UTimelineComponent* AdsTimeline;
-
 	UPROPERTY(BlueprintReadWrite, Category="Vaulting")
 	UVaultingComponent* VaultingComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category="WallRunning")
 	UWallRunningComponent* WallRunningComponent;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TArray<AWeaponBase*> CollectedWeapon;
 	
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
@@ -271,7 +287,6 @@ protected:
 	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void OnSprintAction(bool Pressed);
 	void OnCrouchAction(bool Pressed);
-	void OnWeaponChange(int WeaponNum);
 	void OnSightAction(bool Pressed);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	

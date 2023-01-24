@@ -14,6 +14,7 @@
 #include "Components/WidgetComponent.h"
 #include "CrossHairWidget.h"
 #include "WeaponBase.h"
+#include "Engine/Internal/Kismet/BlueprintTypeConversions.h"
 
 
 AFPSurvivalCharacter::AFPSurvivalCharacter()
@@ -61,7 +62,6 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SmoothCrouchingTimeline"));
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
-	AdsTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AdsTimeline"));
 
 	VaultingComponent = CreateDefaultSubobject<UVaultingComponent>(TEXT("VaultingObject"));
 	WallRunningComponent = CreateDefaultSubobject<UWallRunningComponent>(TEXT("WallRunningObject"));
@@ -88,7 +88,9 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	DefaultArmRelativeTransform = Mesh1P->GetRelativeTransform();
+	const auto HandGunTransform = Mesh1P->GetSocketTransform(TEXT("ik_hand_gun"), RTS_Component);
+	AimSocketLocation = HandGunTransform.GetLocation();
+	AimSocketRotator = HandGunTransform.Rotator();
 	
 	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
 	if(CameraTiltCurveFloat)
@@ -104,13 +106,6 @@ void AFPSurvivalCharacter::BeginPlay()
 		SmoothCrouchingTimeline->AddInterpFloat(SmoothCrouchingCurveFloat, SmoothCrouchTimelineFunction);
 		SmoothCrouchingTimeline->SetTimelineLength(0.3);
 		SmoothCrouchingTimeline->SetLooping(false);
-	}
-	AdsTimelineFunction.BindUFunction(this, FName("AdsTimelineReturn"));
-	if(AdsCurveFloat)
-	{
-		AdsTimeline->AddInterpFloat(AdsCurveFloat, AdsTimelineFunction);
-		AdsTimeline->SetTimelineLength(1.0);
-		AdsTimeline->SetLooping(false);
 	}
 	
 	SlideTimelineFunction.BindUFunction(this, FName("SlideTimelineReturn"));
@@ -411,9 +406,8 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Reload", IE_Pressed, this, &AFPSurvivalCharacter::OnReloadAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Reload", IE_Released, this, &AFPSurvivalCharacter::OnReloadAction, false);
 
-    //Implement Later
-	//PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
-	//PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Released, this, &AFPSurvivalCharacter::OnSightAction, false);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Released, this, &AFPSurvivalCharacter::OnSightAction, false);
 
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
@@ -432,6 +426,32 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AFPSurvivalCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPSurvivalCharacter::LookUpAtRate);
+}
+
+void AFPSurvivalCharacter::SetAimSocket()
+{
+	if(CurrentWeapon != nullptr)
+	{
+		AimSocketInfoSet = true;
+		const FTransform AimPointWorldTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
+		const FTransform IKSocketTransform = Mesh1P->GetSocketTransform(TEXT("ik_hand_gun"));
+
+		const FTransform ResultRelativeTransform = AimPointWorldTransform.GetRelativeTransform(IKSocketTransform);
+
+		AimSocketLocation = ResultRelativeTransform.GetLocation();
+		AimSocketRotator = ResultRelativeTransform.Rotator();
+	}
+}
+
+void AFPSurvivalCharacter::SetAimPoint()
+{
+	const auto CameraTransform = FirstPersonCameraComponent->GetComponentTransform();
+	const auto HandRootTransform = Mesh1P->GetSocketTransform(TEXT("ik_hand_root"));
+	const auto AimPointTransform = CameraTransform.GetRelativeTransform(HandRootTransform);
+
+	AimPointRotator = AimPointTransform.Rotator();
+
+	AimPointLocation = AimPointRotator.Vector() * 20 + AimPointTransform.GetLocation();
 }
 
 void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
@@ -486,62 +506,9 @@ void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 	GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value));
 }
 
-void AFPSurvivalCharacter::AdsTimelineReturn(float Value)
-{
-	FTransform AdsTransform;
-	FTransform TargetTransform;
-	FTransform ArmToAimTransform;
-	auto CurrentWeaponMesh = CurrentWeapon->GetMesh();
-	if(CurrentWeaponMesh != nullptr)
-	{
-		FTransform CameraTransform = FirstPersonCameraComponent->GetComponentTransform();
-		FTransform AimPoint = CurrentWeaponMesh->GetSocketTransform(TEXT("aimPoint"));
-		FTransform ArmTransform = Mesh1P->GetComponentTransform();
-
-		// FVector3d Temp;
-		// if(Value == 1.0f)
-		// {
-		// 	AdsTransform = AimPoint.GetRelativeTransform(CameraTransform);
-		// 	Temp = AdsTransform.Rotator().Euler();
-		// }
-		AdsTransform = AimPoint.GetRelativeTransform(CameraTransform);
-        ArmToAimTransform = AimPoint.GetRelativeTransform(ArmTransform);
-		
-		FRotator TargetRotation;
-		FVector3d DefaultRotator = DefaultArmRelativeTransform.Rotator().Euler();
-		FVector3d ArmToAimRotator = ArmToAimTransform.Rotator().Euler();
-		FVector3d TargetRotator = DefaultRotator - ArmToAimRotator;
-	
-		TargetRotation = FRotator::MakeFromEuler(TargetRotator);
-
-		TargetTransform.SetLocation(DefaultArmRelativeTransform.GetLocation() - DefaultWeaponRelativeTransform.GetLocation());
-		TargetTransform.SetRotation(TargetRotation.Quaternion());
-		TargetTransform.SetScale3D(FVector3d(1, 1, 1));
-	}
-
-	FTransform NewTransform;
-	if(IsInSight)
-	{
-		FTransform MeshTransform = Mesh1P->GetRelativeTransform();
-		
-		NewTransform.SetLocation(FMath::Lerp(MeshTransform.GetLocation(), TargetTransform.GetLocation(), Value));
-		NewTransform.SetScale3D(FMath::Lerp(MeshTransform.GetScale3D(), TargetTransform.GetScale3D(), Value));
-		NewTransform.SetRotation(FMath::Lerp(MeshTransform.GetRotation(), TargetTransform.GetRotation(), Value));
-		Mesh1P->SetRelativeTransform(NewTransform);
-	}
-	else
-	{
-		NewTransform.SetLocation(FMath::Lerp(DefaultArmRelativeTransform.GetLocation(), TargetTransform.GetLocation(), Value));
-		NewTransform.SetScale3D(FMath::Lerp(DefaultArmRelativeTransform.GetScale3D(), TargetTransform.GetScale3D(), Value));
-		NewTransform.SetRotation(FMath::Lerp(DefaultArmRelativeTransform.GetRotation(), TargetTransform.GetRotation(), Value));
-		Mesh1P->SetRelativeTransform(NewTransform);
-	}
-	
-}
-
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
-    if(Pressed && CurrentWeapon != nullptr && !IsWeaponChanging)
+    if(Pressed && CurrentWeapon != nullptr && !IsWeaponChanging && !IsReloading)
     {
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
         if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
@@ -555,11 +522,11 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
 	if(CurrentWeapon != nullptr && !IsWeaponChanging && Pressed && !IsReloading)
 	{
+		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
 		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
 		{
 			StateMachine->CheckStateTransition(EMovementState::Walking);
 		}
-		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
 		UE_LOG(LogTemp, Log, TEXT("OnReloadAction: %s"), IsReloading ? TEXT("true") : TEXT("false") );
 	}
 }
@@ -642,22 +609,16 @@ void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 	{
 		if(Pressed)
 		{
-			const FTransform AimPoint = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
-			const FTransform CameraTransform = FirstPersonCameraComponent->GetComponentTransform();
-			DefaultWeaponRelativeTransform = AimPoint.GetRelativeTransform(CameraTransform);
-			
 			ButtonPressed["Sight"] = true;
 			if(StateMachine->GetCurrentState() != EMovementState::Sprinting)
 			{
 				IsInSight = true;
-				AdsTimeline->Play();
 			}
 		}
 		else
 		{
 			ButtonPressed["Sight"] = false;
 			IsInSight = false;
-			AdsTimeline->Reverse();
 		}
 	}
 }
@@ -699,25 +660,34 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 {
 	if(CollectedWeapon.Num() > WeaponNum && !IsWeaponChanging)
 	{
-		if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
+		if(CurrentWeapon != nullptr)
 		{
-			if(IsReloading)
+			if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
 			{
-				IsReloading = false;
-				UE_LOG(LogTemp, Log, TEXT("OnWeaponChange: %s"), IsReloading ? TEXT("true") : TEXT("false"));
+				if(IsReloading)
+				{
+					IsReloading = false;
+					UE_LOG(LogTemp, Log, TEXT("OnWeaponChange: %s"), IsReloading ? TEXT("true") : TEXT("false"));
+				}
+			
+				Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
+				CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
+				
+				Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPutDownMontage);
+				ChangingWeaponSlot = WeaponNum;
 			}
-			
-			Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
-			CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
-			
-			IsWeaponChanging = true;
-			if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
-			{
-				StateMachine->CheckStateTransition(EMovementState::Walking);
-			}
-			
-			Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPutDownMontage);
-			ChangingWeaponSlot = WeaponNum;
+		}
+		else
+		{
+			CurrentWeaponSlot = WeaponNum;
+			CurrentWeapon = CollectedWeapon[WeaponNum];
+			Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponTakeOutMontage);
+		}
+		
+		IsWeaponChanging = true;
+		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+		{
+			StateMachine->CheckStateTransition(EMovementState::Walking);
 		}
 	}
 }
@@ -741,6 +711,7 @@ void AFPSurvivalCharacter::OnWeaponChangeNotify(UAnimMontage* Montage)
 		CurrentWeaponSlot = ChangingWeaponSlot;
 		ChangingWeaponSlot = -1;
 		Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponTakeOutMontage);
+
 	}
 }
 
@@ -749,6 +720,10 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 	if(Montage == CurrentWeapon->WeaponTakeOutMontage)
 	{
 		IsWeaponChanging = false;
+		
+		SetAimSocket();
+		SetAimPoint();
+		
 		SprintCheck();
 	}
 }
