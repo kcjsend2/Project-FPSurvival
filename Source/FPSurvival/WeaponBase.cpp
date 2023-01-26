@@ -32,24 +32,53 @@ void AWeaponBase::BeginPlay()
     Super::BeginPlay();
 
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
-	WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+
+	if(WeaponMesh->HasValidAnimationInstance())
+		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+}
+
+void AWeaponBase::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if(IsFiring)
+	{
+		FireRate -= DeltaSeconds;
+		if(FireRate < 0)
+		{
+			if(FireMode == EFireMode::Single)
+				IsFiring = false;
+			
+			CurrentFireRate = FireRate;
+		}
+	}
+	else
+	{
+		if(CurrentFireRate != FireRate)
+		{
+			CurrentFireRate = FireRate;
+		}
+	}
 }
 
 
 void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 {
-	if(!IsFiring && CurrentAmmo > 0)
+	if(!IsFiring && CurrentAmmo > 0 && FireRate == CurrentFireRate)
 	{
 		IsFiring = true;
 		IsFireAnimationEnd = false;
-		
-		if(ArmShootingMontage != nullptr && WeaponShootingMontage != nullptr)
+
+		if(ArmShootingMontage != nullptr)
 		{
 			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmShootingMontage);
-			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponShootingMontage);
-		
-			UE_LOG(LogTemp, Log, TEXT("Fire"));
 		}
+		
+		if(WeaponShootingMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
+		{
+			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponShootingMontage);
+		}
+		UE_LOG(LogTemp, Log, TEXT("Fire"));
 
 		FTransform MuzzleTransform;
 		MuzzleTransform.SetLocation(Muzzle->GetComponentLocation());
@@ -77,7 +106,7 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 			if(MagazineLimit == CurrentAmmo && ArmReloadMontage != nullptr)
 			{
 				Character->GetMesh1P()->GetAnimInstance()->Montage_JumpToSection("ReturnPose", ArmReloadMontage);
-				if(WeaponReloadMontage != nullptr)
+				if(WeaponReloadMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
 					WeaponMesh->GetAnimInstance()->Montage_JumpToSection("ReturnPose", WeaponReloadMontage);
 				Character->IsReloading = false;
 				UE_LOG(LogTemp, Log, TEXT("ResolveReload: %s"), Character->IsReloading ? TEXT("true") : TEXT("false"));
@@ -117,7 +146,7 @@ bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr) && IsFireAnimationEnd)
 	{
 		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
-		if(WeaponReloadMontage != nullptr)
+		if(WeaponReloadMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
 			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
 		
 		UE_LOG(LogTemp, Log, TEXT("Reload"));
@@ -150,14 +179,6 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		TargetCharacter->CollectedWeapon.Add(this);
 
 		TargetCharacter->OnWeaponChange(TargetCharacter->CollectedWeapon.Num() - 1);
-		
-		// if(TargetCharacter->CurrentWeapon != nullptr)
-		// {
-		// 	TargetCharacter->CurrentWeapon->SetActorHiddenInGame(true); 
-		// 	TargetCharacter->CurrentWeapon->SetActorEnableCollision(false); 
-		// 	TargetCharacter->CurrentWeapon->SetActorTickEnabled(false);
-		// }
-		// TargetCharacter->CurrentWeapon = this;
 		
 		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 

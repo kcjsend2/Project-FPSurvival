@@ -39,6 +39,10 @@ class AFPSurvivalCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
 
+	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* AimComponent;
+
 	/** First person camera */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
@@ -176,11 +180,17 @@ public:
 	int CurrentWeaponSlot = -1;
 	int ChangingWeaponSlot = -1;
 
+	float AimAlpha = 0.0f;
+	float AimingSpeed = 12.0f;
+
 	UFUNCTION()
 	void SetAimSocket();
 	
 	UFUNCTION()
 	void SetAimPoint();
+
+	UFUNCTION()
+	void SetAimDownSight(float DeltaTime);
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector AimSocketLocation;
@@ -217,7 +227,7 @@ public:
 	void SprintCheck();
 
 	UFUNCTION()
-	void OnWeaponChangeNotify(UAnimMontage* Montage);
+	void OnWeaponChangeEnd();
 
 	UFUNCTION()
 	void OnWeaponChange(int WeaponNum);

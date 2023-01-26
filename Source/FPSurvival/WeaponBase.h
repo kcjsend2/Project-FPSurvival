@@ -19,6 +19,13 @@ enum class EReloadType : uint8
 	OneByOne
 };
 
+UENUM(BlueprintType)
+enum class EFireMode : uint8
+{
+	Single,
+	FullAuto
+};
+
 UCLASS()
 class FPSURVIVAL_API AWeaponBase : public AActor
 {
@@ -31,8 +38,6 @@ public:
 	
 	/** Sets default values for this component's properties */
 	AWeaponBase();
-	
-	virtual void BeginPlay() override;
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION()
@@ -88,15 +93,30 @@ public:
 	UAnimMontage* WeaponReloadMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	UAnimMontage* WeaponPutDownMontage;
+	UAnimMontage* WeaponPullDownMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	UAnimMontage* WeaponTakeOutMontage;
+	UAnimMontage* WeaponPullUpMontage;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float FireRate = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	float CurrentFireRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	EFireMode FireMode;
 	
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION()
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	virtual void Tick(float DeltaSeconds) override;
 	
 
 private:

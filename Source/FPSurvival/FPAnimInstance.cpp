@@ -37,8 +37,3 @@ void UFPAnimInstance::AnimNotify_Reload()
 {
     OwningPlayer->CurrentWeapon->ResolveReload(false, OwningPlayer);
 }
-
-void UFPAnimInstance::AnimNotify_WeaponChange()
-{
-	OwningPlayer->OnWeaponChangeNotify(GetCurrentActiveMontage());
-}

@@ -15,6 +15,7 @@
 #include "CrossHairWidget.h"
 #include "WeaponBase.h"
 #include "Engine/Internal/Kismet/BlueprintTypeConversions.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AFPSurvivalCharacter::AFPSurvivalCharacter()
@@ -33,14 +34,18 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	StateMachine = CreateDefaultSubobject<UMovementStateMachine>(TEXT("StateMachine"));
 	
+	AimComponent = CreateDefaultSubobject<USceneComponent>(TEXT("AimComponent"));
+	AimComponent->SetupAttachment(FirstPersonCameraComponent);
+	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(false);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
+	Mesh1P->SetupAttachment(AimComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeLocation(FVector(7.0f, 2.0f, -167.0f));
 	Mesh1P->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+
 
 	SprintMultiplier = 1.7f;
 	CrouchMultiplier = 0.6f;
@@ -137,6 +142,8 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	{
 		StateMachine->CheckStateTransition(EMovementState::Walking);
 	}
+
+	SetAimDownSight(DeltaSeconds);
 }
 
 void AFPSurvivalCharacter::Landed(const FHitResult& Hit)
@@ -269,7 +276,9 @@ void AFPSurvivalCharacter::SprintInit()
 		IsReloading = false;
 		UE_LOG(LogTemp, Log, TEXT("SprintInit: %s"), IsReloading ? TEXT("true") : TEXT("false"));
 		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
-		CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
+
+		if(CurrentWeapon->GetMesh()->HasValidAnimationInstance())
+			CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
 	}
 }
 
@@ -450,8 +459,43 @@ void AFPSurvivalCharacter::SetAimPoint()
 	const auto AimPointTransform = CameraTransform.GetRelativeTransform(HandRootTransform);
 
 	AimPointRotator = AimPointTransform.Rotator();
-
+	
 	AimPointLocation = AimPointRotator.Vector() * 20 + AimPointTransform.GetLocation();
+	AimPointRotator.Yaw -= 90;
+}
+
+void AFPSurvivalCharacter::SetAimDownSight(float DeltaTime)
+{
+	if(CurrentWeapon == nullptr)
+	{
+		return;
+	}
+
+	const FTransform AimPointTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
+	FRotator AimRotator = AimPointTransform.Rotator();
+	
+	const FTransform AimComponentTransform = AimComponent->GetComponentTransform();
+	FRotator AimComponentRotator = AimComponentTransform.Rotator();
+	
+	const FTransform InverseAimTransform = AimPointTransform.GetRelativeTransform(AimComponentTransform).Inverse();
+	FRotator InverseAimRotator = InverseAimTransform.Rotator();
+	
+	FTransform EmptyTransform;
+	FTransform LerpResult = UKismetMathLibrary::TLerp(InverseAimTransform, EmptyTransform, AimAlpha);
+	FRotator LerpResultRotator = LerpResult.Rotator();
+
+	if(IsInSight)
+	{
+		FRotator ResultRotator = EmptyTransform.Rotator();
+		ResultRotator.Yaw -= 90;
+		EmptyTransform.SetRotation(ResultRotator.Quaternion());
+	}
+
+	const FTransform FinalTransform = UKismetMathLibrary::TInterpTo(AimComponent->GetRelativeTransform(), LerpResult, DeltaTime, 20.0f);
+	
+	AimAlpha = FMath::FInterpTo(AimAlpha, 1 - static_cast<int>(IsInSight), DeltaTime, AimingSpeed);
+
+	AimComponent->SetRelativeTransform(FinalTransform);
 }
 
 void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
@@ -496,7 +540,7 @@ void AFPSurvivalCharacter::SprintCheck()
 {
 	if(ButtonPressed["Sprint"])
 	{
-		Mesh1P->GetAnimInstance()->Montage_Stop(0.0f);
+		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 		OnSprintAction(true);
 	}
 }
@@ -511,6 +555,8 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
     if(Pressed && CurrentWeapon != nullptr && !IsWeaponChanging && !IsReloading)
     {
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
+    	const FTransform AimPointWorldTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
+    	
         if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
         {
         	StateMachine->CheckStateTransition(EMovementState::Walking);
@@ -660,71 +706,75 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 {
 	if(CollectedWeapon.Num() > WeaponNum && !IsWeaponChanging)
 	{
+		bool ChangeFlag = false;
 		if(CurrentWeapon != nullptr)
 		{
 			if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
 			{
+				ChangeFlag = true;
 				if(IsReloading)
 				{
 					IsReloading = false;
-					UE_LOG(LogTemp, Log, TEXT("OnWeaponChange: %s"), IsReloading ? TEXT("true") : TEXT("false"));
 				}
 			
-				Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
-				CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
+				Mesh1P->GetAnimInstance()->Montage_Stop(0.0f);
 				
-				Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPutDownMontage);
+				if(CurrentWeapon->GetMesh()->HasValidAnimationInstance())
+					CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.0f);
+				
+				Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPullDownMontage);
 				ChangingWeaponSlot = WeaponNum;
 			}
 		}
 		else
 		{
+			ChangeFlag = true;
 			CurrentWeaponSlot = WeaponNum;
 			CurrentWeapon = CollectedWeapon[WeaponNum];
-			Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponTakeOutMontage);
+			Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPullUpMontage);
 		}
-		
-		IsWeaponChanging = true;
-		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+
+		if(ChangeFlag)
 		{
-			StateMachine->CheckStateTransition(EMovementState::Walking);
+			IsWeaponChanging = true;
+			if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+			{
+				StateMachine->CheckStateTransition(EMovementState::Walking);
+			}
 		}
 	}
 }
 
-void AFPSurvivalCharacter::OnWeaponChangeNotify(UAnimMontage* Montage)
+void AFPSurvivalCharacter::OnWeaponChangeEnd()
 {
-	if(Montage == CurrentWeapon->WeaponPutDownMontage)
-	{
-		Mesh1P->GetAnimInstance()->Montage_Stop(0.0f, CurrentWeapon->WeaponPutDownMontage);
-		
-		CurrentWeapon->SetActorHiddenInGame(true); 
-		CurrentWeapon->SetActorEnableCollision(false); 
-		CurrentWeapon->SetActorTickEnabled(false);
-
-		CollectedWeapon[ChangingWeaponSlot]->SetActorHiddenInGame(false); 
-		CollectedWeapon[ChangingWeaponSlot]->SetActorEnableCollision(true); 
-		CollectedWeapon[ChangingWeaponSlot]->SetActorTickEnabled(true);
+	Mesh1P->GetAnimInstance()->Montage_Stop(0.0f, CurrentWeapon->WeaponPullDownMontage);
 	
-		CurrentWeapon = CollectedWeapon[ChangingWeaponSlot];
+	CurrentWeapon->SetActorHiddenInGame(true); 
+	CurrentWeapon->SetActorEnableCollision(false); 
+	CurrentWeapon->SetActorTickEnabled(false);
 
-		CurrentWeaponSlot = ChangingWeaponSlot;
-		ChangingWeaponSlot = -1;
-		Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponTakeOutMontage);
+	CollectedWeapon[ChangingWeaponSlot]->SetActorHiddenInGame(false); 
+	CollectedWeapon[ChangingWeaponSlot]->SetActorEnableCollision(true); 
+	CollectedWeapon[ChangingWeaponSlot]->SetActorTickEnabled(true);
 
-	}
+	CurrentWeapon = CollectedWeapon[ChangingWeaponSlot];
+
+	CurrentWeaponSlot = ChangingWeaponSlot;
+	ChangingWeaponSlot = -1;
+	Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPullUpMontage);
 }
 
 void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	if(Montage == CurrentWeapon->WeaponTakeOutMontage)
+	if(Montage == CurrentWeapon->WeaponPullUpMontage && !bInterrupted)
 	{
 		IsWeaponChanging = false;
 		
-		SetAimSocket();
-		SetAimPoint();
-		
 		SprintCheck();
+	}
+	else if(Montage == CurrentWeapon->WeaponPullDownMontage && !bInterrupted)
+	{
+		OnWeaponChangeEnd();
 	}
 }
 
