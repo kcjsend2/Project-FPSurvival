@@ -555,7 +555,6 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
     if(Pressed && CurrentWeapon != nullptr && !IsWeaponChanging && !IsReloading)
     {
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
-    	const FTransform AimPointWorldTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
     	
         if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
         {

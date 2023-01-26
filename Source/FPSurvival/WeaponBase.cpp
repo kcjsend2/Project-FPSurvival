@@ -40,35 +40,16 @@ void AWeaponBase::BeginPlay()
 void AWeaponBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	if(IsFiring)
-	{
-		FireRate -= DeltaSeconds;
-		if(FireRate < 0)
-		{
-			if(FireMode == EFireMode::Single)
-				IsFiring = false;
-			
-			CurrentFireRate = FireRate;
-		}
-	}
-	else
-	{
-		if(CurrentFireRate != FireRate)
-		{
-			CurrentFireRate = FireRate;
-		}
-	}
 }
 
 
 void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 {
-	if(!IsFiring && CurrentAmmo > 0 && FireRate == CurrentFireRate)
+	if(!IsFiring && CurrentAmmo > 0)
 	{
 		IsFiring = true;
 		IsFireAnimationEnd = false;
-
+		
 		if(ArmShootingMontage != nullptr)
 		{
 			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmShootingMontage);
@@ -130,6 +111,7 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	}
 	else if(Montage == ArmShootingMontage && !bInterrupted)
 	{
+		IsFiring = false;
 		IsFireAnimationEnd = true;
 		
 		FireOrReloadEnd.Execute();

@@ -97,12 +97,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponPullUpMontage;
-	
-	UPROPERTY(BlueprintReadWrite)
-	float FireRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	float CurrentFireRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	EFireMode FireMode;
