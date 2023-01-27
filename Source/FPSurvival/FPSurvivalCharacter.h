@@ -39,10 +39,6 @@ class AFPSurvivalCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
-	USceneComponent* AimComponent;
-
 	/** First person camera */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
@@ -172,38 +168,11 @@ public:
 	bool IsReloading = false;
 	
 	UPROPERTY(BlueprintReadOnly)
-	bool AimSocketInfoSet = false;
-
-	UPROPERTY(BlueprintReadOnly)
 	bool IsWeaponChanging = false;
 	
 	int CurrentWeaponSlot = -1;
 	int ChangingWeaponSlot = -1;
 
-	float AimAlpha = 0.0f;
-	float AimingSpeed = 12.0f;
-
-	UFUNCTION()
-	void SetAimSocket();
-	
-	UFUNCTION()
-	void SetAimPoint();
-
-	UFUNCTION()
-	void SetAimDownSight(float DeltaTime);
-
-	UPROPERTY(BlueprintReadOnly)
-	FVector AimSocketLocation;
-	
-	UPROPERTY(BlueprintReadOnly)
-	FRotator AimSocketRotator;
-	
-	UPROPERTY(BlueprintReadOnly)
-	FVector AimPointLocation;
-	
-	UPROPERTY(BlueprintReadOnly)
-	FRotator AimPointRotator;
-	
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* SmoothCrouchingCurveFloat;
 	

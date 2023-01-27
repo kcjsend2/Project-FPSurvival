@@ -116,7 +116,7 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		
 		FireOrReloadEnd.Execute();
 	}
-	else if(Montage == WeaponReloadMontage && !bInterrupted)
+	else if(Montage == ArmReloadMontage && !bInterrupted)
 	{
 		FireOrReloadEnd.Execute();
 	}

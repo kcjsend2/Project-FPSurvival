@@ -29,21 +29,18 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(0.f, 0.f, 70.f));
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 1.752765f, 70.f));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 	
 	StateMachine = CreateDefaultSubobject<UMovementStateMachine>(TEXT("StateMachine"));
 	
-	AimComponent = CreateDefaultSubobject<USceneComponent>(TEXT("AimComponent"));
-	AimComponent->SetupAttachment(FirstPersonCameraComponent);
-	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(false);
-	Mesh1P->SetupAttachment(AimComponent);
+	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	Mesh1P->SetRelativeLocation(FVector(7.0f, 2.0f, -167.0f));
+	Mesh1P->SetRelativeLocation(FVector(0.0f, -1.752765f, -160.0f));
 	Mesh1P->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 
@@ -93,10 +90,6 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	const auto HandGunTransform = Mesh1P->GetSocketTransform(TEXT("ik_hand_gun"), RTS_Component);
-	AimSocketLocation = HandGunTransform.GetLocation();
-	AimSocketRotator = HandGunTransform.Rotator();
-	
 	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
 	if(CameraTiltCurveFloat)
 	{
@@ -142,8 +135,6 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	{
 		StateMachine->CheckStateTransition(EMovementState::Walking);
 	}
-
-	SetAimDownSight(DeltaSeconds);
 }
 
 void AFPSurvivalCharacter::Landed(const FHitResult& Hit)
@@ -437,67 +428,6 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPSurvivalCharacter::LookUpAtRate);
 }
 
-void AFPSurvivalCharacter::SetAimSocket()
-{
-	if(CurrentWeapon != nullptr)
-	{
-		AimSocketInfoSet = true;
-		const FTransform AimPointWorldTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
-		const FTransform IKSocketTransform = Mesh1P->GetSocketTransform(TEXT("ik_hand_gun"));
-
-		const FTransform ResultRelativeTransform = AimPointWorldTransform.GetRelativeTransform(IKSocketTransform);
-
-		AimSocketLocation = ResultRelativeTransform.GetLocation();
-		AimSocketRotator = ResultRelativeTransform.Rotator();
-	}
-}
-
-void AFPSurvivalCharacter::SetAimPoint()
-{
-	const auto CameraTransform = FirstPersonCameraComponent->GetComponentTransform();
-	const auto HandRootTransform = Mesh1P->GetSocketTransform(TEXT("ik_hand_root"));
-	const auto AimPointTransform = CameraTransform.GetRelativeTransform(HandRootTransform);
-
-	AimPointRotator = AimPointTransform.Rotator();
-	
-	AimPointLocation = AimPointRotator.Vector() * 20 + AimPointTransform.GetLocation();
-	AimPointRotator.Yaw -= 90;
-}
-
-void AFPSurvivalCharacter::SetAimDownSight(float DeltaTime)
-{
-	if(CurrentWeapon == nullptr)
-	{
-		return;
-	}
-
-	const FTransform AimPointTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("aimPoint"));
-	FRotator AimRotator = AimPointTransform.Rotator();
-	
-	const FTransform AimComponentTransform = AimComponent->GetComponentTransform();
-	FRotator AimComponentRotator = AimComponentTransform.Rotator();
-	
-	const FTransform InverseAimTransform = AimPointTransform.GetRelativeTransform(AimComponentTransform).Inverse();
-	FRotator InverseAimRotator = InverseAimTransform.Rotator();
-	
-	FTransform EmptyTransform;
-	FTransform LerpResult = UKismetMathLibrary::TLerp(InverseAimTransform, EmptyTransform, AimAlpha);
-	FRotator LerpResultRotator = LerpResult.Rotator();
-
-	if(IsInSight)
-	{
-		FRotator ResultRotator = EmptyTransform.Rotator();
-		ResultRotator.Yaw -= 90;
-		EmptyTransform.SetRotation(ResultRotator.Quaternion());
-	}
-
-	const FTransform FinalTransform = UKismetMathLibrary::TInterpTo(AimComponent->GetRelativeTransform(), LerpResult, DeltaTime, 20.0f);
-	
-	AimAlpha = FMath::FInterpTo(AimAlpha, 1 - static_cast<int>(IsInSight), DeltaTime, AimingSpeed);
-
-	AimComponent->SetRelativeTransform(FinalTransform);
-}
-
 void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
 {
 	const auto CrouchedHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
@@ -746,8 +676,6 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 
 void AFPSurvivalCharacter::OnWeaponChangeEnd()
 {
-	Mesh1P->GetAnimInstance()->Montage_Stop(0.0f, CurrentWeapon->WeaponPullDownMontage);
-	
 	CurrentWeapon->SetActorHiddenInGame(true); 
 	CurrentWeapon->SetActorEnableCollision(false); 
 	CurrentWeapon->SetActorTickEnabled(false);
