@@ -27,6 +27,7 @@ void UFPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		{
 			IsFiring = CurrentWeapon->GetIsFiring();
 			CurrentWeaponID = CurrentWeapon->WeaponID;
+			AimDownSightOffset = CurrentWeapon->AimDownSightOffset;
 		}
 		IsSprinting = OwningPlayer->IsSprinting();
 		IsInSight = OwningPlayer->IsInSight;

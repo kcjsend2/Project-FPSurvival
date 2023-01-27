@@ -49,4 +49,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	bool IsInSight = false;
+
+	UPROPERTY(BlueprintReadOnly, Category="Weapon")
+	FVector AimDownSightOffset;
 };

@@ -101,6 +101,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	EFireMode FireMode;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	FVector AimDownSightOffset;
+	
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
