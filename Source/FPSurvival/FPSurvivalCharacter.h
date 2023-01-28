@@ -89,7 +89,7 @@ protected:
 	void CrouchInit();
 
 	UFUNCTION()
-	void SprintEnd() {}
+	void SprintEnd();
 
 	UFUNCTION()
 	void WalkEnd() {}
@@ -193,7 +193,7 @@ public:
 	void SlideTimelineReturn();
 
 	UFUNCTION()
-	void SprintCheck();
+	void ActionCheck();
 
 	UFUNCTION()
 	void OnWeaponChangeEnd();

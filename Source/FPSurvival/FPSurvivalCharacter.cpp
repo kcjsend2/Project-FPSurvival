@@ -208,7 +208,7 @@ bool AFPSurvivalCharacter::SprintToWalkTransition()
 {
 	if(CurrentWeapon != nullptr)
 	{
-		if(CurrentWeapon->GetIsFiring() || IsReloading || !CurrentWeapon->GetFireAnimationEnd() || IsWeaponChanging)
+		if(CurrentWeapon->GetIsFiring() || IsReloading || IsWeaponChanging || IsInSight)
 		{
 			return true;
 		}
@@ -271,6 +271,17 @@ void AFPSurvivalCharacter::SprintInit()
 		if(CurrentWeapon->GetMesh()->HasValidAnimationInstance())
 			CurrentWeapon->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f);
 	}
+	
+	if(IsInSight)
+	{
+		IsInSight = false;
+	}
+}
+
+void AFPSurvivalCharacter::SprintEnd()
+{
+	if(ButtonPressed["Sight"])
+		OnSightAction(true);
 }
 
 void AFPSurvivalCharacter::WalkInit()
@@ -289,13 +300,6 @@ void AFPSurvivalCharacter::SlideInit()
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
 }
 
-void AFPSurvivalCharacter::CrouchInit()
-{
-	if(SpeedMap[EMovementState::Crouching] != NULL)
-		GetCharacterMovement()->MaxWalkSpeed = SpeedMap[EMovementState::Crouching];
-	SmoothCrouchingTimeline->Play();
-}
-
 void AFPSurvivalCharacter::SlideEnd()
 {
 	SmoothCrouchingTimeline->Reverse();
@@ -304,6 +308,13 @@ void AFPSurvivalCharacter::SlideEnd()
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
 	SlideHot = true;
+}
+
+void AFPSurvivalCharacter::CrouchInit()
+{
+	if(SpeedMap[EMovementState::Crouching] != NULL)
+		GetCharacterMovement()->MaxWalkSpeed = SpeedMap[EMovementState::Crouching];
+	SmoothCrouchingTimeline->Play();
 }
 
 void AFPSurvivalCharacter::CrouchEnd()
@@ -466,12 +477,16 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 	}
 }
 
-void AFPSurvivalCharacter::SprintCheck()
+void AFPSurvivalCharacter::ActionCheck()
 {
 	if(ButtonPressed["Sprint"])
 	{
 		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 		OnSprintAction(true);
+	}
+	if(ButtonPressed["Sight"])
+	{
+		OnSightAction(true);
 	}
 }
 void AFPSurvivalCharacter::CameraTiltReturn(float Value)
@@ -498,6 +513,10 @@ void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 	if(CurrentWeapon != nullptr && !IsWeaponChanging && Pressed && !IsReloading)
 	{
 		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
+		
+		if(IsReloading)
+			IsInSight = false;
+		
 		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
 		{
 			StateMachine->CheckStateTransition(EMovementState::Walking);
@@ -580,43 +599,45 @@ void AFPSurvivalCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const F
 
 void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 {
-	if(CurrentWeapon != nullptr)
+	ButtonPressed["Sight"] = Pressed;
+	if(CurrentWeapon == nullptr || IsReloading)
 	{
-		if(Pressed)
+		return;
+	}
+	
+	if(Pressed)
+	{
+		IsInSight = true;
+		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
 		{
-			ButtonPressed["Sight"] = true;
-			if(StateMachine->GetCurrentState() != EMovementState::Sprinting)
-			{
-				IsInSight = true;
-			}
+			StateMachine->CheckStateTransition(EMovementState::Walking);
 		}
-		else
-		{
-			ButtonPressed["Sight"] = false;
-			IsInSight = false;
-		}
+	}
+	else
+	{
+		IsInSight = false;
+		ActionCheck();
 	}
 }
 
 void AFPSurvivalCharacter::OnSprintAction(const bool Pressed)
 {
+	ButtonPressed["Sprint"] = Pressed;
 	if(Pressed)
 	{
-		ButtonPressed["Sprint"] = true;
 		StateMachine->CheckStateTransition(EMovementState::Sprinting);
 	}
 	else
 	{
-		ButtonPressed["Sprint"] = false;
 		StateMachine->CheckStateTransition(EMovementState::Walking);
 	}
 }
 
 void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 {
+	ButtonPressed["Crouch"] = Pressed;
 	if(Pressed)
 	{
-		ButtonPressed["Crouch"] = true;
 		if(StateMachine->GetCurrentState() != EMovementState::Sprinting)
 			StateMachine->CheckStateTransition(EMovementState::Crouching);
 		else
@@ -625,7 +646,6 @@ void AFPSurvivalCharacter::OnCrouchAction(const bool Pressed)
 	}
 	else
 	{
-		ButtonPressed["Crouch"] = false;
 		if(StateMachine->GetCurrentState() == EMovementState::Crouching)
 			StateMachine->CheckStateTransition(EMovementState::Walking);
 	}
@@ -638,7 +658,7 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 		bool ChangeFlag = false;
 		if(CurrentWeapon != nullptr)
 		{
-			if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring() && CurrentWeapon->GetFireAnimationEnd())
+			if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring())
 			{
 				ChangeFlag = true;
 				if(IsReloading)
@@ -697,7 +717,7 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 	{
 		IsWeaponChanging = false;
 		
-		SprintCheck();
+		ActionCheck();
 	}
 	else if(Montage == CurrentWeapon->WeaponPullDownMontage && !bInterrupted)
 	{

@@ -48,17 +48,16 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	if(!IsFiring && CurrentAmmo > 0)
 	{
 		IsFiring = true;
-		IsFireAnimationEnd = false;
+
+		if(ArmFireMontage != nullptr && !Character->IsInSight)
+			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmFireMontage);
 		
-		if(ArmShootingMontage != nullptr)
-		{
-			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmShootingMontage);
-		}
+		else if(ArmAimDownSightFireMontage != nullptr&& Character->IsInSight)
+			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmAimDownSightFireMontage);
 		
-		if(WeaponShootingMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
-		{
-			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponShootingMontage);
-		}
+		if(WeaponFireMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
+			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponFireMontage);
+		
 		UE_LOG(LogTemp, Log, TEXT("Fire"));
 
 		FTransform MuzzleTransform;
@@ -70,10 +69,9 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 
 		CurrentAmmo--;
 		UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
+		
 		if(SpawnedBullet == nullptr)
-		{
 			UE_LOG(LogTemp, Log, TEXT("Spawn Failed"));
-		}
 	}
 }
 
@@ -105,14 +103,9 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 
 void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if(Montage == WeaponShootingMontage)
+	if(Montage == ArmFireMontage || Montage == ArmAimDownSightFireMontage)
 	{
 		IsFiring = false;
-	}
-	else if(Montage == ArmShootingMontage && !bInterrupted)
-	{
-		IsFiring = false;
-		IsFireAnimationEnd = true;
 		
 		FireOrReloadEnd.Execute();
 	}
@@ -125,7 +118,7 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 {
 	if(ArmReloadMontage != nullptr && CurrentAmmo < MagazineLimit
-		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr) && IsFireAnimationEnd)
+		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr))
 	{
 		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 		if(WeaponReloadMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
@@ -166,7 +159,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 
 		//TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
 
-		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::SprintCheck);
+		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
 		
 		IsAttached = true;
 	}

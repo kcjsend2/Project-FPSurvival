@@ -81,10 +81,13 @@ public:
 	EReloadType ReloadType;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	UAnimMontage* ArmShootingMontage;
+	UAnimMontage* ArmFireMontage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	UAnimMontage* WeaponShootingMontage;
+	UAnimMontage* ArmAimDownSightFireMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* WeaponFireMontage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* ArmReloadMontage;
@@ -130,7 +133,6 @@ private:
 	
 	bool IsFiring = false;
 	bool IsAttached = false;
-	bool IsFireAnimationEnd = true;
 	
 	UPROPERTY()
 	FOnFireOrReloadEnd FireOrReloadEnd;
@@ -139,5 +141,4 @@ public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
 	bool GetIsFiring() const { return IsFiring; }
 	bool GetIsAttached() const { return IsAttached; }
-	bool GetFireAnimationEnd() const { return IsFireAnimationEnd; }
 };
