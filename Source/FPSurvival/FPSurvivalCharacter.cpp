@@ -660,7 +660,9 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 		{
 			if(CurrentWeapon != CollectedWeapon[WeaponNum] && !CurrentWeapon->GetIsFiring())
 			{
+				IsInSight = false;
 				ChangeFlag = true;
+				
 				if(IsReloading)
 				{
 					IsReloading = false;
