@@ -28,6 +28,7 @@ class AFPSurvivalCharacter;
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFireEnd, AFPSurvivalCharacter*, Character);
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
 
 UCLASS(config=Game)
@@ -110,7 +111,8 @@ public:
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY()
 	FOnFire OnFire[WEAPON_MAX];
-
+	FOnFireEnd OnFireEnd[WEAPON_MAX];
+	
 	UPROPERTY()
 	FOnReload OnReload[WEAPON_MAX];
 

@@ -497,7 +497,12 @@ void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 {
-    if(Pressed && CurrentWeapon != nullptr && !IsWeaponChanging && !IsReloading)
+	if(CurrentWeapon == nullptr || IsWeaponChanging || IsReloading)
+	{
+		return;
+	}
+	
+    if(Pressed)
     {
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
     	
@@ -505,6 +510,11 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
         {
         	StateMachine->CheckStateTransition(EMovementState::Walking);
         }
+    }
+    else
+    {
+    	OnFireEnd[CurrentWeaponSlot].ExecuteIfBound(this);
+    	ActionCheck();
     }
 }
 
