@@ -28,7 +28,7 @@ class AFPSurvivalCharacter;
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFireEnd, AFPSurvivalCharacter*, Character);
+DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
 
 UCLASS(config=Game)
@@ -111,7 +111,11 @@ public:
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY()
 	FOnFire OnFire[WEAPON_MAX];
+	
+	UPROPERTY()
 	FOnFireEnd OnFireEnd[WEAPON_MAX];
+
+	bool FireEndFlag = false;
 	
 	UPROPERTY()
 	FOnReload OnReload[WEAPON_MAX];
@@ -160,8 +164,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sliding")
 	float SlidePower = 5;
-	
-	float GroundSmashForce = -5000;
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;

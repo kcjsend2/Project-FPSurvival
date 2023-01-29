@@ -511,10 +511,9 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
         	StateMachine->CheckStateTransition(EMovementState::Walking);
         }
     }
-    else
+    else if(CurrentWeapon->CurrentAmmo > 0 && CurrentWeapon->GetIsFiring())
     {
-    	OnFireEnd[CurrentWeaponSlot].ExecuteIfBound(this);
-    	ActionCheck();
+    	FireEndFlag = true;
     }
 }
 
@@ -734,6 +733,20 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 	else if(Montage == CurrentWeapon->WeaponPullDownMontage && !bInterrupted)
 	{
 		OnWeaponChangeEnd();
+	}
+	else if((Montage == CurrentWeapon->ArmFireMontage || Montage == CurrentWeapon->ArmAimDownSightFireMontage) &&
+		CurrentWeapon->FireMode == EFireMode::FullAuto && !bInterrupted)
+	{
+		if(FireEndFlag || CurrentWeapon->CurrentAmmo <= 0)
+		{
+			FireEndFlag = false;
+			OnFireEnd[CurrentWeaponSlot].ExecuteIfBound();
+			ActionCheck();
+		}
+		else
+		{
+			CurrentWeapon->Fire(this);
+		}
 	}
 }
 

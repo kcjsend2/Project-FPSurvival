@@ -45,34 +45,42 @@ void AWeaponBase::Tick(float DeltaSeconds)
 
 void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 {
-	if(!IsFiring && CurrentAmmo > 0)
-	{
-		IsFiring = true;
+	if(FireMode == EFireMode::Single && IsFiring)
+		return;
 
-		if(ArmFireMontage != nullptr && !Character->IsInSight)
-			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmFireMontage);
-		
-		else if(ArmAimDownSightFireMontage != nullptr&& Character->IsInSight)
-			Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmAimDownSightFireMontage);
-		
-		if(WeaponFireMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
-			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponFireMontage);
-		
-		UE_LOG(LogTemp, Log, TEXT("Fire"));
+	if(CurrentAmmo <= 0)
+		return;
+	
+	IsFiring = true;
 
-		FTransform MuzzleTransform;
-		MuzzleTransform.SetLocation(Muzzle->GetComponentLocation());
-		MuzzleTransform.SetRotation(Character->GetFirstPersonCameraComponent()->GetComponentTransform().GetRotation());
-		MuzzleTransform.SetScale3D(FVector3d(1, 1, 1));
-		
-		const ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
+	if(ArmFireMontage != nullptr && !Character->IsInSight)
+		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmFireMontage);
+	
+	else if(ArmAimDownSightFireMontage != nullptr&& Character->IsInSight)
+		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmAimDownSightFireMontage);
+	
+	if(WeaponFireMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
+		WeaponMesh->GetAnimInstance()->Montage_Play(WeaponFireMontage);
+	
+	UE_LOG(LogTemp, Log, TEXT("Fire"));
 
-		CurrentAmmo--;
-		UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
-		
-		if(SpawnedBullet == nullptr)
-			UE_LOG(LogTemp, Log, TEXT("Spawn Failed"));
-	}
+	FTransform MuzzleTransform;
+	MuzzleTransform.SetLocation(Muzzle->GetComponentLocation());
+	MuzzleTransform.SetRotation(Character->GetFirstPersonCameraComponent()->GetComponentTransform().GetRotation());
+	MuzzleTransform.SetScale3D(FVector3d(1, 1, 1));
+	
+	const ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
+
+	CurrentAmmo--;
+	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
+	
+	if(SpawnedBullet == nullptr)
+		UE_LOG(LogTemp, Log, TEXT("Spawn Failed"));
+}
+
+void AWeaponBase::FireEnd()
+{
+	IsFiring = false;
 }
 
 void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Character)
@@ -105,13 +113,16 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if(Montage == ArmFireMontage || Montage == ArmAimDownSightFireMontage)
 	{
-		IsFiring = false;
+		if(FireMode == EFireMode::Single)
+		{
+			IsFiring = false;
 		
-		FireOrReloadEnd.Execute();
+			OnActionCheck.Execute();
+		}
 	}
 	else if(Montage == ArmReloadMontage && !bInterrupted)
 	{
-		FireOrReloadEnd.Execute();
+		OnActionCheck.Execute();
 	}
 }
 
@@ -147,6 +158,9 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		
 		TargetCharacter->OnFire[WeaponSlot].Clear();
 		TargetCharacter->OnFire[WeaponSlot].BindDynamic(this, &AWeaponBase::Fire);
+
+		TargetCharacter->OnFireEnd[WeaponSlot].Clear();
+		TargetCharacter->OnFireEnd[WeaponSlot].BindDynamic(this, &AWeaponBase::FireEnd);
 		
 		TargetCharacter->OnReload[WeaponSlot].Clear();
 		TargetCharacter->OnReload[WeaponSlot].BindDynamic(this, &AWeaponBase::Reload);
@@ -159,7 +173,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 
 		//TargetCharacter->CurrentWeaponSlot = TargetCharacter->CollectedWeapon.Num() - 1;
 
-		FireOrReloadEnd.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
+		OnActionCheck.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
 		
 		IsAttached = true;
 	}

@@ -47,6 +47,9 @@ public:
 	UFUNCTION()
 	void Fire(AFPSurvivalCharacter* Character);
 
+	UFUNCTION()
+	void FireEnd();
+
 	UFUNCTION(BlueprintCallable)
 	USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
 	
@@ -135,7 +138,7 @@ private:
 	bool IsAttached = false;
 	
 	UPROPERTY()
-	FOnFireOrReloadEnd FireOrReloadEnd;
+	FOnFireOrReloadEnd OnActionCheck;
 	
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
