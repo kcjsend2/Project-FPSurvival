@@ -191,13 +191,9 @@ public:
 	UTimelineComponent* RecoilTimeline;
 	
 	FOnTimelineFloat RecoilTimelineFunction;
-	FOnTimelineEvent RecoilTimelineEndFunction;
 	
 	UPROPERTY(EditAnywhere, Category = "Recoil")
 	UCurveFloat* RecoilCurveFloat;
-
-	UFUNCTION()
-	void RecoilTimelineFinished();
 
 	UFUNCTION()
 	void RecoilTimelineReturn(float Value);

@@ -113,11 +113,9 @@ void AFPSurvivalCharacter::BeginPlay()
 	SlideTimeline->SetLooping(true);
 	
 	RecoilTimelineFunction.BindUFunction(this, FName("RecoilTimelineReturn"));
-	RecoilTimelineEndFunction.BindUFunction(this, FName("RecoilTimelineFinished"));
 	if(RecoilCurveFloat)
 	{
 		RecoilTimeline->AddInterpFloat(RecoilCurveFloat, RecoilTimelineFunction);
-		RecoilTimeline->SetTimelineFinishedFunc(RecoilTimelineEndFunction);
 		RecoilTimeline->SetTimelineLength(0.1f);
 		RecoilTimeline->SetLooping(false);
 	}
@@ -451,13 +449,6 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPSurvivalCharacter::LookUpAtRate);
 }
 
-
-void AFPSurvivalCharacter::RecoilTimelineFinished()
-{
-	if(FireEndFlag)
-		RecoilTimeline->ReverseFromEnd();
-}
-
 void AFPSurvivalCharacter::RecoilTimelineReturn(float Value)
 {
 	float ResultPitch = IsInSight ? CurrentWeapon->RecoilPitchADS : CurrentWeapon->RecoilPitch;
@@ -780,6 +771,7 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 		if(FireEndFlag || CurrentWeapon->CurrentAmmo <= 0)
 		{
 			FireEndFlag = false;
+		    RecoilTimeline->ReverseFromEnd();
 			OnFireEnd[CurrentWeaponSlot].ExecuteIfBound();
 			ActionCheck();
 		}
