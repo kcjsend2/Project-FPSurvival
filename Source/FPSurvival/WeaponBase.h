@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BulletProjectile.h"
+#include "Components/TimelineComponent.h"
 #include "WeaponBase.generated.h"
 
 class UCameraComponent;
@@ -109,6 +110,15 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	FVector AimDownSightOffset;
+
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	float RecoilPitch;
+	
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	float RecoilPitchADS;
+	
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	float RecoilYaw;
 	
 protected:
 	/** Ends gameplay for this component. */
@@ -120,7 +130,6 @@ protected:
 
 	UFUNCTION()
 	virtual void Tick(float DeltaSeconds) override;
-	
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
@@ -136,6 +145,7 @@ private:
 	
 	bool IsFiring = false;
 	bool IsAttached = false;
+
 	
 	UPROPERTY()
 	FOnFireOrReloadEnd OnActionCheck;

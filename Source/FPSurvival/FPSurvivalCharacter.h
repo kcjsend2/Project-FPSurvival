@@ -187,6 +187,21 @@ public:
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
 	FOnTimelineFloat CameraTiltTimelineFunction;
 
+	UPROPERTY()
+	UTimelineComponent* RecoilTimeline;
+	
+	FOnTimelineFloat RecoilTimelineFunction;
+	FOnTimelineEvent RecoilTimelineEndFunction;
+	
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	UCurveFloat* RecoilCurveFloat;
+
+	UFUNCTION()
+	void RecoilTimelineFinished();
+
+	UFUNCTION()
+	void RecoilTimelineReturn(float Value);
+	
 	UFUNCTION()
 	void SmoothCrouchTimelineReturn(float Value);
 	
@@ -279,6 +294,7 @@ protected:
 	UPROPERTY()
 	UMovementStateMachine* StateMachine;
 	
+	bool RecoilReverseCheck = false;
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;

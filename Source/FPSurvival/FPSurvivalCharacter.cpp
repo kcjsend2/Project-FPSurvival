@@ -64,7 +64,8 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SmoothCrouchingTimeline"));
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
-
+	RecoilTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RecoilTimeline"));
+	
 	VaultingComponent = CreateDefaultSubobject<UVaultingComponent>(TEXT("VaultingObject"));
 	WallRunningComponent = CreateDefaultSubobject<UWallRunningComponent>(TEXT("WallRunningObject"));
 	
@@ -110,6 +111,17 @@ void AFPSurvivalCharacter::BeginPlay()
 	SlideTimeline->AddEvent(0, SlideTimelineFunction);
 	SlideTimeline->SetTimelineLength(1.0);
 	SlideTimeline->SetLooping(true);
+	
+	RecoilTimelineFunction.BindUFunction(this, FName("RecoilTimelineReturn"));
+	RecoilTimelineEndFunction.BindUFunction(this, FName("RecoilTimelineFinished"));
+	if(RecoilCurveFloat)
+	{
+		RecoilTimeline->AddInterpFloat(RecoilCurveFloat, RecoilTimelineFunction);
+		RecoilTimeline->SetTimelineFinishedFunc(RecoilTimelineEndFunction);
+		RecoilTimeline->SetTimelineLength(0.1f);
+		RecoilTimeline->SetLooping(false);
+	}
+	
 	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnMontageEnd);
 }
 
@@ -438,6 +450,34 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AFPSurvivalCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPSurvivalCharacter::LookUpAtRate);
 }
+
+
+void AFPSurvivalCharacter::RecoilTimelineFinished()
+{
+	if(FireEndFlag)
+		RecoilTimeline->Reverse();
+}
+
+void AFPSurvivalCharacter::RecoilTimelineReturn(float Value)
+{
+	float ResultPitch = IsInSight ? CurrentWeapon->RecoilPitchADS : CurrentWeapon->RecoilPitch;
+
+	ResultPitch = FMath::Lerp(0, ResultPitch, Value);
+
+	if(!RecoilTimeline->IsReversing())
+	{
+		AddControllerPitchInput(ResultPitch);
+
+		const float RecoilYaw = CurrentWeapon->RecoilYaw;
+		const float ResultYaw = FMath::RandRange(-RecoilYaw, RecoilYaw);
+		AddControllerYawInput(ResultYaw);
+	}
+	else
+	{
+		AddControllerPitchInput(-ResultPitch);
+	}	
+}
+
 
 void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
 {

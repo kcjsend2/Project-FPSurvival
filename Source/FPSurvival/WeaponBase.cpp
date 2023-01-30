@@ -20,6 +20,7 @@ AWeaponBase::AWeaponBase()
 	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
 	PickUpComponent->SetupAttachment(WeaponMesh);
 
+
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(WeaponMesh);
 	
@@ -35,13 +36,13 @@ void AWeaponBase::BeginPlay()
 
 	if(WeaponMesh->HasValidAnimationInstance())
 		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+
 }
 
 void AWeaponBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 }
-
 
 void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 {
@@ -71,6 +72,8 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	
 	const ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
 
+	Character->RecoilTimeline->PlayFromStart();
+	
 	CurrentAmmo--;
 	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
 	
