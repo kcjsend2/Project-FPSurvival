@@ -455,7 +455,7 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 void AFPSurvivalCharacter::RecoilTimelineFinished()
 {
 	if(FireEndFlag)
-		RecoilTimeline->Reverse();
+		RecoilTimeline->ReverseFromEnd();
 }
 
 void AFPSurvivalCharacter::RecoilTimelineReturn(float Value)
