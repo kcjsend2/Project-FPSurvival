@@ -77,12 +77,20 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	SlideCoolTime = SlideInterval;
 	
-	static ConstructorHelpers::FClassFinder<UUserWidget> UI_CrossHair(TEXT("/Game/FirstPerson/Widgets/DynamicCrossHair.WBCrosshair_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_CrossHair(TEXT("/Game/FirstPerson/Widgets/WBCrosshair.WBCrosshair_C"));
 	if(UI_CrossHair.Succeeded())
 	{
 		CrossHairWidget = CreateWidget<UCrossHairWidget>(GetWorld(), UI_CrossHair.Class, TEXT("CrossHair"));
 		if(CrossHairWidget != nullptr)
 			CrossHairWidget->AddToViewport();
+	}
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/FirstPerson/Widgets/WBHud.WBHud_C"));
+	if(UI_HUD.Succeeded())
+	{
+		HudWidget = CreateWidget<UHudWidget>(GetWorld(), UI_HUD.Class, TEXT("Hud"));
+		if(HudWidget != nullptr)
+			HudWidget->AddToViewport();
 	}
 }
 
@@ -760,6 +768,7 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 {
 	if(Montage == CurrentWeapon->WeaponPullUpMontage && !bInterrupted)
 	{
+		HudWidget->CurrentWeaponImage = CurrentWeapon->WeaponImage;
 		IsWeaponChanging = false;
 		
 		ActionCheck();

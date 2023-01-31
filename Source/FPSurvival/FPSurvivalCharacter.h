@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CrossHairWidget.h"
+#include "HudWidget.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -20,7 +21,6 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 class UVaultingComponent;
-class UCrossHairWidget;
 class UWallRunningComponent;
 class UWidgetComponent;
 class AFPSurvivalCharacter;
@@ -128,6 +128,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UCrossHairWidget* CrossHairWidget;
+	
+	UPROPERTY(VisibleAnywhere, Category="UI")
+	UHudWidget* HudWidget;
 	
 	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
 	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;

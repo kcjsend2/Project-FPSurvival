@@ -36,6 +36,9 @@ public:
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=UI)
+	UTexture2D* WeaponImage;
 	
 	/** Sets default values for this component's properties */
 	AWeaponBase();
