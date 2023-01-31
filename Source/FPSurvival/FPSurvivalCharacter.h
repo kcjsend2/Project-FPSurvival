@@ -144,6 +144,24 @@ public:
 	float SprintMultiplier;
 	float CrouchMultiplier;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float MaxHP = 100;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float MaxStamina = 100;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float CurrentHP = 100;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float CurrentStamina = 100;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float StaminaRegen;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float StaminaRegenCoolDown;
+
 	int CurrentJumpCount = 0;
 	int MaxJumpCount = 0;
 
