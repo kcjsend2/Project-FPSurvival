@@ -20,4 +20,10 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CurrentWeaponImage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HPPercentage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float StaminaPercentage;
 };

@@ -145,16 +145,16 @@ public:
 	float CrouchMultiplier;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float MaxHP = 100;
+	float MaxHP = 200;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float MaxStamina = 100;
+	float MaxStamina = 200;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float CurrentHP = 100;
+	float CurrentHP = 150;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float CurrentStamina = 100;
+	float CurrentStamina = 150;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float StaminaRegen;

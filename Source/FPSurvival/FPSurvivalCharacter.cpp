@@ -146,8 +146,10 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 		}
 	}
 
-	if(CrossHairWidget != nullptr)
-		CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length());
+	CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length());
+	HudWidget->HPPercentage = CurrentHP / MaxHP;
+	HudWidget->StaminaPercentage = CurrentStamina / MaxStamina;
+		
 	
 	if(StateMachine->GetCurrentState() == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
