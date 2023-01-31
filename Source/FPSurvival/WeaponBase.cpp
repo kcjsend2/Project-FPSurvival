@@ -72,7 +72,8 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	
 	const ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
 
-	Character->RecoilTimeline->PlayFromStart();
+	if(RecoilOn)
+		Character->RecoilTimeline->PlayFromStart();
 	
 	CurrentAmmo--;
 	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);

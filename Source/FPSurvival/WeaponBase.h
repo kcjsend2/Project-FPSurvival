@@ -120,6 +120,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Recoil")
 	float RecoilYaw;
 	
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	bool RecoilOn;
+	
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()

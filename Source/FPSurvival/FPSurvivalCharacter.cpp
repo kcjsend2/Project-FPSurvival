@@ -765,19 +765,29 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 	{
 		OnWeaponChangeEnd();
 	}
-	else if((Montage == CurrentWeapon->ArmFireMontage || Montage == CurrentWeapon->ArmAimDownSightFireMontage) &&
-		CurrentWeapon->FireMode == EFireMode::FullAuto)
+	else if(Montage == CurrentWeapon->ArmFireMontage || Montage == CurrentWeapon->ArmAimDownSightFireMontage)
 	{
-		if(FireEndFlag || CurrentWeapon->CurrentAmmo <= 0)
+		if(CurrentWeapon->FireMode == EFireMode::FullAuto)
 		{
-			FireEndFlag = false;
-		    RecoilTimeline->ReverseFromEnd();
-			OnFireEnd[CurrentWeaponSlot].ExecuteIfBound();
-			ActionCheck();
+			if(FireEndFlag || CurrentWeapon->CurrentAmmo <= 0)
+			{
+				FireEndFlag = false;
+		    	
+				if(CurrentWeapon->RecoilOn)
+					RecoilTimeline->ReverseFromEnd();
+				
+				OnFireEnd[CurrentWeaponSlot].ExecuteIfBound();
+				ActionCheck();
+			}
+			else
+			{
+				CurrentWeapon->Fire(this);
+			}
 		}
-		else
+		else if(CurrentWeapon->FireMode == EFireMode::Single)
 		{
-			CurrentWeapon->Fire(this);
+			if(CurrentWeapon->RecoilOn)
+				RecoilTimeline->ReverseFromEnd();
 		}
 	}
 }
