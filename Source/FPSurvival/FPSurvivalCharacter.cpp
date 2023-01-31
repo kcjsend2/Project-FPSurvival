@@ -535,6 +535,9 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 	
     if(Pressed)
     {
+		if(CurrentWeapon->GetIsFiring())
+			return;
+    	
         OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
     	
         if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
