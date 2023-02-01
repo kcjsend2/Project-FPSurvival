@@ -92,6 +92,7 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 	{
 		if(ReloadType == EReloadType::OneByOne)
 		{
+			Character->AmmoMap[WeaponName]--;
 			CurrentAmmo++;
 			if(MagazineLimit == CurrentAmmo && ArmReloadMontage != nullptr)
 			{
@@ -104,6 +105,7 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 		}
 		else if(ReloadType == EReloadType::WholeAtOnce)
 		{
+			Character->AmmoMap[WeaponName] -= MagazineLimit - CurrentAmmo;
 			Character->IsReloading = false;
 			UE_LOG(LogTemp, Log, TEXT("ResolveReload: %s"), Character->IsReloading ? TEXT("true") : TEXT("false"));
 			CurrentAmmo = MagazineLimit;
@@ -174,6 +176,15 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		
 		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 
+		if(TargetCharacter->AmmoMap.Contains(WeaponName))
+		{
+			TargetCharacter->AmmoMap[WeaponName] += InitialAmmo;
+		}
+		else
+		{
+			TargetCharacter->AmmoMap.Add(WeaponName, InitialAmmo);
+		}
+		
 		OnActionCheck.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
 		
 		IsAttached = true;

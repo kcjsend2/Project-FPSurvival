@@ -149,7 +149,17 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length());
 	HudWidget->HPPercentage = CurrentHP / MaxHP;
 	HudWidget->StaminaPercentage = CurrentStamina / MaxStamina;
-		
+
+	if(CurrentWeapon != nullptr)
+	{
+		HudWidget->CurrentMagazine = FString::FromInt(CurrentWeapon->CurrentAmmo);
+		HudWidget->TotalAmmo = FString::FromInt(AmmoMap[CurrentWeapon->WeaponName]);
+	}
+	else
+	{
+		HudWidget->CurrentMagazine = TEXT("--");
+		HudWidget->TotalAmmo = TEXT("--");
+	}
 	
 	if(StateMachine->GetCurrentState() == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{

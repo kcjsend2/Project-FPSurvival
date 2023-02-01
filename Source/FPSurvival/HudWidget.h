@@ -26,4 +26,11 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float StaminaPercentage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString CurrentMagazine;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TotalAmmo;
+	
 };

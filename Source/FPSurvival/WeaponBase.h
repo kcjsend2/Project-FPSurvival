@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BulletProjectile.h"
-#include "Components/TimelineComponent.h"
 #include "WeaponBase.generated.h"
 
 class UCameraComponent;
 class AFPSurvivalCharacter;
 class UPickUpComponent;
 
-DECLARE_DYNAMIC_DELEGATE(FOnFireOrReloadEnd);
+DECLARE_DYNAMIC_DELEGATE(FOnActionCheck);
 
 UENUM(BlueprintType)
 enum class EReloadType : uint8
@@ -74,6 +73,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FRotator WeaponRelativeRotation;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	FName WeaponName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	int InitialAmmo;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	int WeaponID;
@@ -151,11 +156,10 @@ private:
 	
 	bool IsFiring = false;
 	bool IsAttached = false;
-
 	
 	UPROPERTY()
-	FOnFireOrReloadEnd OnActionCheck;
-	
+	FOnActionCheck OnActionCheck;
+
 public:
 	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
 	bool GetIsFiring() const { return IsFiring; }

@@ -188,6 +188,7 @@ public:
 	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;
+	TMap<FName, int> AmmoMap;
 
 	bool IsInSight = false;
 	bool IsReloading = false;
