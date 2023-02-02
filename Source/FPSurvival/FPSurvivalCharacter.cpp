@@ -13,6 +13,7 @@
 #include "WallRunningComponent.h"
 #include "Components/WidgetComponent.h"
 #include "CrossHairWidget.h"
+#include "PickUpWidget.h"
 #include "WeaponBase.h"
 #include "Engine/Internal/Kismet/BlueprintTypeConversions.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -164,6 +165,25 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	if(StateMachine->GetCurrentState() == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
 		StateMachine->CheckStateTransition(EMovementState::Walking);
+	}
+
+	if(NearWeapons.Num() > 0)
+	{
+		float MaxDist = 0;
+		const AWeaponBase* NearestWeapon = nullptr;
+		for(int i = 0; i < NearWeapons.Num(); ++i)
+		{
+			const float Dist = GetDistanceTo(NearWeapons[i]);
+			if(Dist > MaxDist)
+				MaxDist = Dist;
+			NearestWeapon = NearWeapons[i];
+		}
+		if(NearestWeapon != nullptr)
+		{
+			UPickUpWidget* PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
+			PickUpWidget->PickupWeaponImage = NearestWeapon->WeaponImage;
+			PickUpWidget->PickupWeaponName = NearestWeapon->WeaponName.ToString();
+		}
 	}
 }
 

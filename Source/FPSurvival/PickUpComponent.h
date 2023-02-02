@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
-#include "FPSurvivalCharacter.h"
 #include "PickUpComponent.generated.h"
+
+class AFPSurvivalCharacter;
 
 // Declaration of the delegate that will be called when someone picks this up
 // The character picking this up is the parameter sent with the notification
@@ -31,4 +32,7 @@ protected:
 	/** Code for when something overlaps this component */
 	UFUNCTION()
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	UFUNCTION()
+	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

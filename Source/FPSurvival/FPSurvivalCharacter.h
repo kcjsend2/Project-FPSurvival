@@ -262,6 +262,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	AWeaponBase* CurrentWeapon;
 	
+	UPROPERTY()
+	TArray<AWeaponBase*> NearWeapons;
+	
 protected:
 	/** Fires a projectile. */
 	void OnPrimaryAction(const bool Pressed);	
@@ -312,7 +315,6 @@ protected:
 	UPROPERTY()
 	UMovementStateMachine* StateMachine;
 	
-	bool RecoilReverseCheck = false;
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
