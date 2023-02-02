@@ -16,8 +16,11 @@ class FPSURVIVAL_API UPickUpWidget : public UUserWidget
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* PickupWeaponImage;
+	UTexture2D* PickUpWeaponImage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString PickupWeaponName;
+	FString PickUpWeaponName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PickUpGauge = 0;
 };

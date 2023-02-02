@@ -22,6 +22,7 @@ class UAnimMontage;
 class USoundBase;
 class UVaultingComponent;
 class UWallRunningComponent;
+class UPickUpWidget;
 class UWidgetComponent;
 class AFPSurvivalCharacter;
 
@@ -131,6 +132,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UHudWidget* HudWidget;
+
+	UPROPERTY()
+	UPickUpWidget* PickUpWidget;
 	
 	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
 	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
@@ -261,9 +265,16 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	AWeaponBase* CurrentWeapon;
+
+	UPROPERTY()
+	AWeaponBase* NearestWeapon;
 	
 	UPROPERTY()
 	TArray<AWeaponBase*> NearWeapons;
+
+	// 1초 동안 누르면 무기 획득
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PickUpSpeed = 1;
 	
 protected:
 	/** Fires a projectile. */
@@ -307,6 +318,7 @@ protected:
 	void OnSprintAction(bool Pressed);
 	void OnCrouchAction(bool Pressed);
 	void OnSightAction(bool Pressed);
+	void OnInteraction(bool Pressed);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	
 	FVector CalculateFloorInfluence(FVector FloorNormal);

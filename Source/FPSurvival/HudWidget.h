@@ -22,10 +22,10 @@ public:
 	UTexture2D* CurrentWeaponImage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float HPPercentage;
+	float HPPercentage = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float StaminaPercentage;
+	float StaminaPercentage = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString CurrentMagazine;

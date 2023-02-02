@@ -56,6 +56,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	ButtonPressed.Add("Sprint", false);
 	ButtonPressed.Add("Crouch", false);
 	ButtonPressed.Add("Sight", false);
+	ButtonPressed.Add("Interaction", false);
 	
 	CurrentJumpCount = 0;
 	MaxJumpCount = 2;
@@ -130,6 +131,8 @@ void AFPSurvivalCharacter::BeginPlay()
 	}
 	
 	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnMontageEnd);
+	
+	PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
 }
 
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
@@ -170,19 +173,43 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	if(NearWeapons.Num() > 0)
 	{
 		float MaxDist = 0;
-		const AWeaponBase* NearestWeapon = nullptr;
-		for(int i = 0; i < NearWeapons.Num(); ++i)
+		for(AWeaponBase* Weapon : NearWeapons)
 		{
-			const float Dist = GetDistanceTo(NearWeapons[i]);
+			const float Dist = GetDistanceTo(Weapon);
 			if(Dist > MaxDist)
 				MaxDist = Dist;
-			NearestWeapon = NearWeapons[i];
+
+			if(NearestWeapon != Weapon)
+			{
+				NearestWeapon = Weapon;
+				PickUpWidget->PickUpGauge = 0;
+			}
 		}
 		if(NearestWeapon != nullptr)
 		{
-			UPickUpWidget* PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
-			PickUpWidget->PickupWeaponImage = NearestWeapon->WeaponImage;
-			PickUpWidget->PickupWeaponName = NearestWeapon->WeaponName.ToString();
+			PickUpWidget->PickUpWeaponImage = NearestWeapon->WeaponImage;
+			PickUpWidget->PickUpWeaponName = NearestWeapon->WeaponName.ToString();
+		}
+	}
+
+	if(NearestWeapon != nullptr)
+	{
+		if(ButtonPressed["interaction"] && PickUpWidget->PickUpGauge < 1.f)
+		{
+			PickUpWidget->PickUpGauge += PickUpSpeed * DeltaSeconds;
+			if(PickUpWidget->PickUpGauge > 1.f)
+				PickUpWidget->PickUpGauge = 1.f;
+		}
+		else if(!ButtonPressed["interaction"] && PickUpWidget->PickUpGauge > 0.f)
+		{
+			PickUpWidget->PickUpGauge -= PickUpSpeed * DeltaSeconds;
+			if(PickUpWidget->PickUpGauge < 0.f)
+				PickUpWidget->PickUpGauge = 0.f;
+		}
+
+		if(PickUpWidget->PickUpGauge >= 1.f && CollectedWeapon.Num() < 2)
+		{
+			NearestWeapon->AttachWeapon(this);
 		}
 	}
 }
@@ -470,6 +497,9 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Pressed, this, &AFPSurvivalCharacter::OnSightAction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Sight", IE_Released, this, &AFPSurvivalCharacter::OnSightAction, false);
 
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Interaction", IE_Pressed, this, &AFPSurvivalCharacter::OnInteraction, true);
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("Interaction", IE_Released, this, &AFPSurvivalCharacter::OnInteraction, false);
+	
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
 	
@@ -593,19 +623,21 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
 
 void AFPSurvivalCharacter::OnReloadAction(const bool Pressed)
 {
-	if(CurrentWeapon != nullptr && !IsWeaponChanging && Pressed && !IsReloading)
+	if(CurrentWeapon == nullptr || IsWeaponChanging || !Pressed || IsReloading || AmmoMap[CurrentWeapon->WeaponName] <= 0)
 	{
-		IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
-		
-		if(IsReloading)
-			IsInSight = false;
-		
-		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
-		{
-			StateMachine->CheckStateTransition(EMovementState::Walking);
-		}
-		UE_LOG(LogTemp, Log, TEXT("OnReloadAction: %s"), IsReloading ? TEXT("true") : TEXT("false") );
+		return;
 	}
+	
+	IsReloading = OnReload[CurrentWeaponSlot].Execute(Mesh1P->GetAnimInstance());
+	
+	if(IsReloading)
+		IsInSight = false;
+	
+	if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+	{
+		StateMachine->CheckStateTransition(EMovementState::Walking);
+	}
+	UE_LOG(LogTemp, Log, TEXT("OnReloadAction: %s"), IsReloading ? TEXT("true") : TEXT("false") );
 }
 
 bool AFPSurvivalCharacter::CanStand()
@@ -700,6 +732,18 @@ void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 	{
 		IsInSight = false;
 		ActionCheck();
+	}
+}
+
+void AFPSurvivalCharacter::OnInteraction(bool Pressed)
+{
+	if(Pressed)
+	{
+		ButtonPressed["Interaction"] = true;
+	}
+	else
+	{
+		ButtonPressed["Interaction"] = false;
 	}
 }
 

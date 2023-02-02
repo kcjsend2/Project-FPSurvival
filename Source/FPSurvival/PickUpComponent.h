@@ -24,6 +24,9 @@ public:
 
 	UPickUpComponent();
 	
+	UFUNCTION()
+	void RemoveNearWeaponInfo(AFPSurvivalCharacter* Character);
+
 protected:
 
 	/** Called when the game starts */

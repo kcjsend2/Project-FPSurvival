@@ -105,10 +105,19 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 		}
 		else if(ReloadType == EReloadType::WholeAtOnce)
 		{
-			Character->AmmoMap[WeaponName] -= MagazineLimit - CurrentAmmo;
+			if(Character->AmmoMap[WeaponName] >= MagazineLimit)
+			{
+				Character->AmmoMap[WeaponName] -= MagazineLimit - CurrentAmmo;
+				CurrentAmmo = MagazineLimit;
+			}
+			else
+			{
+				CurrentAmmo = Character->AmmoMap[WeaponName];
+				Character->AmmoMap[WeaponName] = 0;
+			}
+				
 			Character->IsReloading = false;
 			UE_LOG(LogTemp, Log, TEXT("ResolveReload: %s"), Character->IsReloading ? TEXT("true") : TEXT("false"));
-			CurrentAmmo = MagazineLimit;
 		}
 		UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
 	}
@@ -186,6 +195,10 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		}
 		
 		OnActionCheck.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
+		PickUpComponent->OnComponentBeginOverlap.RemoveAll(PickUpComponent);
+		PickUpComponent->OnComponentEndOverlap.RemoveAll(PickUpComponent);
+
+		PickUpComponent->RemoveNearWeaponInfo(TargetCharacter);
 		
 		IsAttached = true;
 	}
