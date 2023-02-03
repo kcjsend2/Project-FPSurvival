@@ -40,7 +40,7 @@ class AFPSurvivalCharacter : public ACharacter
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category="Character", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
-
+	
 	/** First person camera */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
@@ -129,6 +129,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UCrossHairWidget* CrossHairWidget;
+
+	
 	
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UHudWidget* HudWidget;

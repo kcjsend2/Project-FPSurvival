@@ -8,6 +8,12 @@ UPickUpComponent::UPickUpComponent()
 {
 	// Setup the Sphere Collision
 	SphereRadius = 32.f;
+	RegisterOverlapFunction();
+}
+
+
+void UPickUpComponent::RegisterOverlapFunction()
+{
 	OnComponentBeginOverlap.AddDynamic(this, &UPickUpComponent::OnSphereBeginOverlap);
 	OnComponentEndOverlap.AddDynamic(this, &UPickUpComponent::OnSphereEndOverlap);
 }
@@ -32,18 +38,24 @@ void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
 	if(Character != nullptr)
 	{
-		Character->NearWeapons.Add(Cast<AWeaponBase>(GetOwner()));
-		UWidget* PickUpWidget = Character->HudWidget->GetWidgetFromName(TEXT("WBPickUp"));
-		if(!PickUpWidget->IsVisible())
-			PickUpWidget->SetVisibility(ESlateVisibility::Visible);
+		AddNearWeaponInfo(Character);
 	}
+}
+
+void UPickUpComponent::AddNearWeaponInfo(AFPSurvivalCharacter* Character)
+{
+	Character->NearWeapons.Add(Cast<AWeaponBase>(GetOwner()));
+	UWidget* PickUpWidget = Character->HudWidget->GetWidgetFromName(TEXT("WBPickUp"));
+	if(!PickUpWidget->IsVisible())
+		PickUpWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UPickUpComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
 
-	RemoveNearWeaponInfo(Character);
+	if(Character != nullptr)
+		RemoveNearWeaponInfo(Character);
 }
 
 void UPickUpComponent::RemoveNearWeaponInfo(AFPSurvivalCharacter* Character)

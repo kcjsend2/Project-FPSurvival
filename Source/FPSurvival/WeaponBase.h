@@ -45,6 +45,9 @@ public:
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION()
 	void AttachWeapon(AFPSurvivalCharacter* TargetCharacter);
+	
+	UFUNCTION()
+	void DetachWeapon(AFPSurvivalCharacter* TargetCharacter, const FTransform DetachTransform, const int DetachWeaponSlot);
 
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION()

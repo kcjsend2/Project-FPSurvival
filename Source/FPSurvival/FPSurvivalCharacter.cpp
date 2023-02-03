@@ -15,7 +15,6 @@
 #include "CrossHairWidget.h"
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
-#include "Engine/Internal/Kismet/BlueprintTypeConversions.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -207,9 +206,17 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 				PickUpWidget->PickUpGauge = 0.f;
 		}
 
-		if(PickUpWidget->PickUpGauge >= 1.f && CollectedWeapon.Num() < 2)
+		if(PickUpWidget->PickUpGauge >= 1.f)
 		{
-			NearestWeapon->AttachWeapon(this);
+			if(CollectedWeapon.Num() < 2)
+			{
+				NearestWeapon->AttachWeapon(this);
+			}
+			else
+			{
+				CollectedWeapon[CurrentWeaponSlot]->DetachWeapon(this, NearestWeapon->GetTransform(), CurrentWeaponSlot);
+				NearestWeapon->AttachWeapon(this);
+			}
 		}
 	}
 }
@@ -825,9 +832,12 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 
 void AFPSurvivalCharacter::OnWeaponChangeEnd()
 {
-	CurrentWeapon->SetActorHiddenInGame(true); 
-	CurrentWeapon->SetActorEnableCollision(false); 
-	CurrentWeapon->SetActorTickEnabled(false);
+	if(CurrentWeapon->GetIsAttached())
+	{
+		CurrentWeapon->SetActorHiddenInGame(true); 
+		CurrentWeapon->SetActorEnableCollision(false); 
+		CurrentWeapon->SetActorTickEnabled(false);
+	}
 
 	CollectedWeapon[ChangingWeaponSlot]->SetActorHiddenInGame(false); 
 	CollectedWeapon[ChangingWeaponSlot]->SetActorEnableCollision(true); 

@@ -163,43 +163,76 @@ void AWeaponBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 {
-	if(TargetCharacter != nullptr)
+	if(TargetCharacter == nullptr)
 	{
-		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
-
-		const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
-		
-		TargetCharacter->OnFire[WeaponSlot].Clear();
-		TargetCharacter->OnFire[WeaponSlot].BindDynamic(this, &AWeaponBase::Fire);
-
-		TargetCharacter->OnFireEnd[WeaponSlot].Clear();
-		TargetCharacter->OnFireEnd[WeaponSlot].BindDynamic(this, &AWeaponBase::FireEnd);
-		
-		TargetCharacter->OnReload[WeaponSlot].Clear();
-		TargetCharacter->OnReload[WeaponSlot].BindDynamic(this, &AWeaponBase::Reload);
-		
-		TargetCharacter->CollectedWeapon.Add(this);
-
-		TargetCharacter->OnWeaponChange(TargetCharacter->CollectedWeapon.Num() - 1);
-		
-		TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
-
-		if(TargetCharacter->AmmoMap.Contains(WeaponName))
-		{
-			TargetCharacter->AmmoMap[WeaponName] += InitialAmmo;
-		}
-		else
-		{
-			TargetCharacter->AmmoMap.Add(WeaponName, InitialAmmo);
-		}
-		
-		OnActionCheck.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
-		PickUpComponent->OnComponentBeginOverlap.RemoveAll(PickUpComponent);
-		PickUpComponent->OnComponentEndOverlap.RemoveAll(PickUpComponent);
-
-		PickUpComponent->RemoveNearWeaponInfo(TargetCharacter);
-		
-		IsAttached = true;
+		return;
 	}
+	
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
+
+	const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
+	
+	TargetCharacter->OnFire[WeaponSlot].Clear();
+	TargetCharacter->OnFire[WeaponSlot].BindDynamic(this, &AWeaponBase::Fire);
+
+	TargetCharacter->OnFireEnd[WeaponSlot].Clear();
+	TargetCharacter->OnFireEnd[WeaponSlot].BindDynamic(this, &AWeaponBase::FireEnd);
+	
+	TargetCharacter->OnReload[WeaponSlot].Clear();
+	TargetCharacter->OnReload[WeaponSlot].BindDynamic(this, &AWeaponBase::Reload);
+	
+	TargetCharacter->CollectedWeapon.Add(this);
+
+	TargetCharacter->OnWeaponChange(TargetCharacter->CollectedWeapon.Num() - 1);
+	
+	TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+
+	if(TargetCharacter->AmmoMap.Contains(WeaponName))
+	{
+		TargetCharacter->AmmoMap[WeaponName] += InitialAmmo;
+	}
+	else
+	{
+		TargetCharacter->AmmoMap.Add(WeaponName, InitialAmmo);
+	}
+	
+	OnActionCheck.BindDynamic(TargetCharacter, &AFPSurvivalCharacter::ActionCheck);
+	PickUpComponent->OnComponentBeginOverlap.RemoveAll(PickUpComponent);
+	PickUpComponent->OnComponentEndOverlap.RemoveAll(PickUpComponent);
+
+	PickUpComponent->RemoveNearWeaponInfo(TargetCharacter);
+	
+	IsAttached = true;
+}
+
+void AWeaponBase::DetachWeapon(AFPSurvivalCharacter* TargetCharacter, const FTransform DetachTransform, const int DetachWeaponSlot)
+{
+	if(TargetCharacter == nullptr)
+	{
+		return;
+	}
+
+	const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
+	DetachFromActor(DetachmentRules);
+
+	SetActorTransform(DetachTransform);
+	TargetCharacter->OnFire[DetachWeaponSlot].Clear();
+	TargetCharacter->OnFireEnd[DetachWeaponSlot].Clear();
+	TargetCharacter->OnReload[DetachWeaponSlot].Clear();
+
+	TargetCharacter->CollectedWeapon.Remove(this);
+	
+	TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &AWeaponBase::MontageEnded);
+
+	TargetCharacter->AmmoMap[WeaponName] += CurrentAmmo;
+	CurrentAmmo = 0;
+	InitialAmmo = 0;
+	
+	OnActionCheck.Clear();
+
+	PickUpComponent->RegisterOverlapFunction();
+	PickUpComponent->AddNearWeaponInfo(TargetCharacter);
+
+	IsAttached = false;
 }
