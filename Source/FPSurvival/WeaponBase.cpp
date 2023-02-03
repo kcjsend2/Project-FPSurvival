@@ -167,7 +167,8 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	{
 		return;
 	}
-
+	
+	WeaponMesh->SetSimulatePhysics(false);
 	WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
@@ -214,13 +215,14 @@ void AWeaponBase::DetachWeapon(AFPSurvivalCharacter* TargetCharacter, const FTra
 	{
 		return;
 	}
-	
-	WeaponMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
+
+	WeaponMesh->SetSimulatePhysics(true);
+	WeaponMesh->SetCollisionProfileName(TEXT("WeaponMesh"));
 	
 	const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
 
-	SetActorTransform(DetachTransform);
+	SetActorTransform(DetachTransform, true, nullptr, ETeleportType::TeleportPhysics);
 	TargetCharacter->OnFire[DetachWeaponSlot].Clear();
 	TargetCharacter->OnFireEnd[DetachWeaponSlot].Clear();
 	TargetCharacter->OnReload[DetachWeaponSlot].Clear();
