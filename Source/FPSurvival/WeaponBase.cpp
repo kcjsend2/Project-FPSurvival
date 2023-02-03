@@ -167,6 +167,8 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	{
 		return;
 	}
+
+	WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
@@ -212,7 +214,9 @@ void AWeaponBase::DetachWeapon(AFPSurvivalCharacter* TargetCharacter, const FTra
 	{
 		return;
 	}
-
+	
+	WeaponMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
+	
 	const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
 
