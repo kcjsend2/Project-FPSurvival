@@ -102,7 +102,14 @@ protected:
 	UFUNCTION()
 	void CrouchEnd();
 	
+	UFUNCTION()
 	void SetStateMachineTransition();
+
+	UFUNCTION()
+	void ConsumeStamina(float StaminaConsume);
+
+	UFUNCTION()
+	void RegenStamina(float DeltaSeconds);
 	
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -129,8 +136,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UCrossHairWidget* CrossHairWidget;
-
-	
 	
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UHudWidget* HudWidget;
@@ -157,17 +162,36 @@ public:
 	float MaxStamina = 200;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float CurrentHP = 150;
+	float CurrentHP;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float CurrentStamina = 150;
+	float CurrentStamina;
+
+	// 초당 스태미나 회복
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float StaminaRegenValue;
+	
+	bool StaminaRegenHot = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float StaminaRegen;
+	float StaminaRegenInterval;
 
+	float StaminaRegenCoolDown = 0.f;
+	
+	// 초당 스태미나 소모량
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float StaminaRegenCoolDown;
+	float SprintStaminaConsume;
 
+	// 상태 진입 시 즉시 스태미나 소모량
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float DoubleJumpStaminaConsume;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float SlideStaminaConsume;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	float WallRunningStaminaConsume;
+	
 	int CurrentJumpCount = 0;
 	int MaxJumpCount = 0;
 
@@ -179,7 +203,7 @@ public:
 	float DefaultGroundFriction;
 	float DefaultBrakingDeceleration;
 	
-	float SlideCoolTime = 0.0f;
+	float SlideCoolDown = 0.0f;
 	float SlideGroundFriction = 0;
 	bool SlideHot = false;
 	

@@ -76,7 +76,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	DefaultGroundFriction = GetCharacterMovement()->GroundFriction;
 	DefaultBrakingDeceleration = GetCharacterMovement()->BrakingDecelerationWalking;
 	
-	SlideCoolTime = SlideInterval;
+	SlideCoolDown = SlideInterval;
 	
 	static ConstructorHelpers::FClassFinder<UUserWidget> UI_CrossHair(TEXT("/Game/FirstPerson/Widgets/WBCrosshair.WBCrosshair_C"));
 	if(UI_CrossHair.Succeeded())
@@ -93,6 +93,9 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 		if(HudWidget != nullptr)
 			HudWidget->AddToViewport();
 	}
+
+	CurrentHP = MaxHP;
+	CurrentStamina = MaxStamina;
 }
 
 void AFPSurvivalCharacter::BeginPlay()
@@ -140,12 +143,23 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 
 	if(SlideHot)
 	{
-		if(SlideCoolTime > 0.0f)
-			SlideCoolTime -= DeltaSeconds;
+		if(SlideCoolDown > 0.0f)
+			SlideCoolDown -= DeltaSeconds;
 		else
 		{
-			SlideCoolTime = SlideInterval;
+			SlideCoolDown = SlideInterval;
 			SlideHot = false;
+		}
+	}
+
+	if(StaminaRegenHot)
+	{
+		if(StaminaRegenCoolDown > 0.0f)
+			StaminaRegenCoolDown -= DeltaSeconds;
+		else
+		{
+			StaminaRegenCoolDown = StaminaRegenInterval;
+			StaminaRegenHot = false;
 		}
 	}
 
@@ -219,6 +233,17 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 			}
 		}
 	}
+
+	if(StateMachine->GetCurrentState() == EMovementState::Sprinting && !GetCharacterMovement()->IsFalling())
+	{
+		ConsumeStamina(SprintStaminaConsume * DeltaSeconds);
+		if(CurrentStamina == 0)
+		{
+			StateMachine->CheckStateTransition(EMovementState::Walking);
+		}
+	}
+
+	RegenStamina(DeltaSeconds);
 }
 
 void AFPSurvivalCharacter::Landed(const FHitResult& Hit)
@@ -241,8 +266,9 @@ void AFPSurvivalCharacter::Jump()
 			Super::Jump();
 			CurrentJumpCount++;
 		}
-		else if (CurrentJumpCount < MaxJumpCount)
+		else if (CurrentJumpCount < MaxJumpCount && CurrentStamina > 0)
 		{
+			ConsumeStamina(DoubleJumpStaminaConsume);
 			const FVector LaunchDir = FVector(0, 0, GetCharacterMovement()->JumpZVelocity);
 			LaunchCharacter(LaunchDir, false, true);
 			CurrentJumpCount++;
@@ -298,7 +324,7 @@ bool AFPSurvivalCharacter::SprintToWalkTransition()
 		}
 	}
 	
-	if(!ButtonPressed["Sprint"])
+	if(!ButtonPressed["Sprint"] || CurrentStamina == 0)
 	{
 		return true;
 	}
@@ -307,7 +333,7 @@ bool AFPSurvivalCharacter::SprintToWalkTransition()
 
 bool AFPSurvivalCharacter::SprintToSlideTransition()
 {
-	if(!GetCharacterMovement()->IsFalling() && !SlideHot && ButtonPressed["Crouch"])
+	if(!GetCharacterMovement()->IsFalling() && !SlideHot && ButtonPressed["Crouch"] && CurrentStamina > 0)
 	{
 		return true;
 	}
@@ -376,6 +402,8 @@ void AFPSurvivalCharacter::WalkInit()
 
 void AFPSurvivalCharacter::SlideInit()
 {
+	ConsumeStamina(SlideStaminaConsume);
+	
 	SmoothCrouchingTimeline->Play();
 	SlideTimeline->Play();
 	CameraTiltTimeline->Play();
@@ -471,6 +499,27 @@ void AFPSurvivalCharacter::SetStateMachineTransition()
 	FStateEnd SlideEnd;
 	SlideEnd.BindDynamic(this, &AFPSurvivalCharacter::SlideEnd);
 	StateMachine->AddEndFunc(SlideEnd, EMovementState::Sliding);
+}
+
+void AFPSurvivalCharacter::ConsumeStamina(float StaminaConsume)
+{
+	StaminaRegenHot = true;
+	StaminaRegenCoolDown = StaminaRegenInterval;
+	CurrentStamina -= StaminaConsume;
+	if(CurrentStamina < 0)
+		CurrentStamina = 0;
+}
+
+void AFPSurvivalCharacter::RegenStamina(float DeltaSeconds)
+{
+	if(!StaminaRegenHot && CurrentStamina < MaxStamina)
+	{
+		CurrentStamina += StaminaRegenValue * DeltaSeconds;
+		if(CurrentStamina > MaxStamina)
+		{
+			CurrentStamina = MaxStamina;
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
