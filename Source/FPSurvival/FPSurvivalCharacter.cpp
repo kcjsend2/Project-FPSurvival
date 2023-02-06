@@ -10,7 +10,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "VaultingComponent.h"
-#include "WallRunningComponent.h"
 #include "Components/WidgetComponent.h"
 #include "CrossHairWidget.h"
 #include "PickUpWidget.h"
@@ -66,9 +65,9 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
 	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
 	RecoilTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RecoilTimeline"));
+	WallRunningTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("WallRunningTimeline"));
 	
 	VaultingComponent = CreateDefaultSubobject<UVaultingComponent>(TEXT("VaultingObject"));
-	WallRunningComponent = CreateDefaultSubobject<UWallRunningComponent>(TEXT("WallRunningObject"));
 	
 	StandingCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	StandingCameraZOffset = GetFirstPersonCameraComponent()->GetRelativeLocation().Z;
@@ -103,6 +102,9 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSurvivalCharacter::OnCapsuleComponentHit);
+	
 	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
 	if(CameraTiltCurveFloat)
 	{
@@ -119,11 +121,6 @@ void AFPSurvivalCharacter::BeginPlay()
 		SmoothCrouchingTimeline->SetLooping(false);
 	}
 	
-	SlideTimelineFunction.BindUFunction(this, FName("SlideTimelineReturn"));
-	SlideTimeline->AddEvent(0, SlideTimelineFunction);
-	SlideTimeline->SetTimelineLength(1.0);
-	SlideTimeline->SetLooping(true);
-	
 	RecoilTimelineFunction.BindUFunction(this, FName("RecoilTimelineReturn"));
 	if(RecoilCurveFloat)
 	{
@@ -131,6 +128,16 @@ void AFPSurvivalCharacter::BeginPlay()
 		RecoilTimeline->SetTimelineLength(0.1f);
 		RecoilTimeline->SetLooping(false);
 	}
+	
+	SlideTimelineFunction.BindUFunction(this, FName("SlideTimelineReturn"));
+	SlideTimeline->AddEvent(0, SlideTimelineFunction);
+	SlideTimeline->SetTimelineLength(1.0);
+	SlideTimeline->SetLooping(true);
+
+	WallRunningTimelineFunction.BindUFunction(this, FName("UpdateWallRunning"));
+	WallRunningTimeline->AddEvent(0, WallRunningTimelineFunction);
+	WallRunningTimeline->SetTimelineLength(1.0);
+	WallRunningTimeline->SetLooping(true);
 	
 	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnMontageEnd);
 	
@@ -140,6 +147,8 @@ void AFPSurvivalCharacter::BeginPlay()
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	ClampHorizontalVelocity();
 
 	if(SlideHot)
 	{
@@ -261,17 +270,28 @@ void AFPSurvivalCharacter::Jump()
 	}
 	else
 	{
+		bool JumpFlag = false;
 		if(CurrentJumpCount == 0)
 		{
 			Super::Jump();
-			CurrentJumpCount++;
+			JumpFlag = true;
 		}
 		else if (CurrentJumpCount < MaxJumpCount && CurrentStamina > 0)
 		{
 			ConsumeStamina(DoubleJumpStaminaConsume);
-			const FVector LaunchDir = FVector(0, 0, GetCharacterMovement()->JumpZVelocity);
+			JumpFlag = true;
+		}
+		
+		if(JumpFlag)
+		{
+			const FVector LaunchDir = FindLaunchDirection();
 			LaunchCharacter(LaunchDir, false, true);
 			CurrentJumpCount++;
+
+			if(IsWallRunning)
+			{
+				EndWallRunning(EWallRunningEndReason::JumpOffWall);
+			}
 		}
 	}
 }
@@ -558,9 +578,6 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
-	
-	// Enable touchscreen input
-	EnableTouchscreenMovement(PlayerInputComponent);
 
 	// Bind movement events
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AFPSurvivalCharacter::MoveForward);
@@ -573,6 +590,57 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AFPSurvivalCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPSurvivalCharacter::LookUpAtRate);
+}
+
+void AFPSurvivalCharacter::BeginWallRunning()
+{
+	GetCharacterMovement()->AirControl = 1.0f;
+	GetCharacterMovement()->GravityScale = 0.0f;
+	GetCharacterMovement()->SetPlaneConstraintNormal(FVector(0, 0, 1));
+	WallRunningTimeline->Play();
+	
+	CurrentJumpCount = 0;
+
+	IsWallRunning = true;
+}
+
+void AFPSurvivalCharacter::EndWallRunning(EWallRunningEndReason EndReason)
+{
+	if(EndReason == EWallRunningEndReason::FallOffWall)
+	{
+		CurrentJumpCount = 1;
+	}
+	else if(EndReason == EWallRunningEndReason::JumpOffWall)
+	{
+		CurrentJumpCount = MaxJumpCount - 1;
+	}
+	
+	GetCharacterMovement()->AirControl = 0.05f;
+	GetCharacterMovement()->GravityScale = 1.0f;
+	GetCharacterMovement()->SetPlaneConstraintNormal(FVector(0, 0, 0));
+	WallRunningTimeline->Stop();
+	
+	IsWallRunning = false;
+}
+
+FWallRunningInfo AFPSurvivalCharacter::FindWallRunningDirectionAndSide(FVector WallNormal) const
+{
+	FVector2d RightVector2D(GetActorRightVector());
+	FVector2d WallNormal2D(WallNormal);
+	
+	FWallRunningInfo ResultInfo;
+	if(FVector2d::DotProduct(WallNormal2D, RightVector2D) > 0)
+	{
+		ResultInfo.Side = EWallRunningSide::Left;
+		ResultInfo.Direction = WallNormal.Cross(FVector(0, 0, -1));
+	}
+	else
+	{
+		ResultInfo.Side = EWallRunningSide::Right;
+		ResultInfo.Direction = WallNormal.Cross(FVector(0, 0, 1));
+	}
+
+	return ResultInfo;
 }
 
 void AFPSurvivalCharacter::RecoilTimelineReturn(float Value)
@@ -741,32 +809,6 @@ void AFPSurvivalCharacter::EndSlide()
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
 	SlideHot = true;
 }
-
-void AFPSurvivalCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	if (TouchItem.bIsPressed == true)
-	{
-		return;
-	}
-	if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
-	{
-		OnPrimaryAction(true);
-	}
-	TouchItem.bIsPressed = true;
-	TouchItem.FingerIndex = FingerIndex;
-	TouchItem.Location = Location;
-	TouchItem.bMoved = false;
-}
-
-void AFPSurvivalCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	if (TouchItem.bIsPressed == false)
-	{
-		return;
-	}
-	TouchItem.bIsPressed = false;
-}
-
 
 void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 {
@@ -939,6 +981,26 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 	}
 }
 
+void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(IsWallRunning)
+	{
+		return;
+	}
+	
+	if(CanSurfaceBeWallRan(Hit.ImpactNormal) &&	GetCharacterMovement()->IsFalling())
+	{
+		const auto [Side, Direction] = FindWallRunningDirectionAndSide(Hit.ImpactNormal);
+		WallRunningDirection = Direction;
+		WallRunningSide = Side;
+		
+		if(IsWallRunningKeysDown())
+		{
+			BeginWallRunning();
+		}
+	}
+}
+
 FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
 {
 	const auto UpVector = GetActorUpVector();
@@ -957,6 +1019,7 @@ FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
 
 void AFPSurvivalCharacter::MoveForward(float Value)
 {
+	ForwardAxis = Value;
 	if (Value != 0.0f && StateMachine->GetCurrentState() != EMovementState::Sliding)
 	{
 		// add movement in that direction
@@ -966,6 +1029,7 @@ void AFPSurvivalCharacter::MoveForward(float Value)
 
 void AFPSurvivalCharacter::MoveRight(float Value)
 {
+	RightAxis = Value;
 	if (Value != 0.0f && StateMachine->GetCurrentState() != EMovementState::Sliding)
 	{
 		// add movement in that direction
@@ -985,17 +1049,117 @@ void AFPSurvivalCharacter::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
-bool AFPSurvivalCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
+bool AFPSurvivalCharacter::CanSurfaceBeWallRan(FVector SurfaceNormal) const
 {
-	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
+	if(SurfaceNormal.Z < -0.05f)
 	{
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AFPSurvivalCharacter::BeginTouch);
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AFPSurvivalCharacter::EndTouch);
+		return false;
+	}
 
-		return true;
+	FVector SlopeNormal = FVector(SurfaceNormal.X, SurfaceNormal.Y, 0.f);
+	SlopeNormal.Normalize();
+	
+	const float SlopeAngle = FMath::Acos(FVector::DotProduct(SlopeNormal, SurfaceNormal));
+
+	return SlopeAngle < GetCharacterMovement()->GetWalkableFloorAngle();
+}
+
+FVector AFPSurvivalCharacter::FindLaunchDirection() const
+{
+	FVector LaunchDirection;
+	if(IsWallRunning)
+	{
+		if(WallRunningSide == EWallRunningSide::Left)
+			LaunchDirection = WallRunningDirection.Cross(FVector(0, 0, 1));
+		else
+			LaunchDirection = WallRunningDirection.Cross(FVector(0, 0, -1));
+	}
+	else
+	{
+		if(GetCharacterMovement()->IsFalling())
+		{
+			LaunchDirection = GetActorRightVector() * RightAxis + GetActorForwardVector() * ForwardAxis;
+		}
 	}
 	
+	return (LaunchDirection + FVector(0, 0, 1)) * GetCharacterMovement()->JumpZVelocity;
+}
+
+bool AFPSurvivalCharacter::IsWallRunningKeysDown() const
+{
+	if(ForwardAxis <= 0.1)
+	{
+		return false;
+	}
+
+	if(WallRunningSide == EWallRunningSide::Left)
+	{
+		return RightAxis < -0.1;
+	}
+	else if(WallRunningSide == EWallRunningSide::Right)
+	{
+		return RightAxis > 0.1;
+	}
+
 	return false;
+}
+
+void AFPSurvivalCharacter::ClampHorizontalVelocity() const
+{
+	if(GetCharacterMovement()->IsFalling() && StateMachine->GetCurrentState() != EMovementState::Sliding)
+	{
+		const auto BaseVelocity = GetHorizontalVelocity().Length() / GetCharacterMovement()->GetMaxSpeed();
+		if(BaseVelocity > 1.0f)
+		{
+			const auto ModifiedVelocity = GetHorizontalVelocity() / BaseVelocity;
+			SetHorizontalVelocity(ModifiedVelocity.X, ModifiedVelocity.Y);
+		}
+	}
+}
+
+void AFPSurvivalCharacter::UpdateWallRunning()
+{
+	if(!IsWallRunningKeysDown())
+	{
+		EndWallRunning(EWallRunningEndReason::FallOffWall);
+	}
+	
+	FHitResult HitResult;
+
+	FVector LocationStart = GetActorLocation();
+	FVector LocationEnd;
+
+	if(WallRunningSide == EWallRunningSide::Left)
+	{
+		LocationEnd = FVector(0, 0, -1);
+	}
+	else
+	{
+		LocationEnd = FVector(0, 0, 1);
+	}
+
+	LocationEnd = WallRunningDirection.Cross(LocationEnd) * 200 + LocationStart;
+	
+	bool TraceCheck = GetWorld()->LineTraceSingleByChannel(HitResult, LocationStart, LocationEnd, ECC_Visibility);
+
+	if(!TraceCheck)
+	{
+		EndWallRunning(EWallRunningEndReason::FallOffWall);
+	}
+	else
+	{
+		const auto [Side, Direction] = FindWallRunningDirectionAndSide(HitResult.ImpactNormal);
+		if(WallRunningSide != Side)
+		{
+			EndWallRunning(EWallRunningEndReason::FallOffWall);
+		}
+		else
+		{
+			WallRunningDirection = Direction;
+			FVector Velocity = WallRunningDirection * GetCharacterMovement()->GetMaxSpeed();
+			GetCharacterMovement()->Velocity = FVector(-Velocity.X, -Velocity.Y, 0.f);
+		}
+	}
 }
 
 void AFPSurvivalCharacter::SetHorizontalVelocity(float VelocityX, float VelocityY) const

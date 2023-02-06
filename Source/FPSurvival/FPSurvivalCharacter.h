@@ -21,7 +21,6 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 class UVaultingComponent;
-class UWallRunningComponent;
 class UPickUpWidget;
 class UWidgetComponent;
 class AFPSurvivalCharacter;
@@ -31,6 +30,26 @@ class AFPSurvivalCharacter;
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
 DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
+
+UENUM()
+enum class EWallRunningSide : uint8
+{
+	Left,
+	Right
+};
+
+UENUM()
+enum class EWallRunningEndReason : uint8
+{
+	FallOffWall,
+	JumpOffWall
+};
+
+struct FWallRunningInfo
+{
+	EWallRunningSide Side;
+	FVector Direction;
+};
 
 UCLASS(config=Game)
 class AFPSurvivalCharacter : public ACharacter
@@ -143,8 +162,6 @@ public:
 	UPROPERTY()
 	UPickUpWidget* PickUpWidget;
 	
-	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
-	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
 	void GainJumpCount() { JumpCurrentCount++; }
 	
 	int GetCurrentWeaponID() const;
@@ -235,13 +252,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* CameraTiltCurveFloat;
 	
+	FOnTimelineEvent WallRunningTimelineFunction;
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
 	FOnTimelineFloat CameraTiltTimelineFunction;
-
-	UPROPERTY()
-	UTimelineComponent* RecoilTimeline;
-	
 	FOnTimelineFloat RecoilTimelineFunction;
 	
 	UPROPERTY(EditAnywhere, Category = "Recoil")
@@ -271,6 +285,9 @@ public:
 	UFUNCTION()
 	void OnMontageEnd(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
 
@@ -280,11 +297,14 @@ public:
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
 	
+	UPROPERTY()
+	UTimelineComponent* RecoilTimeline;
+	
+	UPROPERTY()
+	UTimelineComponent* WallRunningTimeline;
+	
 	UPROPERTY(BlueprintReadWrite, Category="Vaulting")
 	UVaultingComponent* VaultingComponent;
-
-	UPROPERTY(BlueprintReadWrite, Category="WallRunning")
-	UWallRunningComponent* WallRunningComponent;
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<AWeaponBase*> CollectedWeapon;
@@ -301,7 +321,7 @@ public:
 	// 1초 동안 누르면 무기 획득
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PickUpSpeed = 1;
-	
+
 protected:
 	/** Fires a projectile. */
 	void OnPrimaryAction(const bool Pressed);	
@@ -331,39 +351,51 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 	
-	struct TouchData
-	{
-		TouchData() { bIsPressed = false;Location=FVector::ZeroVector;}
-		bool bIsPressed;
-		ETouchIndex::Type FingerIndex;
-		FVector Location;
-		bool bMoved;
-	};
-	void BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
-	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void OnSprintAction(bool Pressed);
 	void OnCrouchAction(bool Pressed);
 	void OnSightAction(bool Pressed);
 	void OnInteraction(bool Pressed);
-	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	
 	FVector CalculateFloorInfluence(FVector FloorNormal);
-	TouchData	TouchItem;
 
 	UPROPERTY()
 	UMovementStateMachine* StateMachine;
 	
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+	
+	void BeginWallRunning();
+	void EndWallRunning(EWallRunningEndReason EndReason);
 
-	/* 
-	 * Configures input for touchscreen devices if there is a valid touch interface for doing so 
-	 *
-	 * @param	InputComponent	The input component pointer to bind controls to
-	 * @returns true if touch controls were enabled.
-	 */
-	bool EnableTouchscreenMovement(UInputComponent* InputComponent);
+	
+	FWallRunningInfo FindWallRunningDirectionAndSide(FVector WallNormal) const;
+	bool CanSurfaceBeWallRan(FVector SurfaceNormal) const;
+	FVector FindLaunchDirection() const;
+	bool IsWallRunningKeysDown() const;
+	void ClampHorizontalVelocity() const;
+	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
+	
+	FVector2d GetHorizontalVelocity() const { return FVector2d(GetCharacterMovement()->Velocity); }
+
+	UFUNCTION()
+	void UpdateWallRunning();
+	
+	// 벽 타기 관련 변수들
+	UPROPERTY()
+	FVector WallRunningDirection;
+	
+	UPROPERTY()
+	bool IsWallRunning = false;
+	
+	UPROPERTY()
+	float RightAxis;
+	
+	UPROPERTY()
+	float ForwardAxis;
+	
+	UPROPERTY()
+	EWallRunningSide WallRunningSide;
+	
 };
 
