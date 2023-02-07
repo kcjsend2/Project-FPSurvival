@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PickUpComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values for this component's properties
 AWeaponBase::AWeaponBase()
@@ -22,6 +23,10 @@ AWeaponBase::AWeaponBase()
 	
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(WeaponMesh);
+
+	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleFlashParticle"));
+	MuzzleFlash->SetupAttachment(Muzzle);
+	MuzzleFlash->SetAutoActivate(false);
 	
 	static ConstructorHelpers::FClassFinder<AActor> SpawnedBulletClass(TEXT("/Game/FirstPerson/Blueprints/BP_BulletProjectile.BP_BulletProjectile_C"));
 	BulletProjectileClass = SpawnedBulletClass.Class;
@@ -73,6 +78,8 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 
 	if(RecoilOn)
 		Character->RecoilTimeline->PlayFromStart();
+
+	MuzzleFlash->ActivateSystem(true);
 	
 	CurrentAmmo--;
 	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);

@@ -250,17 +250,17 @@ public:
 	UCurveFloat* SmoothCrouchingCurveFloat;
 	
 	UPROPERTY(EditAnywhere, Category = "Timeline")
-	UCurveFloat* SlideCameraTiltCurveFloat;
+	UCurveFloat* CameraTiltCurveFloat;
+	
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* RecoilCurveFloat;
+	
 	
 	FOnTimelineEvent WallRunningTimelineFunction;
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
-	FOnTimelineFloat SlideCameraTiltTimelineFunction;
+	FOnTimelineFloat CameraTiltTimelineFunction;
 	FOnTimelineFloat RecoilTimelineFunction;
-	
-	UPROPERTY(EditAnywhere, Category = "Recoil")
-	UCurveFloat* RecoilCurveFloat;
-
 	UFUNCTION()
 	void RecoilTimelineReturn(float Value);
 	
@@ -268,7 +268,7 @@ public:
 	void SmoothCrouchTimelineReturn(float Value);
 	
 	UFUNCTION()
-	void SlideCameraTiltReturn(float Value);
+	void CameraTiltReturn(float Value);
 	
 	UFUNCTION()
 	void SlideTimelineReturn();
@@ -295,7 +295,7 @@ public:
 	UTimelineComponent* SmoothCrouchingTimeline;
 	
 	UPROPERTY()
-	UTimelineComponent* SlideCameraTiltTimeline;
+	UTimelineComponent* CameraTiltTimeline;
 	
 	UPROPERTY()
 	UTimelineComponent* RecoilTimeline;

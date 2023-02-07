@@ -63,7 +63,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	SmoothCrouchingTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SmoothCrouchingTimeline"));
 	SlideTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SlideTimeline"));
-	SlideCameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
+	CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TiltTimeline"));
 	RecoilTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RecoilTimeline"));
 	WallRunningTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("WallRunningTimeline"));
 	
@@ -105,12 +105,12 @@ void AFPSurvivalCharacter::BeginPlay()
 	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSurvivalCharacter::OnCapsuleComponentHit);
 	
-	SlideCameraTiltTimelineFunction.BindUFunction(this, FName("SlideCameraTiltReturn"));
-	if(SlideCameraTiltCurveFloat)
+	CameraTiltTimelineFunction.BindUFunction(this, FName("CameraTiltReturn"));
+	if(CameraTiltCurveFloat)
 	{
-		SlideCameraTiltTimeline->AddInterpFloat(SlideCameraTiltCurveFloat, SlideCameraTiltTimelineFunction);
-		SlideCameraTiltTimeline->SetTimelineLength(0.3);
-		SlideCameraTiltTimeline->SetLooping(false);
+		CameraTiltTimeline->AddInterpFloat(CameraTiltCurveFloat, CameraTiltTimelineFunction);
+		CameraTiltTimeline->SetTimelineLength(0.3);
+		CameraTiltTimeline->SetLooping(false);
 	}
 	
 	SmoothCrouchTimelineFunction.BindUFunction(this, FName("SmoothCrouchTimelineReturn"));
@@ -427,7 +427,7 @@ void AFPSurvivalCharacter::SlideInit()
 	
 	SmoothCrouchingTimeline->Play();
 	SlideTimeline->Play();
-	SlideCameraTiltTimeline->Play();
+	CameraTiltTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
@@ -437,7 +437,7 @@ void AFPSurvivalCharacter::SlideEnd()
 {
 	SmoothCrouchingTimeline->Reverse();
 	SlideTimeline->Stop();
-	SlideCameraTiltTimeline->Reverse();
+	CameraTiltTimeline->Reverse();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
 	SlideHot = true;
@@ -595,18 +595,18 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 
 void AFPSurvivalCharacter::BeginWallRunning()
 {
+	CurrentJumpCount = 0;
+	IsWallRunning = true;
 	GetCharacterMovement()->AirControl = 1.0f;
 	GetCharacterMovement()->GravityScale = 0.0f;
 	GetCharacterMovement()->SetPlaneConstraintNormal(FVector(0, 0, 1));
 	WallRunningTimeline->Play();
-	
-	CurrentJumpCount = 0;
-
-	IsWallRunning = true;
+	CameraTiltTimeline->Play();
 }
 
 void AFPSurvivalCharacter::EndWallRunning(EWallRunningEndReason EndReason)
 {
+	IsWallRunning = false;
 	if(EndReason == EWallRunningEndReason::FallOffWall)
 	{
 		WallRunningHot = true;
@@ -622,7 +622,7 @@ void AFPSurvivalCharacter::EndWallRunning(EWallRunningEndReason EndReason)
 	GetCharacterMovement()->SetPlaneConstraintNormal(FVector(0, 0, 0));
 	WallRunningTimeline->Stop();
 	
-	IsWallRunning = false;
+	CameraTiltTimeline->Reverse();
 }
 
 FWallRunningInfo AFPSurvivalCharacter::FindWallRunningDirectionAndSide(FVector WallNormal) const
@@ -716,10 +716,19 @@ void AFPSurvivalCharacter::ActionCheck()
 		OnSightAction(true);
 	}
 }
-void AFPSurvivalCharacter::SlideCameraTiltReturn(float Value)
+void AFPSurvivalCharacter::CameraTiltReturn(float Value)
 {
-	auto ControlRotation = GetController()->GetControlRotation();
-	GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value));
+	const auto ControlRotation = GetController()->GetControlRotation();
+	if(StateMachine->GetCurrentState() == EMovementState::Sliding)
+	{
+		GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value));
+	}
+	else
+	{
+		const float SideValue = WallRunningSide == EWallRunningSide::Left ? -1 : 1;
+		
+		GetController()->SetControlRotation(FRotator(ControlRotation.Pitch, ControlRotation.Yaw, Value * SideValue));
+	}
 }
 
 void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
@@ -797,7 +806,7 @@ bool AFPSurvivalCharacter::CanSprint()
 void AFPSurvivalCharacter::BeginSlide()
 {
 	SlideTimeline->Play();
-	SlideCameraTiltTimeline->Play();
+	CameraTiltTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
@@ -806,7 +815,7 @@ void AFPSurvivalCharacter::BeginSlide()
 void AFPSurvivalCharacter::EndSlide()
 {
 	SlideTimeline->Stop();
-	SlideCameraTiltTimeline->Reverse();
+	CameraTiltTimeline->Reverse();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
 	SlideHot = true;
@@ -1117,15 +1126,6 @@ void AFPSurvivalCharacter::UpdateWallRunning()
 	FVector LocationStart = GetActorLocation();
 	FVector LocationEnd;
 	
-	FVector ForwardVector = GetActorForwardVector();
-	LocationEnd = ForwardVector * 30 + LocationStart;
-	bool TraceCheck = GetWorld()->LineTraceSingleByChannel(HitResult, LocationStart, LocationEnd, ECC_Visibility);
-	if(TraceCheck)
-	{
-		EndWallRunning(EWallRunningEndReason::FallOffWall);
-		return;
-	}
-
 	if(WallRunningSide == EWallRunningSide::Left)
 	{
 		LocationEnd = FVector(0, 0, -1);
@@ -1135,9 +1135,9 @@ void AFPSurvivalCharacter::UpdateWallRunning()
 		LocationEnd = FVector(0, 0, 1);
 	}
 
-	LocationEnd = WallRunningDirection.Cross(LocationEnd) * 60 + LocationStart;
+	LocationEnd = WallRunningDirection.Cross(LocationEnd) * 80 + LocationStart;
 	
-	TraceCheck = GetWorld()->LineTraceSingleByChannel(HitResult, LocationStart, LocationEnd, ECC_Visibility);
+	bool TraceCheck = GetWorld()->LineTraceSingleByChannel(HitResult, LocationStart, LocationEnd, ECC_Visibility);
 	
 	if(!TraceCheck)
 	{

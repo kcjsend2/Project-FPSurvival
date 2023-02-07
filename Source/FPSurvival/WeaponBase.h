@@ -154,7 +154,10 @@ private:
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Muzzle;
-
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* MuzzleFlash;
+	
 	TSubclassOf<ABulletProjectile> BulletProjectileClass;
 	
 	bool IsFiring = false;
