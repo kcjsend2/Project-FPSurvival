@@ -4,8 +4,6 @@
 #include "WeaponBase.h"
 #include "FPSurvivalCharacter.h"
 #include "FPSurvivalProjectile.h"
-#include "GameFramework/PlayerController.h"
-#include "Camera/PlayerCameraManager.h"
 #include "BulletProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "PickUpComponent.h"
@@ -57,7 +55,9 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 		return;
 	
 	IsFiring = true;
-
+	
+	Character->CrossHairWidget->FireSpreadValue += SpreadPerShot;
+	
 	if(ArmFireMontage != nullptr && !Character->IsInSight)
 		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmFireMontage);
 	

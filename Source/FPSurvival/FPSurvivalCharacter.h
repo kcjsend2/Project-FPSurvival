@@ -155,7 +155,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UCrossHairWidget* CrossHairWidget;
-	
+
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UHudWidget* HudWidget;
 

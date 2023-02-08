@@ -171,8 +171,8 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 			StaminaRegenHot = false;
 		}
 	}
-
-	CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length());
+	
+	CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length() + CrossHairWidget->FireSpreadValue);
 	HudWidget->HPPercentage = CurrentHP / MaxHP;
 	HudWidget->StaminaPercentage = CurrentStamina / MaxStamina;
 
@@ -249,6 +249,15 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 		if(CurrentStamina == 0)
 		{
 			StateMachine->CheckStateTransition(EMovementState::Walking);
+		}
+	}
+
+	if(IsWallRunning)
+	{
+		ConsumeStamina(WallRunningStaminaConsume * DeltaSeconds);
+		if(CurrentStamina == 0)
+		{
+			EndWallRunning(EWallRunningEndReason::FallOffWall);
 		}
 	}
 

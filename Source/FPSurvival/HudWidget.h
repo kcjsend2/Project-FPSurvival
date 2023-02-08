@@ -14,9 +14,6 @@ class FPSURVIVAL_API UHudWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CurrentWeaponImage;

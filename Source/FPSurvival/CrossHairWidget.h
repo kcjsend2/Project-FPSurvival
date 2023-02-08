@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Border.h"
 #include "CrossHairWidget.generated.h"
 
 /**
@@ -14,6 +15,9 @@ class FPSURVIVAL_API UCrossHairWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
 public:
 	UPROPERTY(BlueprintReadWrite)
 	double Spread;
@@ -23,4 +27,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite)
 	double Length = 25;
+
+	float FireSpreadValue = 0;
+	
+	UPROPERTY(EditAnywhere)
+	float SpreadDecrease;
 };

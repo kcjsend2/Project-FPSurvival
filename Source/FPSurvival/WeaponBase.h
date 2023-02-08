@@ -134,6 +134,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Recoil")
 	bool RecoilOn;
 	
+	UPROPERTY(EditAnywhere, Category="UI")
+	float SpreadPerShot;
+
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
