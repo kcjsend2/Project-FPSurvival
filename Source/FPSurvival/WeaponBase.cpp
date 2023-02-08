@@ -74,7 +74,9 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	MuzzleTransform.SetRotation(Character->GetFirstPersonCameraComponent()->GetComponentTransform().GetRotation());
 	MuzzleTransform.SetScale3D(FVector3d(1, 1, 1));
 	
-	const ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
+	ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
+	SpawnedBullet->BulletDamage = BulletDamage;
+	SpawnedBullet->LocationFired = GetActorLocation();
 
 	if(RecoilOn)
 		Character->RecoilTimeline->PlayFromStart();

@@ -93,6 +93,9 @@ public:
 	int MagazineLimit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	float BulletDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	EReloadType ReloadType;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")

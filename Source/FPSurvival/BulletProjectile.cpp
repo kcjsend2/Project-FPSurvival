@@ -2,24 +2,25 @@
 
 
 #include "BulletProjectile.h"
-#include "Components/SphereComponent.h"
 
-// Sets default values
+#include "FPSurvivalCharacter.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 ABulletProjectile::ABulletProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
 	BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BulletMesh"));
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	CollisionSphere->SetupAttachment(BulletMesh);
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABulletProjectile::OnSphereBeginOverlap);
 	
 	SetRootComponent(BulletMesh);
 	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 }
 
-// Called when the game starts or when spawned
 void ABulletProjectile::BeginPlay()
 {
 	Super::BeginPlay();
@@ -27,10 +28,19 @@ void ABulletProjectile::BeginPlay()
 	ProjectileMovementComponent->InitialSpeed = 30000.0f;
 }
 
-// Called every frame
 void ABulletProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABulletProjectile::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
+	if(Character != nullptr)
+	{
+		const FHitResult HitInfo;
+		UGameplayStatics::ApplyPointDamage(Character, BulletDamage, LocationFired, HitInfo, GetInstigatorController(), this, nullptr);
+	}
 }
 

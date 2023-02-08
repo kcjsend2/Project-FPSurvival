@@ -72,6 +72,7 @@ protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Jump() override;
+	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 	UFUNCTION()
 	bool WalkToCrouchTransition();
@@ -321,6 +322,7 @@ public:
 	// 1초 동안 누르면 무기 획득
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PickUpSpeed = 1;
+
 
 protected:
 	/** Fires a projectile. */

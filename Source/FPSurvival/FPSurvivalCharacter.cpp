@@ -14,6 +14,7 @@
 #include "CrossHairWidget.h"
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
+#include "Engine/DamageEvents.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -304,6 +305,25 @@ void AFPSurvivalCharacter::Jump()
 			}
 		}
 	}
+}
+
+float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	
+	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
+	{
+		const FPointDamageEvent* PointDamageEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
+	}
+	
+	else if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID)) 
+	{
+		const FRadialDamageEvent* RadialDamageEvent = static_cast<const FRadialDamageEvent*>(&DamageEvent);
+	}
+
+	CurrentHP -= Damage;
+	
+    return Damage;
 }
 
 bool AFPSurvivalCharacter::WalkToCrouchTransition()
