@@ -41,6 +41,7 @@ void ABulletProjectile::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp
 	{
 		const FHitResult HitInfo;
 		UGameplayStatics::ApplyPointDamage(Character, BulletDamage, LocationFired, HitInfo, GetInstigatorController(), this, nullptr);
+		OnBulletHit.ExecuteIfBound();
 	}
 }
 

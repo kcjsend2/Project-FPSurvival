@@ -1,10 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Border.h"
 #include "CrossHairWidget.generated.h"
 
 /**
@@ -32,4 +29,12 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	float SpreadDecrease;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FLinearColor HitIndicatorColor = {1, 1, 1, 0};
+
+	// 초당 히트 인디케이터의 알파가 줄어드는 속도
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HitIndicatorAlphaDecrease;
+
 };

@@ -288,6 +288,9 @@ public:
 
 	UFUNCTION()
 	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void DamageToOtherActor();
 	
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;

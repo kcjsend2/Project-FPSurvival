@@ -77,6 +77,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
 	SpawnedBullet->BulletDamage = BulletDamage;
 	SpawnedBullet->LocationFired = GetActorLocation();
+	SpawnedBullet->OnBulletHit.BindDynamic(Character, &AFPSurvivalCharacter::DamageToOtherActor);
 
 	if(RecoilOn)
 		Character->RecoilTimeline->PlayFromStart();

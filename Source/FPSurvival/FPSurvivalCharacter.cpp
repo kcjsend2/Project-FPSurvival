@@ -1041,6 +1041,11 @@ void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitCompone
 	}
 }
 
+void AFPSurvivalCharacter::DamageToOtherActor()
+{
+	CrossHairWidget->HitIndicatorColor.A = 1.0f;
+}
+
 FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
 {
 	const auto UpVector = GetActorUpVector();

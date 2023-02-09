@@ -17,4 +17,13 @@ void UCrossHairWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 			FireSpreadValue = 0;
 		}
 	}
+
+	if(HitIndicatorColor.A > 0.0f)
+	{
+		HitIndicatorColor.A -= HitIndicatorAlphaDecrease * InDeltaTime;
+		if(HitIndicatorColor.A < 0.0f)
+		{
+			HitIndicatorColor.A = 0.0f;
+		}
+	}
 }

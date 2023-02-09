@@ -9,6 +9,7 @@
 
 class USphereComponent;
 
+DECLARE_DYNAMIC_DELEGATE(FOnBulletHit);
 UCLASS()
 class FPSURVIVAL_API ABulletProjectile : public AActor
 {
@@ -40,4 +41,5 @@ public:
 
 	int BulletDamage;
 	FVector LocationFired;
+	FOnBulletHit OnBulletHit;
 };
