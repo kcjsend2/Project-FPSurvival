@@ -42,8 +42,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeLocation(FVector(0.0f, -1.752765f, -160.0f));
 	Mesh1P->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-
-
+	
 	SprintMultiplier = 1.7f;
 	CrouchMultiplier = 0.6f;
 	
@@ -79,21 +78,11 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SlideCoolDown = SlideInterval;
 	
 	static ConstructorHelpers::FClassFinder<UUserWidget> UI_CrossHair(TEXT("/Game/FirstPerson/Widgets/WBCrosshair.WBCrosshair_C"));
-	if(UI_CrossHair.Succeeded())
-	{
-		CrossHairWidget = CreateWidget<UCrossHairWidget>(GetWorld(), UI_CrossHair.Class, TEXT("CrossHair"));
-		if(CrossHairWidget != nullptr)
-			CrossHairWidget->AddToViewport();
-	}
-
+	CrossHairWidgetClass = UI_CrossHair.Class;
+	
 	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/FirstPerson/Widgets/WBHud.WBHud_C"));
-	if(UI_HUD.Succeeded())
-	{
-		HudWidget = CreateWidget<UHudWidget>(GetWorld(), UI_HUD.Class, TEXT("Hud"));
-		if(HudWidget != nullptr)
-			HudWidget->AddToViewport();
-	}
-
+	HudWidgetClass = UI_HUD.Class;
+	
 	CurrentHP = MaxHP;
 	CurrentStamina = MaxStamina;
 }
@@ -103,6 +92,19 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	if(IsPlayerControlled())
+	{
+		HudWidget = CreateWidget<UHudWidget>(GetWorld(), HudWidgetClass, TEXT("Hud"));
+		if(HudWidget != nullptr)
+			HudWidget->AddToViewport();
+	
+		CrossHairWidget = CreateWidget<UCrossHairWidget>(GetWorld(), CrossHairWidgetClass, TEXT("CrossHair"));
+		if(CrossHairWidget != nullptr)
+			CrossHairWidget->AddToViewport();
+		
+		PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
+	}
+	
 	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSurvivalCharacter::OnCapsuleComponentHit);
 	
@@ -141,14 +143,30 @@ void AFPSurvivalCharacter::BeginPlay()
 	WallRunningTimeline->SetLooping(true);
 	
 	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnMontageEnd);
-	
-	PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
 }
 
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if(IsPlayerControlled())
+	{
+		CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length() + CrossHairWidget->FireSpreadValue);
+		HudWidget->HPPercentage = CurrentHP / MaxHP;
+		HudWidget->StaminaPercentage = CurrentStamina / MaxStamina;
+
+		if(CurrentWeapon != nullptr)
+		{
+			HudWidget->CurrentMagazine = FString::FromInt(CurrentWeapon->CurrentAmmo);
+			HudWidget->TotalAmmo = FString::FromInt(AmmoMap[CurrentWeapon->WeaponName]);
+		}
+		else
+		{
+			HudWidget->CurrentMagazine = TEXT("--");
+			HudWidget->TotalAmmo = TEXT("--");
+		}
+	}
+	
 	ClampHorizontalVelocity();
 
 	if(SlideHot)
@@ -173,20 +191,6 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 		}
 	}
 	
-	CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length() + CrossHairWidget->FireSpreadValue);
-	HudWidget->HPPercentage = CurrentHP / MaxHP;
-	HudWidget->StaminaPercentage = CurrentStamina / MaxStamina;
-
-	if(CurrentWeapon != nullptr)
-	{
-		HudWidget->CurrentMagazine = FString::FromInt(CurrentWeapon->CurrentAmmo);
-		HudWidget->TotalAmmo = FString::FromInt(AmmoMap[CurrentWeapon->WeaponName]);
-	}
-	else
-	{
-		HudWidget->CurrentMagazine = TEXT("--");
-		HudWidget->TotalAmmo = TEXT("--");
-	}
 	
 	if(StateMachine->GetCurrentState() == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
@@ -985,7 +989,8 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 {
 	if(Montage == CurrentWeapon->WeaponPullUpMontage && !bInterrupted)
 	{
-		HudWidget->CurrentWeaponImage = CurrentWeapon->WeaponImage;
+		if(HudWidget != nullptr)
+			HudWidget->CurrentWeaponImage = CurrentWeapon->WeaponImage;
 		IsWeaponChanging = false;
 		
 		ActionCheck();

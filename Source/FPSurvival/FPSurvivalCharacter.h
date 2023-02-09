@@ -404,6 +404,9 @@ protected:
 	
 	UPROPERTY()
 	EWallRunningSide WallRunningSide;
+
+	TSubclassOf<UCrossHairWidget> CrossHairWidgetClass;
+	TSubclassOf<UHudWidget> HudWidgetClass;
 	
 };
 
