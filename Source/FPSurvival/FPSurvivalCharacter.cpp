@@ -165,6 +165,57 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 			HudWidget->CurrentMagazine = TEXT("--");
 			HudWidget->TotalAmmo = TEXT("--");
 		}
+		
+		if(NearWeapons.Num() > 0)
+		{
+			float MaxDist = 0;
+			for(AWeaponBase* Weapon : NearWeapons)
+			{
+				const float Dist = GetDistanceTo(Weapon);
+				if(Dist > MaxDist)
+					MaxDist = Dist;
+
+				if(NearestWeapon != Weapon)
+				{
+					NearestWeapon = Weapon;
+					PickUpWidget->PickUpGauge = 0;
+				}
+			}
+			if(NearestWeapon != nullptr)
+			{
+				PickUpWidget->PickUpWeaponImage = NearestWeapon->WeaponImage;
+				PickUpWidget->PickUpWeaponName = NearestWeapon->WeaponName.ToString();
+			}
+		}
+
+		if(NearestWeapon != nullptr)
+		{
+			if(ButtonPressed["interaction"] && PickUpWidget->PickUpGauge < 1.f)
+			{
+				PickUpWidget->PickUpGauge += PickUpSpeed * DeltaSeconds;
+				if(PickUpWidget->PickUpGauge > 1.f)
+					PickUpWidget->PickUpGauge = 1.f;
+			}
+			else if(!ButtonPressed["interaction"] && PickUpWidget->PickUpGauge > 0.f)
+			{
+				PickUpWidget->PickUpGauge -= PickUpSpeed * DeltaSeconds;
+				if(PickUpWidget->PickUpGauge < 0.f)
+					PickUpWidget->PickUpGauge = 0.f;
+			}
+
+			if(PickUpWidget->PickUpGauge >= 1.f)
+			{
+				if(CollectedWeapon.Num() < 2)
+				{
+					NearestWeapon->AttachWeapon(this);
+				}
+				else
+				{
+					CollectedWeapon[CurrentWeaponSlot]->DetachWeapon(this, NearestWeapon->GetTransform(), CurrentWeaponSlot);
+					NearestWeapon->AttachWeapon(this);
+				}
+			}
+		}
 	}
 	
 	ClampHorizontalVelocity();
@@ -196,58 +247,7 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 	{
 		StateMachine->CheckStateTransition(EMovementState::Walking);
 	}
-
-	if(NearWeapons.Num() > 0)
-	{
-		float MaxDist = 0;
-		for(AWeaponBase* Weapon : NearWeapons)
-		{
-			const float Dist = GetDistanceTo(Weapon);
-			if(Dist > MaxDist)
-				MaxDist = Dist;
-
-			if(NearestWeapon != Weapon)
-			{
-				NearestWeapon = Weapon;
-				PickUpWidget->PickUpGauge = 0;
-			}
-		}
-		if(NearestWeapon != nullptr)
-		{
-			PickUpWidget->PickUpWeaponImage = NearestWeapon->WeaponImage;
-			PickUpWidget->PickUpWeaponName = NearestWeapon->WeaponName.ToString();
-		}
-	}
-
-	if(NearestWeapon != nullptr)
-	{
-		if(ButtonPressed["interaction"] && PickUpWidget->PickUpGauge < 1.f)
-		{
-			PickUpWidget->PickUpGauge += PickUpSpeed * DeltaSeconds;
-			if(PickUpWidget->PickUpGauge > 1.f)
-				PickUpWidget->PickUpGauge = 1.f;
-		}
-		else if(!ButtonPressed["interaction"] && PickUpWidget->PickUpGauge > 0.f)
-		{
-			PickUpWidget->PickUpGauge -= PickUpSpeed * DeltaSeconds;
-			if(PickUpWidget->PickUpGauge < 0.f)
-				PickUpWidget->PickUpGauge = 0.f;
-		}
-
-		if(PickUpWidget->PickUpGauge >= 1.f)
-		{
-			if(CollectedWeapon.Num() < 2)
-			{
-				NearestWeapon->AttachWeapon(this);
-			}
-			else
-			{
-				CollectedWeapon[CurrentWeaponSlot]->DetachWeapon(this, NearestWeapon->GetTransform(), CurrentWeaponSlot);
-				NearestWeapon->AttachWeapon(this);
-			}
-		}
-	}
-
+	
 	if(StateMachine->GetCurrentState() == EMovementState::Sprinting && !GetCharacterMovement()->IsFalling())
 	{
 		ConsumeStamina(SprintStaminaConsume * DeltaSeconds);
@@ -1048,7 +1048,8 @@ void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitCompone
 
 void AFPSurvivalCharacter::DamageToOtherActor()
 {
-	CrossHairWidget->HitIndicatorColor.A = 1.0f;
+	if(CrossHairWidget != nullptr)
+		CrossHairWidget->HitIndicatorColor.A = 1.0f;
 }
 
 FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
