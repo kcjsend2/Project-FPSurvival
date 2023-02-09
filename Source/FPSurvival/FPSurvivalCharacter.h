@@ -24,6 +24,7 @@ class UVaultingComponent;
 class UPickUpWidget;
 class UWidgetComponent;
 class AFPSurvivalCharacter;
+class UHitIndicator;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
@@ -256,12 +257,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* RecoilCurveFloat;
 	
-	
 	FOnTimelineEvent WallRunningTimelineFunction;
 	FOnTimelineEvent SlideTimelineFunction;
 	FOnTimelineFloat SmoothCrouchTimelineFunction;
 	FOnTimelineFloat CameraTiltTimelineFunction;
 	FOnTimelineFloat RecoilTimelineFunction;
+	
 	UFUNCTION()
 	void RecoilTimelineReturn(float Value);
 	
@@ -360,6 +361,7 @@ protected:
 	void OnCrouchAction(bool Pressed);
 	void OnSightAction(bool Pressed);
 	void OnInteraction(bool Pressed);
+	void OnDamageTest(bool Pressed);
 	
 	FVector CalculateFloorInfluence(FVector FloorNormal);
 
@@ -407,6 +409,6 @@ protected:
 
 	TSubclassOf<UCrossHairWidget> CrossHairWidgetClass;
 	TSubclassOf<UHudWidget> HudWidgetClass;
-	
+	TSubclassOf<UHitIndicator> HitIndicatorClass;
 };
 

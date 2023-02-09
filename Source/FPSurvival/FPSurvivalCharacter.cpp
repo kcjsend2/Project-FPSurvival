@@ -8,14 +8,13 @@
 #include "Components/InputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/InputSettings.h"
 #include "VaultingComponent.h"
 #include "Components/WidgetComponent.h"
 #include "CrossHairWidget.h"
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
+#include "HitIndicator.h"
 #include "Engine/DamageEvents.h"
-#include "Kismet/KismetMathLibrary.h"
 
 
 AFPSurvivalCharacter::AFPSurvivalCharacter()
@@ -82,6 +81,9 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/FirstPerson/Widgets/WBHud.WBHud_C"));
 	HudWidgetClass = UI_HUD.Class;
+	
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HitIndicator(TEXT("/Game/FirstPerson/Widgets/WBHitIndicator.WBHitIndicator_C"));
+	HitIndicatorClass = UI_HitIndicator.Class;
 	
 	CurrentHP = MaxHP;
 	CurrentStamina = MaxStamina;
@@ -318,6 +320,10 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
 		const FPointDamageEvent* PointDamageEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
+		UHitIndicator* HitIndicator = Cast<UHitIndicator>(CreateWidget(GetWorld(), HitIndicatorClass));
+		HitIndicator->HitDirection = PointDamageEvent->ShotDirection;
+		HitIndicator->Character = this;
+		HitIndicator->AddToViewport();
 	}
 	
 	else if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID)) 
@@ -610,6 +616,8 @@ void AFPSurvivalCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Interaction", IE_Pressed, this, &AFPSurvivalCharacter::OnInteraction, true);
 	PlayerInputComponent->BindAction<FActionKeyDelegate>("Interaction", IE_Released, this, &AFPSurvivalCharacter::OnInteraction, false);
 	
+	PlayerInputComponent->BindAction<FActionKeyDelegate>("DamageTest", IE_Pressed, this, &AFPSurvivalCharacter::OnDamageTest, true);
+	
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("PrimaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 0);
 	PlayerInputComponent->BindAction<FWeaponChangeDelegate>("SecondaryWeapon", IE_Pressed, this, &AFPSurvivalCharacter::OnWeaponChange, 1);
 
@@ -886,6 +894,21 @@ void AFPSurvivalCharacter::OnInteraction(bool Pressed)
 	else
 	{
 		ButtonPressed["Interaction"] = false;
+	}
+}
+
+void AFPSurvivalCharacter::OnDamageTest(bool Pressed)
+{
+	if(Pressed)
+	{
+		const FHitResult HitInfo;
+		FVector LocationFired = GetActorLocation();
+		LocationFired.Y -= 50;
+		
+		FVector HitDirection = GetActorLocation() - LocationFired;
+		HitDirection.Normalize();
+		
+		UGameplayStatics::ApplyPointDamage(this, 50, HitDirection, HitInfo, GetInstigatorController(), this, nullptr);
 	}
 }
 
