@@ -140,6 +140,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="UI")
 	float SpreadPerShot;
 
+	UPROPERTY(EditAnywhere, Category="UI")
+	bool DotCrosshairInSight;
+
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()

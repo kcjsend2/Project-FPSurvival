@@ -156,7 +156,7 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 	UPROPERTY(VisibleAnywhere, Category="UI")
-	UCrossHairWidget* CrossHairWidget;
+	UCrossHairWidget* CrosshairWidget;
 
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UHudWidget* HudWidget;

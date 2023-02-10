@@ -56,7 +56,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	
 	IsFiring = true;
 	
-	Character->CrossHairWidget->FireSpreadValue += SpreadPerShot;
+	Character->CrosshairWidget->FireSpreadValue += SpreadPerShot;
 	
 	if(ArmFireMontage != nullptr && !Character->IsInSight)
 		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmFireMontage);

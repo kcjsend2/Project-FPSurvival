@@ -100,9 +100,9 @@ void AFPSurvivalCharacter::BeginPlay()
 		if(HudWidget != nullptr)
 			HudWidget->AddToViewport();
 	
-		CrossHairWidget = CreateWidget<UCrossHairWidget>(GetWorld(), CrossHairWidgetClass, TEXT("CrossHair"));
-		if(CrossHairWidget != nullptr)
-			CrossHairWidget->AddToViewport();
+		CrosshairWidget = CreateWidget<UCrossHairWidget>(GetWorld(), CrossHairWidgetClass, TEXT("CrossHair"));
+		if(CrosshairWidget != nullptr)
+			CrosshairWidget->AddToViewport();
 		
 		PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
 	}
@@ -153,7 +153,7 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 
 	if(IsPlayerControlled())
 	{
-		CrossHairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length() + CrossHairWidget->FireSpreadValue);
+		CrosshairWidget->Spread = FMath::GetMappedRangeValueClamped(FVector2D(0, 1000), FVector2D(5, 80), GetVelocity().Length() + CrosshairWidget->FireSpreadValue);
 		HudWidget->HPPercentage = CurrentHP / MaxHP;
 		HudWidget->StaminaPercentage = CurrentStamina / MaxStamina;
 
@@ -320,10 +320,14 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
 		const FPointDamageEvent* PointDamageEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
-		UHitIndicator* HitIndicator = Cast<UHitIndicator>(CreateWidget(GetWorld(), HitIndicatorClass));
-		HitIndicator->HitDirection = PointDamageEvent->ShotDirection;
-		HitIndicator->Character = this;
-		HitIndicator->AddToViewport();
+
+		if(IsPlayerControlled())
+		{
+			UHitIndicator* HitIndicator = Cast<UHitIndicator>(CreateWidget(GetWorld(), HitIndicatorClass));
+			HitIndicator->HitDirection = PointDamageEvent->ShotDirection;
+			HitIndicator->Character = this;
+			HitIndicator->AddToViewport();
+		}
 	}
 	
 	else if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID)) 
@@ -376,6 +380,11 @@ bool AFPSurvivalCharacter::WalkToSprintTransition()
 
 bool AFPSurvivalCharacter::SprintToWalkTransition()
 {
+	if(IsWallRunning)
+	{
+		return false;
+	}
+	
 	if(CurrentWeapon != nullptr)
 	{
 		if(CurrentWeapon->GetIsFiring() || IsReloading || IsWeaponChanging || IsInSight)
@@ -664,6 +673,8 @@ void AFPSurvivalCharacter::EndWallRunning(EWallRunningEndReason EndReason)
 	WallRunningTimeline->Stop();
 	
 	CameraTiltTimeline->Reverse();
+
+	StateMachine->CheckStateTransition(EMovementState::Walking);
 }
 
 FWallRunningInfo AFPSurvivalCharacter::FindWallRunningDirectionAndSide(FVector WallNormal) const
@@ -873,6 +884,27 @@ void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 	if(Pressed)
 	{
 		IsInSight = true;
+		
+		UWidget* Bottom = CrosshairWidget->GetWidgetFromName("bottom");
+		Bottom->SetRenderOpacity(0.0f);
+		UWidget* Top = CrosshairWidget->GetWidgetFromName("Top");
+		Top->SetRenderOpacity(0.0f);
+		UWidget* Left = CrosshairWidget->GetWidgetFromName("Left");
+		Left->SetRenderOpacity(0.0f);
+		UWidget* Right = CrosshairWidget->GetWidgetFromName("Right");
+		Right->SetRenderOpacity(0.0f);
+		
+		if(CurrentWeapon->DotCrosshairInSight)
+		{
+			UWidget* Dot = HudWidget->GetWidgetFromName("DotCrosshair");
+			Dot->SetRenderOpacity(1.0f);
+		}
+		else
+		{
+			UWidget* Dot = HudWidget->GetWidgetFromName("DotCrosshair");
+			Dot->SetRenderOpacity(0.0f);
+		}
+		
 		if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
 		{
 			StateMachine->CheckStateTransition(EMovementState::Walking);
@@ -880,6 +912,21 @@ void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 	}
 	else
 	{
+		UWidget* Bottom = CrosshairWidget->GetWidgetFromName("bottom");
+		Bottom->SetRenderOpacity(1.0f);
+		UWidget* Top = CrosshairWidget->GetWidgetFromName("Top");
+		Top->SetRenderOpacity(1.0f);
+		UWidget* Left = CrosshairWidget->GetWidgetFromName("Left");
+		Left->SetRenderOpacity(1.0f);
+		UWidget* Right = CrosshairWidget->GetWidgetFromName("Right");
+		Right->SetRenderOpacity(1.0f);
+		
+		if(CurrentWeapon->DotCrosshairInSight)
+		{
+			UWidget* Dot = HudWidget->GetWidgetFromName("DotCrosshair");
+			Dot->SetRenderOpacity(0.0f);
+		}
+		
 		IsInSight = false;
 		ActionCheck();
 	}
@@ -1051,7 +1098,7 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 
 void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(IsWallRunning)
+	if(IsWallRunning || StateMachine->GetCurrentState() != EMovementState::Sprinting)
 	{
 		return;
 	}
@@ -1071,8 +1118,8 @@ void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitCompone
 
 void AFPSurvivalCharacter::DamageToOtherActor()
 {
-	if(CrossHairWidget != nullptr)
-		CrossHairWidget->HitIndicatorColor.A = 1.0f;
+	if(CrosshairWidget != nullptr)
+		CrosshairWidget->HitIndicatorColor.A = 1.0f;
 }
 
 FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
@@ -1216,7 +1263,7 @@ void AFPSurvivalCharacter::UpdateWallRunning()
 		else
 		{
 			WallRunningDirection = Direction;
-			FVector Velocity = WallRunningDirection * GetCharacterMovement()->GetMaxSpeed();
+			FVector Velocity = WallRunningDirection * SpeedMap[EMovementState::Sprinting];
 			GetCharacterMovement()->Velocity = FVector(-Velocity.X, -Velocity.Y, 0.f);
 		}
 	}
