@@ -125,6 +125,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	FVector AimDownSightOffset;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	float BulletRange = 10000;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	float HeadshotMultiplier = 2.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	float LimbshotMultiplier = 0.7;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	TArray<FName> LimbshotBones;
+	
 	UPROPERTY(EditAnywhere, Category = "Recoil")
 	float RecoilPitch;
 	

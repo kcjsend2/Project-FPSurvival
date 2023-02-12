@@ -14,6 +14,8 @@
 AWeaponBase::AWeaponBase()
 {
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->bCastDynamicShadow = false;
+	WeaponMesh->CastShadow = false;
 	SetRootComponent(WeaponMesh);
 	
 	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
@@ -77,13 +79,49 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	ABulletProjectile* SpawnedBullet = GetWorld()->SpawnActor<ABulletProjectile>(BulletProjectileClass, MuzzleTransform);
 	SpawnedBullet->BulletDamage = BulletDamage;
 	SpawnedBullet->LocationFired = GetActorLocation();
-	SpawnedBullet->OnBulletHit.BindDynamic(Character, &AFPSurvivalCharacter::DamageToOtherActor);
 
 	if(RecoilOn)
 		Character->RecoilTimeline->PlayFromStart();
 
 	MuzzleFlash->ActivateSystem(true);
 	
+	FHitResult HitResult;
+	const FVector Start = Character->GetFirstPersonCameraComponent()->GetComponentLocation();
+	const FVector End = Start + Character->GetFirstPersonCameraComponent()->GetForwardVector() * BulletRange;
+
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(Character);
+	bool Hit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
+	if(Hit)
+	{
+		//DrawDebugLine(GetWorld(), HitResult.TraceStart, HitResult.TraceEnd, FColor(255, 0, 0), false, 2.f, 0.f, 1.f);
+		AFPSurvivalCharacter* HitActor = Cast<AFPSurvivalCharacter>(HitResult.GetActor());
+		if(HitActor != nullptr)
+		{
+			FVector HitDirection = Character->GetActorLocation() - HitActor->GetActorLocation();
+			HitDirection.Normalize();
+			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false);
+
+			float ResultDamage = BulletDamage;
+			if(HitResult.BoneName == "head")
+			{
+				ResultDamage *= HeadshotMultiplier;
+			}
+			else
+			{
+				for(int i = 0; i < LimbshotBones.Num(); ++i)
+				{
+					if(HitResult.BoneName == LimbshotBones[i])
+					{
+						ResultDamage *= LimbshotMultiplier;
+						break;
+					}
+				}
+			}
+			UGameplayStatics::ApplyPointDamage(HitActor, ResultDamage, HitDirection, HitResult, GetInstigatorController(), this, nullptr);
+		}
+	}
+		
 	CurrentAmmo--;
 	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
 	

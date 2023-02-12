@@ -35,7 +35,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(false);
+	Mesh1P->SetOnlyOwnerSee(true);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
@@ -93,6 +93,9 @@ void AFPSurvivalCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	GetMesh()->SetOwnerNoSee(true);
+	GetMesh()->SetCastShadow(true);
 
 	if(IsPlayerControlled())
 	{
@@ -838,10 +841,12 @@ bool AFPSurvivalCharacter::CanStand()
 	const FVector Feet = FVector(Location.X, Location.Y, Location.Z - GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 		
 	const FVector Head = FVector(Feet.X, Feet.Y, Feet.Z + StandingCapsuleHalfHeight * 2);
-
+	
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+	
 	FHitResult HitResult;
-
-	GetWorld()->LineTraceSingleByChannel(HitResult, Feet, Head, ECC_Visibility);
+	GetWorld()->LineTraceSingleByChannel(HitResult, Feet, Head, ECC_Visibility, CollisionQueryParams);
 
 	return !HitResult.bBlockingHit;
 }
@@ -1085,7 +1090,7 @@ void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted
 			}
 			else
 			{
-				CurrentWeapon->Fire(this);
+				OnFire[CurrentWeaponSlot].ExecuteIfBound(this);
 			}
 		}
 		else if(CurrentWeapon->FireMode == EFireMode::Single)
@@ -1116,10 +1121,20 @@ void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitCompone
 	}
 }
 
-void AFPSurvivalCharacter::DamageToOtherActor()
+void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot)
 {
-	if(CrosshairWidget != nullptr)
-		CrosshairWidget->HitIndicatorColor.A = 1.0f;
+	if(CrosshairWidget == nullptr)
+	{
+		return;
+	}
+	if(Headshot)
+	{
+		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else
+	{
+		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	}
 }
 
 FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)

@@ -291,7 +291,7 @@ public:
 	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION()
-	void DamageToOtherActor();
+	void DamageToOtherActor(bool Headshot);
 	
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
@@ -316,7 +316,9 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	AWeaponBase* CurrentWeapon;
-
+	
+	
+	
 	UPROPERTY()
 	AWeaponBase* NearestWeapon;
 	

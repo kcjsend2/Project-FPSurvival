@@ -25,7 +25,6 @@ void ABulletProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	SetLifeSpan(10.0f);
-	ProjectileMovementComponent->InitialSpeed = 30000.0f;
 }
 
 void ABulletProjectile::Tick(float DeltaTime)
@@ -36,14 +35,14 @@ void ABulletProjectile::Tick(float DeltaTime)
 
 void ABulletProjectile::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
-	if(Character != nullptr)
-	{
-		const FHitResult HitInfo;
-		FVector HitDirection = Character->GetActorLocation() - LocationFired;
-		HitDirection.Normalize();
-		UGameplayStatics::ApplyPointDamage(Character, BulletDamage, HitDirection, HitInfo, GetInstigatorController(), this, nullptr);
-		OnBulletHit.ExecuteIfBound();
-	}
+	// AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
+	// if(Character != nullptr)
+	// {
+	// 	const FHitResult HitInfo;
+	// 	FVector HitDirection = Character->GetActorLocation() - LocationFired;
+	// 	HitDirection.Normalize();
+	// 	UGameplayStatics::ApplyPointDamage(Character, BulletDamage, HitDirection, HitInfo, GetInstigatorController(), this, nullptr);
+	//
+	// 	OnBulletHit.ExecuteIfBound();
+	// }
 }
-
