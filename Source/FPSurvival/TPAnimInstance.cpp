@@ -26,13 +26,22 @@ void UTPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		const auto CurrentWeapon = OwningPlayer->CurrentWeapon;
 		if(CurrentWeapon != nullptr)
 		{
+			HasWeapon = true;
 			IsFiring = CurrentWeapon->GetIsFiring();
 			CurrentWeaponID = CurrentWeapon->WeaponID;
 		}
+		else
+		{
+			HasWeapon = false;
+		}
 		IsSprinting = OwningPlayer->IsSprinting();
 		IsInSight = OwningPlayer->IsInSight;
-
+		IsCrouching = OwningPlayer->IsCrouching();
+		
 		Speed = OwningPlayer->GetVelocity().Length();
 		Direction = UKismetAnimationLibrary::CalculateDirection(OwningPlayer->GetVelocity(), OwningPlayer->GetActorRotation());
+
+		if(Speed > 0)
+			UE_LOG(LogTemp, Log, TEXT("Speed > 0"));
 	}
 }

@@ -13,16 +13,26 @@
 // Sets default values for this component's properties
 AWeaponBase::AWeaponBase()
 {
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->bCastDynamicShadow = false;
-	WeaponMesh->CastShadow = false;
-	SetRootComponent(WeaponMesh);
+	DefaultSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneComponent"));
+	SetRootComponent(DefaultSceneComponent);
+	
+	FPWeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPWeaponMesh"));
+	FPWeaponMesh->SetupAttachment(DefaultSceneComponent);
+	FPWeaponMesh->bCastDynamicShadow = false;
+	FPWeaponMesh->CastShadow = false;
+	FPWeaponMesh->SetSimulatePhysics(true);
+
+	TPWeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TPWeaponMesh"));
+	TPWeaponMesh->SetupAttachment(DefaultSceneComponent);
+	TPWeaponMesh->SetVisibility(false);
+	TPWeaponMesh->bCastDynamicShadow = true;
+	TPWeaponMesh->CastShadow = true;
 	
 	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
-	PickUpComponent->SetupAttachment(WeaponMesh);
+	PickUpComponent->SetupAttachment(FPWeaponMesh);
 	
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
-	Muzzle->SetupAttachment(WeaponMesh);
+	Muzzle->SetupAttachment(FPWeaponMesh);
 
 	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleFlashParticle"));
 	MuzzleFlash->SetupAttachment(Muzzle);
@@ -38,8 +48,8 @@ void AWeaponBase::BeginPlay()
 
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
 
-	if(WeaponMesh->HasValidAnimationInstance())
-		WeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
+	if(FPWeaponMesh->HasValidAnimationInstance())
+		FPWeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 
 }
 
@@ -66,8 +76,8 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	else if(ArmAimDownSightFireMontage != nullptr&& Character->IsInSight)
 		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmAimDownSightFireMontage);
 	
-	if(WeaponFireMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
-		WeaponMesh->GetAnimInstance()->Montage_Play(WeaponFireMontage);
+	if(WeaponFireMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
+		FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponFireMontage);
 	
 	UE_LOG(LogTemp, Log, TEXT("Fire"));
 
@@ -145,8 +155,8 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 			if(MagazineLimit == CurrentAmmo && ArmReloadMontage != nullptr)
 			{
 				Character->GetMesh1P()->GetAnimInstance()->Montage_JumpToSection("ReturnPose", ArmReloadMontage);
-				if(WeaponReloadMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
-					WeaponMesh->GetAnimInstance()->Montage_JumpToSection("ReturnPose", WeaponReloadMontage);
+				if(WeaponReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
+					FPWeaponMesh->GetAnimInstance()->Montage_JumpToSection("ReturnPose", WeaponReloadMontage);
 				Character->IsReloading = false;
 				UE_LOG(LogTemp, Log, TEXT("ResolveReload: %s"), Character->IsReloading ? TEXT("true") : TEXT("false"));
 			}
@@ -194,8 +204,8 @@ bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr))
 	{
 		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
-		if(WeaponReloadMontage != nullptr && WeaponMesh->HasValidAnimationInstance())
-			WeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
+		if(WeaponReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
+			FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
 		
 		UE_LOG(LogTemp, Log, TEXT("Reload"));
 
@@ -216,12 +226,13 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 		return;
 	}
 	
-	WeaponMesh->SetSimulatePhysics(false);
-	WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	FPWeaponMesh->SetSimulatePhysics(false);
+	FPWeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, SocketName);
-
+	FPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, FPSocketName);
+	//TPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh(), AttachmentRules, TPSocketName);
+	
 	const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
 	
 	TargetCharacter->OnFire[WeaponSlot].Clear();
@@ -264,8 +275,8 @@ void AWeaponBase::DetachWeapon(AFPSurvivalCharacter* TargetCharacter, const FTra
 		return;
 	}
 
-	WeaponMesh->SetSimulatePhysics(true);
-	WeaponMesh->SetCollisionProfileName(TEXT("WeaponMesh"));
+	FPWeaponMesh->SetSimulatePhysics(true);
+	FPWeaponMesh->SetCollisionProfileName(TEXT("WeaponMesh"));
 	
 	const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);

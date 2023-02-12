@@ -65,6 +65,9 @@ class AFPSurvivalCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* ThirdPersonCameraComponent;
+
 public:
 	AFPSurvivalCharacter();
 
@@ -170,7 +173,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	bool IsSprinting() const;
-	
+	bool IsCrouching() const;
+
 	float SprintMultiplier;
 	float CrouchMultiplier;
 

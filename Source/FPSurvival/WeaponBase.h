@@ -57,7 +57,7 @@ public:
 	void FireEnd();
 
 	UFUNCTION(BlueprintCallable)
-	USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
+	USkeletalMeshComponent* GetWeaponMesh() { return FPWeaponMesh; }
 	
 	UFUNCTION()
 	void ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Character);
@@ -69,8 +69,11 @@ public:
 	bool Reload(UAnimInstance* CharacterAnimInstance);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
-	FName SocketName;
-
+	FName FPSocketName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
+	FName TPSocketName;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Mesh)
 	FVector WeaponRelativePosition;
 	
@@ -118,6 +121,21 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponPullUpMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* TPArmFireMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* TPArmAimDownSightFireMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* TPArmReloadMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* TPWeaponPullDownMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* TPWeaponPullUpMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	EFireMode FireMode;
@@ -168,7 +186,14 @@ protected:
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* WeaponMesh;
+	USceneComponent* DefaultSceneComponent;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* FPWeaponMesh;
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* TPWeaponMesh;
+	
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	UPickUpComponent* PickUpComponent;
@@ -188,7 +213,7 @@ private:
 	FOnActionCheck OnActionCheck;
 
 public:
-	USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
+	USkeletalMeshComponent* GetMesh() const { return FPWeaponMesh; }
 	bool GetIsFiring() const { return IsFiring; }
 	bool GetIsAttached() const { return IsAttached; }
 };

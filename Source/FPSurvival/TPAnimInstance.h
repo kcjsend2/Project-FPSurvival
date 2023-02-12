@@ -34,6 +34,9 @@ public:
 	int CurrentWeaponID = -1;
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
+	bool HasWeapon = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Player")
 	bool IsFiring = false;
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
@@ -41,6 +44,9 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	bool IsSprinting = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Player")
+	bool IsCrouching = false;
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	bool IsInSight = false;

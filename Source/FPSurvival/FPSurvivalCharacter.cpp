@@ -30,6 +30,11 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 1.752765f, 70.f));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+	ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	ThirdPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	ThirdPersonCameraComponent->SetRelativeLocation(FVector(-30.f, 10.f, 0.f));
+	ThirdPersonCameraComponent->bUsePawnControlRotation = true;
 	
 	StateMachine = CreateDefaultSubobject<UMovementStateMachine>(TEXT("StateMachine"));
 	
@@ -94,9 +99,13 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	//Mesh1P->SetOwnerNoSee(true);
 	GetMesh()->SetOwnerNoSee(true);
 	GetMesh()->SetCastShadow(true);
 
+	//FirstPersonCameraComponent->Deactivate();
+	//ThirdPersonCameraComponent->Activate();
+	
 	if(IsPlayerControlled())
 	{
 		HudWidget = CreateWidget<UHudWidget>(GetWorld(), HudWidgetClass, TEXT("Hud"));
@@ -1298,6 +1307,15 @@ int AFPSurvivalCharacter::GetCurrentWeaponID() const
 bool AFPSurvivalCharacter::IsSprinting() const
 {
 	if(StateMachine->GetCurrentState() == EMovementState::Sprinting)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool AFPSurvivalCharacter::IsCrouching() const
+{
+	if(StateMachine->GetCurrentState() == EMovementState::Crouching)
 	{
 		return true;
 	}
