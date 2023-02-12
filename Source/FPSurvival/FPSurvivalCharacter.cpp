@@ -487,7 +487,6 @@ void AFPSurvivalCharacter::SlideInit()
 	
 	SmoothCrouchingTimeline->Play();
 	SlideTimeline->Play();
-	CameraTiltTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
 	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
@@ -497,7 +496,6 @@ void AFPSurvivalCharacter::SlideEnd()
 {
 	SmoothCrouchingTimeline->Reverse();
 	SlideTimeline->Stop();
-	CameraTiltTimeline->Reverse();
 	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
 	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
 	SlideHot = true;
