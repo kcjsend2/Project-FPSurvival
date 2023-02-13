@@ -101,12 +101,12 @@ void AFPSurvivalCharacter::BeginPlay()
 
 	TPMeshBaseRelativeLocation = GetMesh()->GetRelativeLocation();
 	
-	//Mesh1P->SetOwnerNoSee(true);
-	GetMesh()->SetOwnerNoSee(true);
+	Mesh1P->SetOwnerNoSee(true);
+	//GetMesh()->SetOwnerNoSee(true);
 	GetMesh()->SetCastShadow(true);
 
-	//FirstPersonCameraComponent->Deactivate();
-	//ThirdPersonCameraComponent->Activate();
+	FirstPersonCameraComponent->Deactivate();
+	ThirdPersonCameraComponent->Activate();
 	
 	if(IsPlayerControlled())
 	{

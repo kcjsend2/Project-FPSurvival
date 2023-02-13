@@ -231,10 +231,10 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	FPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, FPSocketName);
-	//FPWeaponMesh->SetVisibility(false);
+	FPWeaponMesh->SetVisibility(false);
 
-	//TPWeaponMesh->SetVisibility(true);
-	TPWeaponMesh->SetOwnerNoSee(true);
+	TPWeaponMesh->SetVisibility(true);
+	//TPWeaponMesh->SetOwnerNoSee(true);
 	TPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh(), AttachmentRules, TPSocketName);
 	
 	const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
