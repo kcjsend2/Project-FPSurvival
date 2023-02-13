@@ -166,6 +166,9 @@ public:
 
 	UPROPERTY()
 	UPickUpWidget* PickUpWidget;
+
+	UPROPERTY(EditAnywhere, Category="Mesh")
+	float TPMeshCrouchingZOffset;
 	
 	void GainJumpCount() { JumpCurrentCount++; }
 	
@@ -321,8 +324,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	AWeaponBase* CurrentWeapon;
 	
-	
-	
 	UPROPERTY()
 	AWeaponBase* NearestWeapon;
 	
@@ -416,5 +417,8 @@ protected:
 	TSubclassOf<UCrossHairWidget> CrossHairWidgetClass;
 	TSubclassOf<UHudWidget> HudWidgetClass;
 	TSubclassOf<UHitIndicator> HitIndicatorClass;
+	
+	UPROPERTY()
+	FVector TPMeshBaseRelativeLocation;
 };
 

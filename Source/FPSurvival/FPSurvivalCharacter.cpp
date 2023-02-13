@@ -99,6 +99,8 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	TPMeshBaseRelativeLocation = GetMesh()->GetRelativeLocation();
+	
 	//Mesh1P->SetOwnerNoSee(true);
 	GetMesh()->SetOwnerNoSee(true);
 	GetMesh()->SetCastShadow(true);
@@ -293,6 +295,9 @@ void AFPSurvivalCharacter::Landed(const FHitResult& Hit)
 
 void AFPSurvivalCharacter::Jump()
 {
+	if(StateMachine->GetCurrentState() == EMovementState::Crouching)
+		return;
+	
 	if(VaultingComponent->CanVault)
 	{
 		VaultingComponent->Vault();
@@ -733,6 +738,8 @@ void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
 	const auto CrouchedHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
 	GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(CrouchedHeight, StandingCapsuleHalfHeight, Value));
 
+	GetMesh()->SetRelativeLocation(FVector(TPMeshBaseRelativeLocation.X, TPMeshBaseRelativeLocation.Y, TPMeshBaseRelativeLocation.Z + (1 - Value) * TPMeshCrouchingZOffset));
+	
 	const auto RelativeLocation = FirstPersonCameraComponent->GetRelativeLocation();
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(RelativeLocation.X, RelativeLocation.Y, (FMath::Lerp(CrouchedEyeHeight, StandingCameraZOffset, Value))));
 }
