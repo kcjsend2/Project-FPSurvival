@@ -504,6 +504,7 @@ void AFPSurvivalCharacter::SlideInit()
 {
 	ConsumeStamina(SlideStaminaConsume);
 	
+	SoundManager->PlaySound(TEXT("Slide"), GetActorLocation());
 	SmoothCrouchingTimeline->Play();
 	SlideTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
@@ -886,25 +887,6 @@ bool AFPSurvivalCharacter::CanSprint()
 		return !GetCharacterMovement()->IsFalling() && CanStand() && ForwardAxis > 0;
 	}
 	return false;
-}
-
-void AFPSurvivalCharacter::BeginSlide()
-{
-	SoundManager->PlaySound(TEXT("Slide"), GetActorLocation());
-	SlideTimeline->Play();
-	CameraTiltTimeline->Play();
-	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
-	GetCharacterMovement()->GroundFriction = SlideGroundFriction;
-	GetCharacterMovement()->BrakingDecelerationWalking = SlideBrakingDeceleration;
-}
-
-void AFPSurvivalCharacter::EndSlide()
-{
-	SlideTimeline->Stop();
-	CameraTiltTimeline->Reverse();
-	GetCharacterMovement()->GroundFriction = DefaultGroundFriction;
-	GetCharacterMovement()->BrakingDecelerationWalking = DefaultBrakingDeceleration;
-	SlideHot = true;
 }
 
 void AFPSurvivalCharacter::OnSightAction(bool Pressed)

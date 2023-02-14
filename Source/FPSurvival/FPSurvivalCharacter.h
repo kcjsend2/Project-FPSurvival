@@ -353,9 +353,6 @@ protected:
 	bool CanStand();
 	bool CanSprint();
 
-	void BeginSlide();
-	void EndSlide();
-
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
