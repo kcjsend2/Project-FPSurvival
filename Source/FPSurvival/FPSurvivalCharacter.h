@@ -301,6 +301,9 @@ public:
 
 	UFUNCTION()
 	void DamageToOtherActor(bool Headshot);
+
+	UFUNCTION(BlueprintCallable)
+	EMovementState GetCurrentMovementState() const { return StateMachine->GetCurrentState(); }
 	
 	UPROPERTY()
 	UTimelineComponent* SlideTimeline;
@@ -338,6 +341,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USoundManager* SoundManager;
+
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
 	
 protected:
 	/** Fires a projectile. */

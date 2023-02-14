@@ -40,7 +40,10 @@ public:
 	// CurrentState에서 StateTo에 대한 검사
 	bool CheckStateTransition(EMovementState StateTo);
 
+	UFUNCTION(BlueprintCallable)
 	EMovementState GetCurrentState() const { return CurrentState; }
+	
+	UFUNCTION(BlueprintCallable)
 	EMovementState GetPrevState() const { return PrevState; }
 	
 private:

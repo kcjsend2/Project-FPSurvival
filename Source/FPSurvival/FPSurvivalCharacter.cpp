@@ -14,6 +14,7 @@
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
 #include "HitIndicator.h"
+#include "Components/AudioComponent.h"
 #include "Engine/DamageEvents.h"
 
 
@@ -38,6 +39,8 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	StateMachine = CreateDefaultSubobject<UMovementStateMachine>(TEXT("StateMachine"));
 	SoundManager = CreateDefaultSubobject<USoundManager>(TEXT("SoundManager"));
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(GetCapsuleComponent());
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
@@ -108,6 +111,8 @@ void AFPSurvivalCharacter::BeginPlay()
 
 	//FirstPersonCameraComponent->Deactivate();
 	//ThirdPersonCameraComponent->Activate();
+
+	SoundManager->SetAudioComponent(AudioComponent);
 	
 	if(IsPlayerControlled())
 	{
@@ -290,6 +295,8 @@ void AFPSurvivalCharacter::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
+	SoundManager->PlaySound(TEXT("Land"), GetActorLocation());
+	
 	CurrentJumpCount = 0;
 	WallRunningHot = false;
 }
@@ -355,7 +362,7 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 
 	CurrentHP -= Damage;
 
-	SoundManager->PlaySound(TEXT("PlayerHit"), GetActorLocation());
+	//SoundManager->PlaySound(TEXT("PlayerHit"), GetActorLocation());
 	
     return Damage;
 }
@@ -879,6 +886,7 @@ bool AFPSurvivalCharacter::CanSprint()
 
 void AFPSurvivalCharacter::BeginSlide()
 {
+	SoundManager->PlaySound(TEXT("Slide"), GetActorLocation());
 	SlideTimeline->Play();
 	CameraTiltTimeline->Play();
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->Velocity.Length() * SlidePower;
@@ -902,7 +910,8 @@ void AFPSurvivalCharacter::OnSightAction(bool Pressed)
 	{
 		return;
 	}
-	
+
+	SoundManager->PlaySound(TEXT("ADS"), GetActorLocation());
 	if(Pressed)
 	{
 		IsInSight = true;
@@ -1072,6 +1081,8 @@ void AFPSurvivalCharacter::OnWeaponChangeEnd()
 
 	CurrentWeapon = CollectedWeapon[ChangingWeaponSlot];
 
+	CurrentWeapon->SoundManager->PlaySoundByAudioComponent(TEXT("Equip"));
+	
 	CurrentWeaponSlot = ChangingWeaponSlot;
 	ChangingWeaponSlot = -1;
 	Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPullUpMontage);
@@ -1144,12 +1155,15 @@ void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot)
 	{
 		return;
 	}
+	
 	if(Headshot)
 	{
+		SoundManager->PlaySound(TEXT("EnemyHeadshot"),GetActorLocation());
 		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 	else
 	{
+		SoundManager->PlaySound(TEXT("EnemyHit"),GetActorLocation());
 		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 }

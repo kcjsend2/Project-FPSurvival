@@ -34,18 +34,11 @@ class FPSURVIVAL_API AWeaponBase : public AActor
 	GENERATED_BODY()
 
 public:
-	/** Sound to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* FireSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundCue* EmptySound;
+	UPROPERTY(EditAnywhere)
+	USoundManager* SoundManager;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundCue* EquipSound;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundCue* ReloadSound;
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=UI)
 	UTexture2D* WeaponImage;

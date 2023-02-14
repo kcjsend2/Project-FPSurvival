@@ -2,6 +2,7 @@
 
 
 #include "SoundManager.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void USoundManager::AddSound(FName Key, USoundCue* Sound)
@@ -17,4 +18,13 @@ void USoundManager::RemoveSound(FName Key)
 void USoundManager::PlaySound(FName Key, FVector Location, float Volume, float Pitch)
 {
 	UGameplayStatics::PlaySoundAtLocation(this, SoundMap[Key], Location, Volume, Pitch);
+}
+
+void USoundManager::PlaySoundByAudioComponent(FName Key)
+{
+	if(OwnerAudioComponent->IsPlaying())
+		OwnerAudioComponent->Stop();
+	
+	OwnerAudioComponent->SetSound(SoundMap[Key]);
+	OwnerAudioComponent->Play();
 }

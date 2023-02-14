@@ -19,7 +19,13 @@ public:
 	void AddSound(FName Key, USoundCue* Sound);
 	void RemoveSound(FName Key);
 	void PlaySound(FName Key, FVector Location, float Volume=1.f, float Pitch=1.f);
+	void PlaySoundByAudioComponent(FName Key);
+
+	void SetAudioComponent(UAudioComponent* AudioComponent) { OwnerAudioComponent = AudioComponent; }
 	
 	UPROPERTY(EditAnywhere, Category="Sound")
 	TMap<FName, USoundCue*> SoundMap;
+
+	UPROPERTY()
+	UAudioComponent* OwnerAudioComponent;
 };

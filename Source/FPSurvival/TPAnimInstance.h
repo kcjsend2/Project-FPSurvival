@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MovementStateMachine.h"
 #include "Animation/AnimInstance.h"
 #include "TPAnimInstance.generated.h"
 
@@ -56,4 +57,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	float Direction;
+
+	UPROPERTY(BlueprintReadOnly, Category="Player")
+	EMovementState CurrentState;
 };

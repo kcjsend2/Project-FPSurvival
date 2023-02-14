@@ -43,5 +43,7 @@ void UTPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		if(Speed > 0)
 			UE_LOG(LogTemp, Log, TEXT("Speed > 0"));
+
+		CurrentState = OwningPlayer->GetCurrentMovementState();
 	}
 }

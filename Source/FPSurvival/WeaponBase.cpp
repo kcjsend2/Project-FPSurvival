@@ -9,13 +9,19 @@
 #include "PickUpComponent.h"
 #include "Camera/CameraComponent.h"
 #include "SoundManager.h"
+#include "Components/AudioComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values for this component's properties
 AWeaponBase::AWeaponBase()
 {
+	SoundManager = CreateDefaultSubobject<USoundManager>(TEXT("SoundManager"));
+
 	DefaultSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneComponent"));
 	SetRootComponent(DefaultSceneComponent);
+	
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(DefaultSceneComponent);
 	
 	FPWeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPWeaponMesh"));
 	FPWeaponMesh->SetupAttachment(DefaultSceneComponent);
@@ -49,6 +55,8 @@ void AWeaponBase::BeginPlay()
 
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
 
+	SoundManager->SetAudioComponent(AudioComponent);
+	
 	if(FPWeaponMesh->HasValidAnimationInstance())
 		FPWeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 
@@ -65,7 +73,10 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 		return;
 
 	if(CurrentAmmo <= 0)
+	{
+		SoundManager->PlaySound(TEXT("Empty"), GetActorLocation());
 		return;
+	}
 	
 	IsFiring = true;
 
@@ -132,8 +143,13 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 			UGameplayStatics::ApplyPointDamage(HitActor, ResultDamage, HitDirection, HitResult, GetInstigatorController(), this, nullptr);
 		}
 	}
-		
+
+	SoundManager->PlaySound(TEXT("Fire"), GetActorLocation());
 	CurrentAmmo--;
+
+	if(CurrentAmmo == 0)
+		SoundManager->PlaySound(TEXT("Empty"), GetActorLocation());
+	
 	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d"), CurrentAmmo);
 	
 	if(SpawnedBullet == nullptr)
@@ -207,6 +223,8 @@ bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 		if(WeaponReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
 			FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
+
+		SoundManager->PlaySound(TEXT("Reload"), GetActorLocation());
 		
 		UE_LOG(LogTemp, Log, TEXT("Reload"));
 
@@ -251,6 +269,7 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	
 	TargetCharacter->CollectedWeapon.Add(this);
 
+	SoundManager->PlaySound("Equip", GetActorLocation());
 	TargetCharacter->OnWeaponChange(TargetCharacter->CollectedWeapon.Num() - 1);
 	
 	TargetCharacter->GetMesh1P()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
