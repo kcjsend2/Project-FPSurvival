@@ -264,6 +264,10 @@ void AFPSurvivalCharacter::Tick(float DeltaSeconds)
 		}
 	}
 	
+	if(ForwardAxis <= 0 && StateMachine->GetCurrentState() == EMovementState::Sprinting)
+	{
+		StateMachine->CheckStateTransition(EMovementState::Walking);
+	}
 	
 	if(StateMachine->GetCurrentState() == EMovementState::Crouching && !ButtonPressed["Crouch"])
 	{
@@ -420,7 +424,7 @@ bool AFPSurvivalCharacter::SprintToWalkTransition()
 		}
 	}
 	
-	if(!ButtonPressed["Sprint"] || CurrentStamina == 0)
+	if(!ButtonPressed["Sprint"] || CurrentStamina == 0 || ForwardAxis <= 0)
 	{
 		return true;
 	}
@@ -879,7 +883,7 @@ bool AFPSurvivalCharacter::CanSprint()
 {
 	if(ButtonPressed["Sprint"])
 	{
-		return !GetCharacterMovement()->IsFalling() && CanStand();
+		return !GetCharacterMovement()->IsFalling() && CanStand() && ForwardAxis > 0;
 	}
 	return false;
 }
@@ -1187,6 +1191,11 @@ FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
 void AFPSurvivalCharacter::MoveForward(float Value)
 {
 	ForwardAxis = Value;
+	// if(Value <= 0 && StateMachine->GetCurrentState() == EMovementState::Sprinting)
+	// {
+	// 	StateMachine->CheckStateTransition(EMovementState::Walking);
+	// }
+	
 	if (Value != 0.0f && StateMachine->GetCurrentState() != EMovementState::Sliding)
 	{
 		// add movement in that direction
