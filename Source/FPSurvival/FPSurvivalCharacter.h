@@ -9,10 +9,12 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MovementStateMachine.h"
+#include "SoundManager.h"
 #include "FPSurvivalCharacter.generated.h"
 
 #define WEAPON_MAX 2
 
+class USoundCue;
 class AWeaponBase;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -334,7 +336,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PickUpSpeed = 1;
 
-
+	UPROPERTY(EditAnywhere)
+	USoundManager* SoundManager;
+	
 protected:
 	/** Fires a projectile. */
 	void OnPrimaryAction(const bool Pressed);	

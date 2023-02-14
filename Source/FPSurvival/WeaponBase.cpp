@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PickUpComponent.h"
 #include "Camera/CameraComponent.h"
+#include "SoundManager.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values for this component's properties
@@ -67,7 +68,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 		return;
 	
 	IsFiring = true;
-	
+
 	Character->CrosshairWidget->FireSpreadValue += SpreadPerShot;
 	
 	if(ArmFireMontage != nullptr && !Character->IsInSight)
@@ -231,9 +232,9 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	FPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, FPSocketName);
-	FPWeaponMesh->SetVisibility(false);
+	//FPWeaponMesh->SetVisibility(false);
 
-	TPWeaponMesh->SetVisibility(true);
+	TPWeaponMesh->SetVisibility(false);
 	//TPWeaponMesh->SetOwnerNoSee(true);
 	TPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh(), AttachmentRules, TPSocketName);
 	

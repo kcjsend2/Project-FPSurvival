@@ -37,6 +37,7 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	ThirdPersonCameraComponent->bUsePawnControlRotation = true;
 	
 	StateMachine = CreateDefaultSubobject<UMovementStateMachine>(TEXT("StateMachine"));
+	SoundManager = CreateDefaultSubobject<USoundManager>(TEXT("SoundManager"));
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
@@ -101,12 +102,12 @@ void AFPSurvivalCharacter::BeginPlay()
 
 	TPMeshBaseRelativeLocation = GetMesh()->GetRelativeLocation();
 	
-	Mesh1P->SetOwnerNoSee(true);
-	//GetMesh()->SetOwnerNoSee(true);
-	GetMesh()->SetCastShadow(true);
+	//Mesh1P->SetOwnerNoSee(true);
+	GetMesh()->SetOwnerNoSee(true);
+	//GetMesh()->SetCastShadow(true);
 
-	FirstPersonCameraComponent->Deactivate();
-	ThirdPersonCameraComponent->Activate();
+	//FirstPersonCameraComponent->Deactivate();
+	//ThirdPersonCameraComponent->Activate();
 	
 	if(IsPlayerControlled())
 	{
@@ -353,6 +354,8 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 	}
 
 	CurrentHP -= Damage;
+
+	SoundManager->PlaySound(TEXT("PlayerHit"), GetActorLocation());
 	
     return Damage;
 }

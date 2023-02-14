@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BulletProjectile.h"
+#include "Sound/SoundCue.h"
 #include "WeaponBase.generated.h"
 
 class UCameraComponent;
 class AFPSurvivalCharacter;
 class UPickUpComponent;
+class USoundManager;
 
 DECLARE_DYNAMIC_DELEGATE(FOnActionCheck);
 
@@ -36,6 +38,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	USoundCue* EmptySound;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	USoundCue* EquipSound;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	USoundCue* ReloadSound;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=UI)
 	UTexture2D* WeaponImage;
 	
