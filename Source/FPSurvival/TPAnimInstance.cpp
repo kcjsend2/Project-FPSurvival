@@ -40,10 +40,7 @@ void UTPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		
 		Speed = OwningPlayer->GetVelocity().Length();
 		Direction = UKismetAnimationLibrary::CalculateDirection(OwningPlayer->GetVelocity(), OwningPlayer->GetActorRotation());
-
-		if(Speed > 0)
-			UE_LOG(LogTemp, Log, TEXT("Speed > 0"));
-
+		
 		CurrentState = OwningPlayer->GetCurrentMovementState();
 	}
 }

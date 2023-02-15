@@ -8,6 +8,7 @@ public class FPSurvival : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "UMG", "AnimGraphRuntime" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
+			"HeadMountedDisplay", "UMG", "AnimGraphRuntime", "NavigationSystem", "AIModule", "GameplayTasks" });
 	}
 }

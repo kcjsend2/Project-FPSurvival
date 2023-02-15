@@ -5,6 +5,7 @@
 #include "FPSurvivalCharacter.h"
 #include "FPSurvivalProjectile.h"
 #include "BulletProjectile.h"
+#include "EnemyCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "PickUpComponent.h"
 #include "Camera/CameraComponent.h"
@@ -117,7 +118,19 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	if(Hit)
 	{
 		//DrawDebugLine(GetWorld(), HitResult.TraceStart, HitResult.TraceEnd, FColor(255, 0, 0), false, 2.f, 0.f, 1.f);
-		AFPSurvivalCharacter* HitActor = Cast<AFPSurvivalCharacter>(HitResult.GetActor());
+		AActor* HitCharacter = Cast<AFPSurvivalCharacter>(HitResult.GetActor());
+		AActor* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor());
+
+		AActor* HitActor = nullptr;
+		if(HitCharacter != nullptr)
+		{
+			HitActor = HitCharacter;
+		}
+		else if(HitEnemy != nullptr)
+		{
+			HitActor = HitEnemy;
+		}
+		
 		if(HitActor != nullptr)
 		{
 			FVector HitDirection = Character->GetActorLocation() - HitActor->GetActorLocation();
