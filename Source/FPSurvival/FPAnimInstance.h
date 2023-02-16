@@ -16,6 +16,7 @@ class FPSURVIVAL_API UFPAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	

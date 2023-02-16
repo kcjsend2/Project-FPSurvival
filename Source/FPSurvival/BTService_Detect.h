@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FPSurvivalCharacter.h"
 #include "BehaviorTree/BTService.h"
 #include "BTService_Detect.generated.h"
 
@@ -19,4 +20,10 @@ public:
 
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+	UPROPERTY()
+	AFPSurvivalCharacter* Character;
+
+	UPROPERTY(EditAnywhere)
+	float DetectRadius;
 };

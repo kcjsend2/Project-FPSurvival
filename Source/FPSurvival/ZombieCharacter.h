@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EnemyCharacter.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "ZombieCharacter.generated.h"
 
@@ -12,6 +13,9 @@ class FPSURVIVAL_API AZombieCharacter : public AEnemyCharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
+	USphereComponent* MeleeAttackSphere;
+	
 public:
 	// Sets default values for this character's properties
 	AZombieCharacter();

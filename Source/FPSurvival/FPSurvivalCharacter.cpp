@@ -1284,7 +1284,9 @@ void AFPSurvivalCharacter::UpdateWallRunning()
 
 	LocationEnd = WallRunningDirection.Cross(LocationEnd) * 80 + LocationStart;
 	
-	bool TraceCheck = GetWorld()->LineTraceSingleByChannel(HitResult, LocationStart, LocationEnd, ECC_Visibility);
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+	bool TraceCheck = GetWorld()->LineTraceSingleByChannel(HitResult, LocationStart, LocationEnd, ECC_Visibility, CollisionQueryParams);
 	
 	if(!TraceCheck)
 	{

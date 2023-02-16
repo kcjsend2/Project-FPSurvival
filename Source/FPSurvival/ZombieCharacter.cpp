@@ -8,14 +8,15 @@ AZombieCharacter::AZombieCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	MeleeAttackSphere = CreateDefaultSubobject<USphereComponent>(TEXT("MeleeAttackSphere"));
+	MeleeAttackSphere->SetupAttachment(GetMesh(), TEXT("RightHand"));
+	MeleeAttackSphere->SetSphereRadius(30.0f);
 }
 
 // Called when the game starts or when spawned
 void AZombieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

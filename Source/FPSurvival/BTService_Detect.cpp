@@ -23,7 +23,6 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 
 	FVector Center = ControllingPawn->GetActorLocation();
-	float DetectRadius = 600.0f;
 
 	if(GetWorld() == nullptr)
 		return;
@@ -31,17 +30,29 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParams(NAME_None, false, ControllingPawn);
 	bool Hit = GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams);
-
+	
+	// 코옵 플레이 감안
 	if(Hit)
 	{
 		for(auto const& OverlapResult : OverlapResults)
 		{
-			AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OverlapResult.GetActor());
-			if(Character && Character->GetController()->IsPlayerController())
+			AFPSurvivalCharacter* NewCharacter = Cast<AFPSurvivalCharacter>(OverlapResult.GetActor());
+			if(NewCharacter && NewCharacter->GetController()->IsPlayerController())
 			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsObject(AZombieAIController::PlayerCharacterKey, Character);
-				return;
+				if(Character != nullptr)
+				{
+					if(Character->GetDistanceTo(ControllingPawn) > NewCharacter->GetDistanceTo(ControllingPawn))
+					{
+						Character = NewCharacter;
+					}
+				}
+				else
+				{
+					Character = NewCharacter;
+				}
 			}
 		}
 	}
+	
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(AZombieAIController::PlayerCharacterKey, Character);
 }
