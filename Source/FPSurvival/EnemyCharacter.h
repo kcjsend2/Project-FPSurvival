@@ -20,18 +20,26 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual bool MeleeAttack() { return false; };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float MaxHP = 200;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float CurrentHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float AttackRange;
 	
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UAnimMontage* AttackMontage;
+	
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float AttackDamage;
+	
+	bool IsAttacking = false;
 };

@@ -23,7 +23,7 @@ protected:
 
 	UPROPERTY()
 	AFPSurvivalCharacter* Character;
-
+	
 	UPROPERTY(EditAnywhere)
 	float DetectRadius;
 };

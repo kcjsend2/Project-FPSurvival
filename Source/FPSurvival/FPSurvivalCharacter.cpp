@@ -164,7 +164,7 @@ void AFPSurvivalCharacter::BeginPlay()
 	WallRunningTimeline->SetTimelineLength(1.0);
 	WallRunningTimeline->SetLooping(true);
 	
-	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::OnMontageEnd);
+	Mesh1P->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AFPSurvivalCharacter::MontageEnded);
 }
 
 void AFPSurvivalCharacter::Tick(float DeltaSeconds)
@@ -1074,7 +1074,7 @@ void AFPSurvivalCharacter::OnWeaponChangeEnd()
 	Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPullUpMontage);
 }
 
-void AFPSurvivalCharacter::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if(Montage == CurrentWeapon->WeaponPullUpMontage && !bInterrupted)
 	{

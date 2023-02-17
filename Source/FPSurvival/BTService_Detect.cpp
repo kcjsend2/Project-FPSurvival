@@ -4,6 +4,7 @@
 #include "BTService_Detect.h"
 
 #include "AIController.h"
+#include "EnemyCharacter.h"
 #include "FPSurvivalCharacter.h"
 #include "ZombieAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -29,10 +30,10 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParams(NAME_None, false, ControllingPawn);
-	bool Hit = GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams);
 	
 	// 코옵 플레이 감안
-	if(Hit)
+	if(GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity,
+		ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams))
 	{
 		for(auto const& OverlapResult : OverlapResults)
 		{
@@ -55,4 +56,21 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	}
 	
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(AZombieAIController::PlayerCharacterKey, Character);
+	
+	AEnemyCharacter* ControllingEnemy = Cast<AEnemyCharacter>(ControllingPawn);
+
+	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::IsAttackingKey, ControllingEnemy->IsAttacking);
+	
+	// 공격 가능한 사거리 안에 있는가?
+	if(Character == nullptr)
+		return;
+
+	if(ControllingEnemy == nullptr)
+		return;
+
+	float Distance = Character->GetDistanceTo(ControllingEnemy);
+	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::CanAttackKey,
+		Distance <= ControllingEnemy->AttackRange && !ControllingEnemy->IsAttacking);
+
+	
 }

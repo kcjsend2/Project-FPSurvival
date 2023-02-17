@@ -294,7 +294,7 @@ public:
 	void OnWeaponChange(int WeaponNum);
 
 	UFUNCTION()
-	void OnMontageEnd(UAnimMontage* Montage, bool bInterrupted);
+	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
 	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

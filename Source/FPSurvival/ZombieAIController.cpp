@@ -6,6 +6,8 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 
 const FName AZombieAIController::PlayerCharacterKey(TEXT("PlayerCharacter"));
+const FName AZombieAIController::CanAttackKey(TEXT("CanAttack"));
+const FName AZombieAIController::IsAttackingKey(TEXT("IsAttacking"));
 
 AZombieAIController::AZombieAIController()
 {

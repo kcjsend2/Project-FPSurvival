@@ -19,7 +19,9 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 
 	static const FName PlayerCharacterKey;
-	
+	static const FName CanAttackKey;
+	static const FName IsAttackingKey;
+
 private:
 	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BTAsset;

@@ -13,5 +13,9 @@ UCLASS()
 class FPSURVIVAL_API UBTTask_MeleeAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
+
+public:
+	UBTTask_MeleeAttack();
+
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };
