@@ -15,7 +15,7 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	CurrentHP = MaxHP;
 }
 
 float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -24,6 +24,11 @@ float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent,
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	CurrentHP -= Damage;
 
+	if(CurrentHP < 0)
+	{
+		CurrentHP = 0;
+	}
+	
 	return Damage;
 }
 

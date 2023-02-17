@@ -4,6 +4,7 @@
 #include "ZombieCharacter.h"
 
 #include "FPSurvivalCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -37,6 +38,24 @@ void AZombieCharacter::Tick(float DeltaTime)
 void AZombieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+float AZombieCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	const float Result = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if(CurrentHP == 0)
+	{
+		MeleeAttackSphere->OnComponentBeginOverlap.Clear();
+		GetMesh()->GetAnimInstance()->StopAllMontages(0.f);
+		GetMesh()->GetAnimInstance()->OnMontageEnded.Clear();
+		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+		GetMesh()->SetSimulatePhysics(true);
+		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+	}
+
+	return Result;
 }
 
 bool AZombieCharacter::MeleeAttack()
