@@ -18,10 +18,21 @@ AZombieCharacter::AZombieCharacter()
 	MeleeAttackSphere->SetSphereRadius(15.0f);
 }
 
+void AZombieCharacter::BeginWalk()
+{
+	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+}
+
+void AZombieCharacter::BeginSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = SprintWalkSpeed;
+}
+
 // Called when the game starts or when spawned
 void AZombieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 	
 	GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AZombieCharacter::MontageEnded);
 	MeleeAttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AZombieCharacter::OnSphereBeginOverlap);

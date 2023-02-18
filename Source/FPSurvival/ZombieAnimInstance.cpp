@@ -15,6 +15,8 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if(OwningCharacter != nullptr)
 	{
 		IsMoving = OwningCharacter->GetVelocity().Size() > 0;
-		IsSprinting = OwningCharacter->GetVelocity().Size() > 10;
+
+		float Velocity = OwningCharacter->GetVelocity().Size();
+		IsSprinting = Velocity > 100;
 	}
 }

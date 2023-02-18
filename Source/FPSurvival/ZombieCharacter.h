@@ -20,6 +20,15 @@ public:
 	// Sets default values for this character's properties
 	AZombieCharacter();
 
+	UPROPERTY(EditAnywhere)
+	float DefaultWalkSpeed;
+	
+	UPROPERTY(EditAnywhere)
+	float SprintWalkSpeed;
+
+	void BeginWalk();
+	void BeginSprint();
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

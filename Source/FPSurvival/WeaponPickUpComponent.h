@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
-#include "PickUpComponent.generated.h"
+#include "WeaponPickUpComponent.generated.h"
 
 class AFPSurvivalCharacter;
 
@@ -13,7 +13,7 @@ class AFPSurvivalCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickUp, AFPSurvivalCharacter*, PickUpCharacter);
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class FPSURVIVAL_API UPickUpComponent : public USphereComponent
+class FPSURVIVAL_API UWeaponPickUpComponent : public USphereComponent
 {
 	GENERATED_BODY()
 
@@ -22,7 +22,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnPickUp OnPickUp;
 
-	UPickUpComponent();
+	UWeaponPickUpComponent();
 
 	void RegisterOverlapFunction();
 

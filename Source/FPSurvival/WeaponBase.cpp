@@ -7,7 +7,7 @@
 #include "BulletProjectile.h"
 #include "EnemyCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "PickUpComponent.h"
+#include "WeaponPickUpComponent.h"
 #include "Camera/CameraComponent.h"
 #include "SoundManager.h"
 #include "Components/AudioComponent.h"
@@ -36,7 +36,7 @@ AWeaponBase::AWeaponBase()
 	TPWeaponMesh->bCastDynamicShadow = true;
 	TPWeaponMesh->CastShadow = true;
 	
-	PickUpComponent = CreateDefaultSubobject<UPickUpComponent>(TEXT("PickUpComponent"));
+	PickUpComponent = CreateDefaultSubobject<UWeaponPickUpComponent>(TEXT("PickUpComponent"));
 	PickUpComponent->SetupAttachment(FPWeaponMesh);
 	
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));

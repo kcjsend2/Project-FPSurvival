@@ -1,21 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTService_Detect.h"
+#include "BTService_ZombieDetectPlayer.h"
 
 #include "AIController.h"
 #include "EnemyCharacter.h"
 #include "FPSurvivalCharacter.h"
 #include "ZombieAIController.h"
+#include "ZombieCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UBTService_Detect::UBTService_Detect()
+class AZombieCharacter;
+
+UBTService_ZombieDetectPlayer::UBTService_ZombieDetectPlayer()
 {
-	NodeName = TEXT("Detect");
+	NodeName = TEXT("Zombie Detect Player");
 	Interval = 1.0f;
 }
 
-void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 	
@@ -24,7 +27,9 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 
 	FVector Center = ControllingPawn->GetActorLocation();
-
+	OwnerComp.GetBlackboardComponent()->SetValueAsVector(AZombieAIController::ForwardKey,
+		Center + ControllingPawn->GetActorForwardVector() * 100);
+	
 	if(GetWorld() == nullptr)
 		return;
 	
@@ -57,20 +62,22 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(AZombieAIController::PlayerCharacterKey, Character);
 	
-	AEnemyCharacter* ControllingEnemy = Cast<AEnemyCharacter>(ControllingPawn);
+	AZombieCharacter* ControllingZombie = Cast<AZombieCharacter>(ControllingPawn);
 
-	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::IsAttackingKey, ControllingEnemy->IsAttacking);
+	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::IsAttackingKey, ControllingZombie->IsAttacking);
 	
 	// 공격 가능한 사거리 안에 있는가?
 	if(Character == nullptr)
 		return;
 
-	if(ControllingEnemy == nullptr)
+	if(ControllingZombie == nullptr)
 		return;
 
-	float Distance = Character->GetDistanceTo(ControllingEnemy);
+	ControllingZombie->BeginSprint();
+	
+	float Distance = Character->GetDistanceTo(ControllingZombie);
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::CanAttackKey,
-		Distance <= ControllingEnemy->AttackRange && !ControllingEnemy->IsAttacking);
+		Distance <= ControllingZombie->AttackRange && !ControllingZombie->IsAttacking);
 
 	
 }

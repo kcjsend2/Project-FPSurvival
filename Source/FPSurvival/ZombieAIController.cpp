@@ -8,6 +8,7 @@
 const FName AZombieAIController::PlayerCharacterKey(TEXT("PlayerCharacter"));
 const FName AZombieAIController::CanAttackKey(TEXT("CanAttack"));
 const FName AZombieAIController::IsAttackingKey(TEXT("IsAttacking"));
+const FName AZombieAIController::ForwardKey(TEXT("Forward"));
 
 AZombieAIController::AZombieAIController()
 {

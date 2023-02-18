@@ -21,6 +21,7 @@ public:
 	static const FName PlayerCharacterKey;
 	static const FName CanAttackKey;
 	static const FName IsAttackingKey;
+	static const FName ForwardKey;
 
 private:
 	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true"))

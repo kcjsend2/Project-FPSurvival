@@ -9,7 +9,7 @@
 
 class UCameraComponent;
 class AFPSurvivalCharacter;
-class UPickUpComponent;
+class UWeaponPickUpComponent;
 class USoundManager;
 
 DECLARE_DYNAMIC_DELEGATE(FOnActionCheck);
@@ -200,7 +200,7 @@ private:
 	
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
-	UPickUpComponent* PickUpComponent;
+	UWeaponPickUpComponent* PickUpComponent;
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Muzzle;

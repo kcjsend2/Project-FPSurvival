@@ -834,9 +834,9 @@ void AFPSurvivalCharacter::OnPrimaryAction(const bool Pressed)
         	StateMachine->CheckStateTransition(EMovementState::Walking);
         }
     }
-    else if(CurrentWeapon->CurrentAmmo > 0 && CurrentWeapon->GetIsFiring())
+    else if(CurrentWeapon->CurrentAmmo > 0 && CurrentWeapon->GetIsFiring() && CurrentWeapon->FireMode == EFireMode::FullAuto)
     {
-    	FireEndFlag = true;
+    	FullAutoEndFlag = true;
     }
 }
 
@@ -1092,9 +1092,9 @@ void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted
 	{
 		if(CurrentWeapon->FireMode == EFireMode::FullAuto)
 		{
-			if(FireEndFlag || CurrentWeapon->CurrentAmmo <= 0)
+			if(FullAutoEndFlag || CurrentWeapon->CurrentAmmo <= 0)
 			{
-				FireEndFlag = false;
+				FullAutoEndFlag = false;
 		    	
 				if(CurrentWeapon->RecoilOn)
 					RecoilTimeline->ReverseFromEnd();

@@ -149,7 +149,7 @@ public:
 	UPROPERTY()
 	FOnFireEnd OnFireEnd[WEAPON_MAX];
 
-	bool FireEndFlag = false;
+	bool FullAutoEndFlag = false;
 	
 	UPROPERTY()
 	FOnReload OnReload[WEAPON_MAX];

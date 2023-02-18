@@ -27,7 +27,7 @@ public:
 	virtual bool MeleeAttack() { return false; };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	float MaxHP = 200;
+	float MaxHP;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float CurrentHP;

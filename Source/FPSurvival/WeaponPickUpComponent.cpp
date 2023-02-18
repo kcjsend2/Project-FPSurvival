@@ -1,10 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "PickUpComponent.h"
+#include "WeaponPickUpComponent.h"
 #include "FPSurvivalCharacter.h"
 #include "WeaponBase.h"
 
-UPickUpComponent::UPickUpComponent()
+UWeaponPickUpComponent::UWeaponPickUpComponent()
 {
 	// Setup the Sphere Collision
 	SphereRadius = 32.f;
@@ -12,18 +12,18 @@ UPickUpComponent::UPickUpComponent()
 }
 
 
-void UPickUpComponent::RegisterOverlapFunction()
+void UWeaponPickUpComponent::RegisterOverlapFunction()
 {
-	OnComponentBeginOverlap.AddDynamic(this, &UPickUpComponent::OnSphereBeginOverlap);
-	OnComponentEndOverlap.AddDynamic(this, &UPickUpComponent::OnSphereEndOverlap);
+	OnComponentBeginOverlap.AddDynamic(this, &UWeaponPickUpComponent::OnSphereBeginOverlap);
+	OnComponentEndOverlap.AddDynamic(this, &UWeaponPickUpComponent::OnSphereEndOverlap);
 }
 
-void UPickUpComponent::BeginPlay()
+void UWeaponPickUpComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UWeaponPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Checking if it is a First Person Character overlapping
 	// if(Character != nullptr && Character->CollectedWeapon.Num() < 2)
@@ -42,7 +42,7 @@ void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	}
 }
 
-void UPickUpComponent::AddNearWeaponInfo(AFPSurvivalCharacter* Character)
+void UWeaponPickUpComponent::AddNearWeaponInfo(AFPSurvivalCharacter* Character)
 {
 	Character->NearWeapons.Add(Cast<AWeaponBase>(GetOwner()));
 	UWidget* PickUpWidget = Character->HudWidget->GetWidgetFromName(TEXT("WBPickUp"));
@@ -50,7 +50,7 @@ void UPickUpComponent::AddNearWeaponInfo(AFPSurvivalCharacter* Character)
 		PickUpWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UPickUpComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void UWeaponPickUpComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(OtherActor);
 
@@ -58,7 +58,7 @@ void UPickUpComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedCompone
 		RemoveNearWeaponInfo(Character);
 }
 
-void UPickUpComponent::RemoveNearWeaponInfo(AFPSurvivalCharacter* Character)
+void UWeaponPickUpComponent::RemoveNearWeaponInfo(AFPSurvivalCharacter* Character)
 {
 	Character->NearWeapons.Remove(Cast<AWeaponBase>(GetOwner()));
 	if(Character->NearWeapons.Num() == 0)
