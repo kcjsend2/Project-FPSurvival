@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemPickup.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
@@ -21,7 +22,10 @@ protected:
 
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, Category="Item")
+	AItemPickup* DropItem;
 	
 public:	
 	virtual bool MeleeAttack() { return false; };

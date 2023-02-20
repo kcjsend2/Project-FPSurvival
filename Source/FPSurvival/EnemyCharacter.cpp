@@ -16,6 +16,12 @@ void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentHP = MaxHP;
+
+	if(DropItem != nullptr)
+	{
+		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		DropItem->AttachToActor(this, AttachmentRules);
+	}
 }
 
 float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -24,9 +30,18 @@ float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent,
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	CurrentHP -= Damage;
 
-	if(CurrentHP < 0)
+	if(CurrentHP <= 0)
 	{
 		CurrentHP = 0;
+		if(DropItem != nullptr)
+		{
+			const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
+			DropItem->DetachFromActor(DetachmentRules);
+			DropItem->ActivateItem();
+			
+			DropItem = nullptr;
+			
+		}
 	}
 	
 	return Damage;

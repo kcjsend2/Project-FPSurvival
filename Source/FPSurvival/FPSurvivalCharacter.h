@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MovementStateMachine.h"
 #include "SoundManager.h"
+#include "Components/SphereComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
 #define WEAPON_MAX 2
@@ -64,12 +65,18 @@ class AFPSurvivalCharacter : public ACharacter
 	USkeletalMeshComponent* Mesh1P;
 	
 	/** First person camera */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* ThirdPersonCameraComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup", meta = (AllowPrivateAccess = "true"))
+	USphereComponent* ItemHomingRange;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup", meta = (AllowPrivateAccess = "true"))
+	USphereComponent* ItemPickupRange;
+	
 public:
 	AFPSurvivalCharacter();
 
@@ -79,6 +86,11 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Jump() override;
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION()
+	void OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnItemPickupRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	UFUNCTION()
 	bool WalkToCrouchTransition();
@@ -182,7 +194,7 @@ public:
 
 	float SprintMultiplier;
 	float CrouchMultiplier;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float MaxHP = 200;
 	

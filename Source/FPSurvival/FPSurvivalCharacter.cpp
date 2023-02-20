@@ -14,6 +14,7 @@
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
 #include "HitIndicator.h"
+#include "ItemPickup.h"
 #include "Components/AudioComponent.h"
 #include "Engine/DamageEvents.h"
 
@@ -41,6 +42,12 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	SoundManager = CreateDefaultSubobject<USoundManager>(TEXT("SoundManager"));
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 	AudioComponent->SetupAttachment(GetCapsuleComponent());
+
+	ItemHomingRange = CreateDefaultSubobject<USphereComponent>(TEXT("ItemHomingRange"));
+	ItemHomingRange->SetupAttachment(GetCapsuleComponent());
+	
+	ItemPickupRange = CreateDefaultSubobject<USphereComponent>(TEXT("ItemPickupRange"));
+	ItemPickupRange->SetupAttachment(GetCapsuleComponent());
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
@@ -112,6 +119,8 @@ void AFPSurvivalCharacter::BeginPlay()
 	//FirstPersonCameraComponent->Deactivate();
 	//ThirdPersonCameraComponent->Activate();
 
+	ItemHomingRange->OnComponentBeginOverlap.AddDynamic(this, &AFPSurvivalCharacter::OnItemHomingRangeBeginOverlap);
+	ItemPickupRange->OnComponentBeginOverlap.AddDynamic(this, &AFPSurvivalCharacter::OnItemPickupRangeBeginOverlap);
 	SoundManager->SetAudioComponent(AudioComponent);
 	
 	if(IsPlayerControlled())
@@ -369,6 +378,57 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 	//SoundManager->PlaySound(TEXT("PlayerHit"), GetActorLocation());
 	
     return Damage;
+}
+
+void AFPSurvivalCharacter::OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AItemPickup* Item = Cast<AItemPickup>(OtherActor);
+	if(Item == nullptr)
+		return;
+
+	if(!Item->IsHoming)
+		Item->SetHomingTarget(ItemPickupRange);
+}
+
+void AFPSurvivalCharacter::OnItemPickupRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AItemPickup* Item = Cast<AItemPickup>(OtherActor);
+	if(Item == nullptr)
+		return;
+	
+	switch(Item->ItemType)
+	{
+	case EItemType::Ammo:
+		{
+			const AAmmoPickup* AmmoPickup = Cast<AAmmoPickup>(Item);
+
+			if(AmmoMap.Contains(AmmoPickup->AmmoName))
+			{
+				AmmoMap[AmmoPickup->AmmoName] += AmmoPickup->Amount;
+			}
+			else
+			{
+				AmmoMap.Add(AmmoPickup->AmmoName, AmmoPickup->Amount);
+			}
+			SoundManager->PlaySound(TEXT("AmmoPickup"), GetActorLocation());
+			break;
+		}
+
+	case EItemType::Health:
+		{
+			CurrentHP += Item->Amount;
+			if(CurrentHP > MaxHP)
+				CurrentHP = MaxHP;
+			SoundManager->PlaySound(TEXT("HealthPickup"), GetActorLocation());
+			break;
+		}
+		
+	default:
+		break;
+	}
+	Item->Destroy();
 }
 
 bool AFPSurvivalCharacter::WalkToCrouchTransition()
@@ -1067,7 +1127,7 @@ void AFPSurvivalCharacter::OnWeaponChangeEnd()
 
 	CurrentWeapon = CollectedWeapon[ChangingWeaponSlot];
 
-	CurrentWeapon->SoundManager->PlaySoundByAudioComponent(TEXT("Equip"));
+	CurrentWeapon->SoundManager->PlaySound(TEXT("Equip"), GetActorLocation());
 	
 	CurrentWeaponSlot = ChangingWeaponSlot;
 	ChangingWeaponSlot = -1;
@@ -1144,12 +1204,12 @@ void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot)
 	
 	if(Headshot)
 	{
-		SoundManager->PlaySound(TEXT("EnemyHeadshot"),GetActorLocation());
+		SoundManager->PlaySound(TEXT("EnemyHeadshot"), GetActorLocation());
 		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 	else
 	{
-		SoundManager->PlaySound(TEXT("EnemyHit"),GetActorLocation());
+		SoundManager->PlaySound(TEXT("EnemyHit"), GetActorLocation());
 		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 }

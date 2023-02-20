@@ -22,6 +22,9 @@ void USoundManager::PlaySound(FName Key, FVector Location, float Volume, float P
 
 void USoundManager::PlaySoundByAudioComponent(FName Key)
 {
+	if(!SoundMap.Contains(Key))
+		return;
+		
 	if(OwnerAudioComponent->IsPlaying())
 		OwnerAudioComponent->Stop();
 	
