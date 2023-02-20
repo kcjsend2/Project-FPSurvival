@@ -9,31 +9,50 @@ UActorObjectPoolComponent::UActorObjectPoolComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+
 void UActorObjectPoolComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(PooledActorSubclass != nullptr)
+	if(PoolableActorSubclass != nullptr)
 	{
 		UWorld* const World = GetWorld();
-		for(int i = 0; i < PoolSize; ++i)
+		for(int i = 0; i < InitialPoolSize; ++i)
 		{
-			APooledActor* SpawnedActor = World->SpawnActor<APooledActor>(PooledActorSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
+			APoolableActor* SpawnedActor = World->SpawnActor<APoolableActor>(PoolableActorSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
 			if(SpawnedActor != nullptr)
 			{
 				SpawnedActor->SetActive(false);
-				SpawnedActor->OnPooledActorDespawn.AddDynamic(this, &UActorObjectPoolComponent::OnPooledActorDespawn);
+				SpawnedActor->OnPoolableActorDespawn.AddDynamic(this, &UActorObjectPoolComponent::OnPooledActorDespawn);
 				ObjectPool.Enqueue(SpawnedActor);
 			}
 		}
 	}
 }
 
-void UActorObjectPoolComponent::OnPooledActorDespawn(APooledActor* PooledActor)
+void UActorObjectPoolComponent::OnPooledActorDespawn(APoolableActor* PooledActor)
 {
+    ObjectPool.Enqueue(PooledActor);
 }
 
-
-APooledActor* UActorObjectPoolComponent::SpawnPooledActor()
+APoolableActor* UActorObjectPoolComponent::SpawnPooledActor()
 {
+	APoolableActor* PoolableActor;
+	
+	if(ObjectPool.Dequeue(PoolableActor))
+	{
+		PoolableActor->SetActive(true);
+		return PoolableActor;
+	}
+
+	UWorld* const World = GetWorld();
+	APoolableActor* SpawnedActor = World->SpawnActor<APoolableActor>(PoolableActorSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
+	if(SpawnedActor != nullptr)
+	{
+		SpawnedActor->SetActive(true);
+		SpawnedActor->OnPoolableActorDespawn.AddDynamic(this, &UActorObjectPoolComponent::OnPooledActorDespawn);
+		return SpawnedActor;
+	}
+
+	return nullptr;
 }

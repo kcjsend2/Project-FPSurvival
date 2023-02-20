@@ -3,21 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "PooledActor.generated.h"
+#include "GameFramework/Character.h"
+#include "PoolableCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPooledActorDespawn, class APooledActor*, PooledActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPoolableCharacterDespawn, class APoolableCharacter*, PoolalbeCharacter);
 
 UCLASS()
-class APooledActor : public AActor
+class FPSURVIVAL_API APoolableCharacter : public ACharacter
 {
 	GENERATED_BODY()
-	
+
 public:	
 	// Sets default values for this actor's properties
-	APooledActor();
+	APoolableCharacter();
 	
-	FOnPooledActorDespawn OnPooledActorDespawn;
+	FOnPoolableCharacterDespawn OnPoolableActorDespawn;
 	
 	UFUNCTION()
 	void Deactivate();
@@ -27,8 +27,5 @@ public:
 	virtual void SetDefault() {}
 	
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	bool bIsActive;
 };

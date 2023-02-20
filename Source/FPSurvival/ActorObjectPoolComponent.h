@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PooledActor.h"
+#include "PoolableActor.h"
 #include "Components/ActorComponent.h"
 #include "ActorObjectPoolComponent.generated.h"
 
@@ -18,21 +18,20 @@ public:
 	UActorObjectPoolComponent();
 
 	UFUNCTION()
-	APooledActor* SpawnPooledActor();
+	APoolableActor* SpawnPooledActor();
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<APooledActor> PooledActorSubclass;
+	TSubclassOf<APoolableActor> PoolableActorSubclass;
 	
 	UPROPERTY(EditAnywhere)
-	int PoolSize;
+	int InitialPoolSize;
 
 	UFUNCTION()
-	void OnPooledActorDespawn(APooledActor* PooledActor);
+	void OnPooledActorDespawn(APoolableActor* PooledActor);
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY()
-	TQueue<APooledActor*> ObjectPool;
+	TQueue<APoolableActor*> ObjectPool;
 };
