@@ -16,7 +16,7 @@ void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentHP = MaxHP;
-
+	
 	if(DropItem != nullptr)
 	{
 		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
@@ -37,7 +37,7 @@ float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent,
 		{
 			const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
 			DropItem->DetachFromActor(DetachmentRules);
-			DropItem->ActivateItem();
+			DropItem->Activate();
 			
 			DropItem = nullptr;
 			

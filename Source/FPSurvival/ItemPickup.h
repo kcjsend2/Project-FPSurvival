@@ -26,8 +26,8 @@ public:
 	AItemPickup();
 
 	void SetHomingTarget(USceneComponent* Target);
-	void ActivateItem();
-	void DeactivateItem();
+	void Activate();
+	void Deactivate();
 	UBoxComponent* GetBoxComponent() const { return PhysicsBoxComponent; }
 	
 protected:

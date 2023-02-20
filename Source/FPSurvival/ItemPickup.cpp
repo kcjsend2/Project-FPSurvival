@@ -26,7 +26,7 @@ void AItemPickup::BeginPlay()
 	Super::BeginPlay();
 	ProjectileMovementComponent->Deactivate();
 	ProjectileMovementComponent->SetAutoActivate(false);
-	DeactivateItem();
+	Deactivate();
 }
 
 void AItemPickup::SetHomingTarget(USceneComponent* Target)
@@ -43,17 +43,17 @@ void AItemPickup::SetHomingTarget(USceneComponent* Target)
 	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 }
 
-void AItemPickup::ActivateItem()
+void AItemPickup::Activate()
 {
-	ItemMesh->SetVisibility(true);
+	SetActorHiddenInGame(false);
 	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemDropped"));
 	PhysicsBoxComponent->SetSimulatePhysics(true);
 	PhysicsBoxComponent->AddImpulse(ActivateImpulse, NAME_None, true);
 }
 
-void AItemPickup::DeactivateItem()
+void AItemPickup::Deactivate()
 {
-	ItemMesh->SetVisibility(false);
+	SetActorHiddenInGame(true);
 	PhysicsBoxComponent->SetCollisionProfileName(TEXT("NoCollsion"));
 	PhysicsBoxComponent->SetSimulatePhysics(false);
 }
