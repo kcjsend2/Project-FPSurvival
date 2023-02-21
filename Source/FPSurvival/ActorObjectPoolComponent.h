@@ -9,7 +9,7 @@
 
 
 UCLASS()
-class UActorObjectPoolComponent : public UActorComponent
+class FPSURVIVAL_API UActorObjectPoolComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

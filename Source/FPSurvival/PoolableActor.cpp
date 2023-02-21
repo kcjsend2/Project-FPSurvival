@@ -17,10 +17,13 @@ void APoolableActor::Deactivate()
 	OnPoolableActorDespawn.Broadcast(this);
 }
 
-void APoolableActor::SetActive(bool IsActive)
+void APoolableActor::SetActive(bool Active)
 {
-	bIsActive = IsActive;
-	SetActorHiddenInGame(!IsActive);
+	bIsActive = Active;
+
+	SetActorEnableCollision(Active);
+	SetActorTickEnabled(Active);
+	SetActorHiddenInGame(!Active);
 }
 
 bool APoolableActor::IsActive()

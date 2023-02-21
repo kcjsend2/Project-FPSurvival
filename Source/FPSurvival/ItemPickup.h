@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PoolableActor.h"
 #include "Components/BoxComponent.h"
-#include "GameFramework/Actor.h"
 #include "ItemPickup.generated.h"
 
 class UProjectileMovementComponent;
@@ -17,7 +17,7 @@ enum class EItemType : uint8
 };
 
 UCLASS()
-class AItemPickup : public AActor
+class FPSURVIVAL_API AItemPickup : public APoolableActor
 {
 	GENERATED_BODY()
 
@@ -26,9 +26,12 @@ public:
 	AItemPickup();
 
 	void SetHomingTarget(USceneComponent* Target);
-	void Activate();
-	void Deactivate();
+	void ActivateItem();
+	void DeactivateItem();
 	UBoxComponent* GetBoxComponent() const { return PhysicsBoxComponent; }
+
+	virtual void SetActive(bool Active) override;
+	virtual void SetDefault() override;
 	
 protected:
 	// Called when the game starts or when spawned

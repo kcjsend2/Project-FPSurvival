@@ -9,7 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPoolableActorDespawn, class APoolableActor*, PoolableActor);
 
 UCLASS()
-class APoolableActor : public AActor
+class FPSURVIVAL_API APoolableActor : public AActor
 {
 	GENERATED_BODY()
 	

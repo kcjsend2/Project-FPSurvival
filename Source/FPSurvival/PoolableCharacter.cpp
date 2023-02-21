@@ -19,8 +19,8 @@ void APoolableCharacter::Deactivate()
 
 void APoolableCharacter::SetActive(bool Active)
 {
-	bIsActive = IsActive;
-	SetActorHiddenInGame(!IsActive);
+	bIsActive = Active;
+	SetActorHiddenInGame(!Active);
 }
 
 bool APoolableCharacter::IsActive()

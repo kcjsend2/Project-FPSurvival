@@ -43,6 +43,7 @@ APoolableCharacter* UCharacterObjectPoolComponent::SpawnPoolableCharacter()
 	if(ObjectPool.Dequeue(PoolableCharacter))
 	{
 		PoolableCharacter->SetActive(true);
+		PoolableCharacter->SetDefault();
 		return PoolableCharacter;
 	}
 
@@ -52,6 +53,7 @@ APoolableCharacter* UCharacterObjectPoolComponent::SpawnPoolableCharacter()
 	{
 		SpawnedCharacter->SetActive(true);
 		SpawnedCharacter->OnPoolableActorDespawn.AddDynamic(this, &UCharacterObjectPoolComponent::OnPooledActorDespawn);
+		SpawnedCharacter->SetDefault();
 		return SpawnedCharacter;
 	}
 

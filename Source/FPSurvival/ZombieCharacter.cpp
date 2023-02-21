@@ -18,6 +18,17 @@ AZombieCharacter::AZombieCharacter()
 	MeleeAttackSphere->SetSphereRadius(15.0f);
 }
 
+void AZombieCharacter::SetDefault()
+{
+	Super::SetDefault();
+	BeginWalk();
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterCollision"));
+	GetMesh()->SetSimulatePhysics(false);
+	GetMesh()->SetRelativeTransform(DefaultMeshRelativeTransform);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	CurrentHP = MaxHP;
+}
+
 void AZombieCharacter::BeginWalk()
 {
 	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
@@ -32,6 +43,7 @@ void AZombieCharacter::BeginSprint()
 void AZombieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	DefaultMeshRelativeTransform = GetMesh()->GetRelativeTransform();
 	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 	
 	GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AZombieCharacter::MontageEnded);
@@ -42,7 +54,6 @@ void AZombieCharacter::BeginPlay()
 void AZombieCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -58,12 +69,11 @@ float AZombieCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent
 
 	if(CurrentHP == 0)
 	{
-		MeleeAttackSphere->OnComponentBeginOverlap.Clear();
 		GetMesh()->GetAnimInstance()->StopAllMontages(0.f);
-		GetMesh()->GetAnimInstance()->OnMontageEnded.Clear();
 		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		GetMesh()->SetSimulatePhysics(true);
 		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+		SetActive(false);
 	}
 
 	return Result;
@@ -107,4 +117,19 @@ void AZombieCharacter::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	const FHitResult HitResult;
 	
 	UGameplayStatics::ApplyPointDamage(Character, AttackDamage, HitDirection, HitResult, GetInstigatorController(), this, nullptr);
+}
+
+void AZombieCharacter::SetActive(bool Active)
+{
+	Super::SetActive(Active);
+
+	if(Active)
+		SpawnDefaultController();
+	else
+		DetachFromControllerPendingDestroy();
+	
+	
+	SetActorEnableCollision(Active);
+	SetActorTickEnabled(Active);
+	SetActorHiddenInGame(!Active);
 }

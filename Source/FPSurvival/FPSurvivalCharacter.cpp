@@ -428,7 +428,8 @@ void AFPSurvivalCharacter::OnItemPickupRangeBeginOverlap(UPrimitiveComponent* Ov
 	default:
 		break;
 	}
-	Item->Destroy();
+	Item->SetActive(false);
+	Item->Deactivate();
 }
 
 bool AFPSurvivalCharacter::WalkToCrouchTransition()

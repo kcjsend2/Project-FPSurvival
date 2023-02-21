@@ -2,7 +2,6 @@
 
 
 #include "ItemPickup.h"
-
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -20,13 +19,34 @@ AItemPickup::AItemPickup()
 	ItemMesh->SetupAttachment(PhysicsBoxComponent);
 }
 
+void AItemPickup::SetActive(bool Active)
+{
+	bIsActive = Active;
+	
+	SetActorEnableCollision(Active);
+	SetActorTickEnabled(Active);
+	SetActorHiddenInGame(!Active);
+}
+
+void AItemPickup::SetDefault()
+{
+	Super::SetDefault();
+	
+	ProjectileMovementComponent->bIsHomingProjectile = false;
+	ProjectileMovementComponent->HomingTargetComponent = nullptr;
+	ProjectileMovementComponent->HomingAccelerationMagnitude = 0.f;
+	ProjectileMovementComponent->ProjectileGravityScale = 1.0f;
+	
+	ProjectileMovementComponent->Deactivate();
+	ProjectileMovementComponent->SetAutoActivate(false);
+	DeactivateItem();
+}
+
 // Called when the game starts or when spawned
 void AItemPickup::BeginPlay()
 {
 	Super::BeginPlay();
-	ProjectileMovementComponent->Deactivate();
-	ProjectileMovementComponent->SetAutoActivate(false);
-	Deactivate();
+	SetDefault();
 }
 
 void AItemPickup::SetHomingTarget(USceneComponent* Target)
@@ -43,7 +63,7 @@ void AItemPickup::SetHomingTarget(USceneComponent* Target)
 	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 }
 
-void AItemPickup::Activate()
+void AItemPickup::ActivateItem()
 {
 	SetActorHiddenInGame(false);
 	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemDropped"));
@@ -51,7 +71,7 @@ void AItemPickup::Activate()
 	PhysicsBoxComponent->AddImpulse(ActivateImpulse, NAME_None, true);
 }
 
-void AItemPickup::Deactivate()
+void AItemPickup::DeactivateItem()
 {
 	SetActorHiddenInGame(true);
 	PhysicsBoxComponent->SetCollisionProfileName(TEXT("NoCollsion"));

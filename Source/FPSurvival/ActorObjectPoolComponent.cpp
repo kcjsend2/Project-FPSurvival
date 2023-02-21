@@ -42,6 +42,7 @@ APoolableActor* UActorObjectPoolComponent::SpawnPooledActor()
 	if(ObjectPool.Dequeue(PoolableActor))
 	{
 		PoolableActor->SetActive(true);
+		PoolableActor->SetDefault();
 		return PoolableActor;
 	}
 
@@ -51,6 +52,7 @@ APoolableActor* UActorObjectPoolComponent::SpawnPooledActor()
 	{
 		SpawnedActor->SetActive(true);
 		SpawnedActor->OnPoolableActorDespawn.AddDynamic(this, &UActorObjectPoolComponent::OnPooledActorDespawn);
+		SpawnedActor->SetDefault();
 		return SpawnedActor;
 	}
 

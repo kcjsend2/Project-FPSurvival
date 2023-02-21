@@ -11,17 +11,23 @@ AEnemyCharacter::AEnemyCharacter()
 
 }
 
+void AEnemyCharacter::SetDropItem(AItemPickup* Item)
+{
+	DropItem = Item;
+	if(DropItem != nullptr)
+	{
+		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		DropItem->AttachToActor(this, AttachmentRules);
+		DropItem->SetActorRelativeLocation(FVector(0, 0, 0));
+		DropItem->SetActorRelativeRotation(FRotator(0, 0, 0));
+	}
+}
+
 // Called when the game starts or when spawned
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentHP = MaxHP;
-	
-	if(DropItem != nullptr)
-	{
-		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		DropItem->AttachToActor(this, AttachmentRules);
-	}
 }
 
 float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -37,7 +43,7 @@ float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent,
 		{
 			const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
 			DropItem->DetachFromActor(DetachmentRules);
-			DropItem->Activate();
+			DropItem->ActivateItem();
 			
 			DropItem = nullptr;
 			

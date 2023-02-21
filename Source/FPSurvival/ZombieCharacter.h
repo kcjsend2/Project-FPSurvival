@@ -26,9 +26,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	float SprintWalkSpeed;
 
+	virtual void SetDefault() override;
+	virtual void SetActive(bool Active) override;
+	
 	void BeginWalk();
 	void BeginSprint();
-	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,7 +43,9 @@ protected:
 
 	UFUNCTION()
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	
+	FTransform DefaultMeshRelativeTransform;
+	
 public:	
 	virtual bool MeleeAttack() override;
 };

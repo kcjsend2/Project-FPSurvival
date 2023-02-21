@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "ItemPickup.h"
-#include "GameFramework/Character.h"
+#include "PoolableCharacter.h"
 #include "EnemyCharacter.generated.h"
 
 UCLASS()
-class FPSURVIVAL_API AEnemyCharacter : public ACharacter
+class FPSURVIVAL_API AEnemyCharacter : public APoolableCharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AEnemyCharacter();
-
+	
+	void SetDropItem(AItemPickup* Item);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
