@@ -27,7 +27,7 @@ public:
 	int InitialPoolSize;
 
 	UFUNCTION()
-	void OnPooledActorDespawn(APoolableCharacter* PooledActor);
+	void OnPooledActorDespawn(APoolableCharacter* PooledCharacter);
 	
 protected:
 	// Called when the game starts

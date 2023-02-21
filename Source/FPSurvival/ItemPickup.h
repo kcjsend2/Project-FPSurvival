@@ -52,6 +52,9 @@ public:
 	
 	bool IsHoming = false;
 
+	float HomingCooldown = 0.1;
+	bool HomingHot = true;
+	
 	EItemType ItemType;
 
 	UPROPERTY(EditAnywhere)

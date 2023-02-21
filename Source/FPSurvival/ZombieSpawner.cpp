@@ -25,7 +25,7 @@ void AZombieSpawner::BeginPlay()
 	Super::BeginPlay();
 
 	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this,
-		&AZombieSpawner::SpawnZombieAtCurrentLocation, 10, true);
+		&AZombieSpawner::SpawnZombieAtCurrentLocation, 3, true);
 }
 
 // Called every frame
@@ -47,17 +47,17 @@ void AZombieSpawner::SpawnZombieAtCurrentLocation()
 	APoolableActor* DropItem = nullptr;
 	
 	//구간 별 확률, 어떻게 개선해야할지 감이 잘 안온다...
-	if(RandomValue <= RifleAmmoDropChance)
+	if(RandomValue <= RifleAmmoDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
 		DropItem = RifleAmmoObjectPool->SpawnPooledActor();
 	else
 		CurrentDropRange += RifleAmmoDropChance;
 	
-	if(RandomValue <= CurrentDropRange + PistolAmmoDropChance)
+	if(RandomValue <= CurrentDropRange + PistolAmmoDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
 		DropItem = PistolAmmoObjectPool->SpawnPooledActor();
 	else
 		CurrentDropRange += PistolAmmoDropChance;
 
-	if(RandomValue <= CurrentDropRange + HealthPickupDropChance)
+	if(RandomValue <= CurrentDropRange + HealthPickupDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
 		DropItem = HealthPickupObjectPool->SpawnPooledActor();
 
 	if(DropItem != nullptr)

@@ -31,9 +31,11 @@ void UCharacterObjectPoolComponent::BeginPlay()
 
 }
 
-void UCharacterObjectPoolComponent::OnPooledActorDespawn(APoolableCharacter* PooledActor)
+void UCharacterObjectPoolComponent::OnPooledActorDespawn(APoolableCharacter* PooledCharacter)
 {
-	ObjectPool.Enqueue(PooledActor);
+	PooledCharacter->SetActorLocation(FVector().ZeroVector);
+	PooledCharacter->SetActorRotation(FRotator().ZeroRotator);
+	ObjectPool.Enqueue(PooledCharacter);
 }
 
 APoolableCharacter* UCharacterObjectPoolComponent::SpawnPoolableCharacter()

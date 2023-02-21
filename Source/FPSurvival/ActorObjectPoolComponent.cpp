@@ -32,6 +32,8 @@ void UActorObjectPoolComponent::BeginPlay()
 
 void UActorObjectPoolComponent::OnPooledActorDespawn(APoolableActor* PooledActor)
 {
+	PooledActor->SetActorLocation(FVector().ZeroVector);
+	PooledActor->SetActorRotation(FRotator().ZeroRotator);
     ObjectPool.Enqueue(PooledActor);
 }
 

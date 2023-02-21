@@ -387,7 +387,7 @@ void AFPSurvivalCharacter::OnItemHomingRangeBeginOverlap(UPrimitiveComponent* Ov
 	if(Item == nullptr)
 		return;
 
-	if(!Item->IsHoming)
+	if(!Item->IsHoming && !Item->HomingHot)
 		Item->SetHomingTarget(ItemPickupRange);
 }
 

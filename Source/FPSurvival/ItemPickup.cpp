@@ -22,15 +22,20 @@ AItemPickup::AItemPickup()
 void AItemPickup::SetActive(bool Active)
 {
 	bIsActive = Active;
+
+	if(!Active)
+		DeactivateItem();
 	
 	SetActorEnableCollision(Active);
 	SetActorTickEnabled(Active);
-	SetActorHiddenInGame(!Active);
 }
 
 void AItemPickup::SetDefault()
 {
 	Super::SetDefault();
+
+	IsHoming = false;
+	HomingHot = true;
 	
 	ProjectileMovementComponent->bIsHomingProjectile = false;
 	ProjectileMovementComponent->HomingTargetComponent = nullptr;
@@ -69,6 +74,15 @@ void AItemPickup::ActivateItem()
 	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemDropped"));
 	PhysicsBoxComponent->SetSimulatePhysics(true);
 	PhysicsBoxComponent->AddImpulse(ActivateImpulse, NAME_None, true);
+
+	FTimerHandle HomingTimer;
+	GetWorldTimerManager().SetTimer(HomingTimer, FTimerDelegate::CreateLambda(
+	[&]()
+		{
+			HomingHot = false;
+		}
+	),HomingCooldown, false);
+
 }
 
 void AItemPickup::DeactivateItem()
