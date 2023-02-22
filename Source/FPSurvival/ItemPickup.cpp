@@ -17,6 +17,7 @@ AItemPickup::AItemPickup()
 
 	SetRootComponent(PhysicsBoxComponent);
 	ItemMesh->SetupAttachment(PhysicsBoxComponent);
+	ProjectileMovementComponent->SetAutoActivate(false);
 }
 
 void AItemPickup::SetActive(bool Active)
@@ -34,6 +35,8 @@ void AItemPickup::SetDefault()
 {
 	Super::SetDefault();
 
+	DeactivateItem();
+	
 	IsHoming = false;
 	HomingHot = true;
 	
@@ -43,8 +46,6 @@ void AItemPickup::SetDefault()
 	ProjectileMovementComponent->ProjectileGravityScale = 1.0f;
 	
 	ProjectileMovementComponent->Deactivate();
-	ProjectileMovementComponent->SetAutoActivate(false);
-	DeactivateItem();
 }
 
 // Called when the game starts or when spawned
@@ -87,9 +88,9 @@ void AItemPickup::ActivateItem()
 
 void AItemPickup::DeactivateItem()
 {
-	SetActorHiddenInGame(true);
-	PhysicsBoxComponent->SetCollisionProfileName(TEXT("NoCollsion"));
+	PhysicsBoxComponent->SetCollisionProfileName(TEXT("NoCollision"));
 	PhysicsBoxComponent->SetSimulatePhysics(false);
+	SetActorHiddenInGame(true);
 }
 
 AHealthPickup::AHealthPickup()

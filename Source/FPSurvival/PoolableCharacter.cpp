@@ -20,6 +20,9 @@ void APoolableCharacter::Deactivate()
 void APoolableCharacter::SetActive(bool Active)
 {
 	bIsActive = Active;
+
+	SetActorEnableCollision(Active);
+	SetActorTickEnabled(Active);
 	SetActorHiddenInGame(!Active);
 }
 

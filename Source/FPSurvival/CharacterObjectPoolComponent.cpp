@@ -10,55 +10,57 @@ UCharacterObjectPoolComponent::UCharacterObjectPoolComponent()
 
 }
 
-// Called when the game starts
 void UCharacterObjectPoolComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	if(PoolableCharacterSubclass != nullptr)
 	{
-		UWorld* const World = GetWorld();
 		for(int i = 0; i < InitialPoolSize; ++i)
 		{
-			APoolableCharacter* SpawnedCharacter = World->SpawnActor<APoolableCharacter>(PoolableCharacterSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
-			if(SpawnedCharacter != nullptr)
-			{
-				SpawnedCharacter->SetActive(false);
-				SpawnedCharacter->OnPoolableActorDespawn.AddDynamic(this, &UCharacterObjectPoolComponent::OnPooledActorDespawn);
-				ObjectPool.Enqueue(SpawnedCharacter);
-			}
+			ObjectPool.Push(LoadPoolableCharacter());
 		}
 	}
-
 }
 
-void UCharacterObjectPoolComponent::OnPooledActorDespawn(APoolableCharacter* PooledCharacter)
+APoolableCharacter* UCharacterObjectPoolComponent::LoadPoolableCharacter()
+{
+	UWorld* const World = GetWorld();
+	APoolableCharacter* SpawnedCharacter = World->SpawnActor<APoolableCharacter>(PoolableCharacterSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
+	if(SpawnedCharacter != nullptr)
+	{
+		SpawnedCharacter->SetActive(false);
+		SpawnedCharacter->SetDefault();
+		SpawnedCharacter->OnPoolableActorDespawn.AddDynamic(this, &UCharacterObjectPoolComponent::OnPooledCharacterDespawn);
+	}
+	return SpawnedCharacter;
+}
+
+void UCharacterObjectPoolComponent::OnPooledCharacterDespawn(APoolableCharacter* PooledCharacter)
 {
 	PooledCharacter->SetActorLocation(FVector().ZeroVector);
 	PooledCharacter->SetActorRotation(FRotator().ZeroRotator);
-	ObjectPool.Enqueue(PooledCharacter);
+	PooledCharacter->SetDefault();
+	ObjectPool.Push(PooledCharacter);
 }
 
 APoolableCharacter* UCharacterObjectPoolComponent::SpawnPoolableCharacter()
 {
 	APoolableCharacter* PoolableCharacter;
-	
-	if(ObjectPool.Dequeue(PoolableCharacter))
+	if(ObjectPool.Num() == 0)
 	{
+		PoolableCharacter = LoadPoolableCharacter();
+		PoolableCharacter->SetDefault();
+		return PoolableCharacter;
+	}
+	
+	PoolableCharacter = ObjectPool.Last();
+	if(PoolableCharacter != nullptr)
+	{
+		ObjectPool.Remove(PoolableCharacter);
 		PoolableCharacter->SetActive(true);
 		PoolableCharacter->SetDefault();
 		return PoolableCharacter;
 	}
-
-	UWorld* const World = GetWorld();
-	APoolableCharacter* SpawnedCharacter = World->SpawnActor<APoolableCharacter>(PoolableCharacterSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
-	if(SpawnedCharacter != nullptr)
-	{
-		SpawnedCharacter->SetActive(true);
-		SpawnedCharacter->OnPoolableActorDespawn.AddDynamic(this, &UCharacterObjectPoolComponent::OnPooledActorDespawn);
-		SpawnedCharacter->SetDefault();
-		return SpawnedCharacter;
-	}
-
 	return nullptr;
 }
 

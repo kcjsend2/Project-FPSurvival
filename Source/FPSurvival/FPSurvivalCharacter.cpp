@@ -428,7 +428,6 @@ void AFPSurvivalCharacter::OnItemPickupRangeBeginOverlap(UPrimitiveComponent* Ov
 	default:
 		break;
 	}
-	Item->SetActive(false);
 	Item->Deactivate();
 }
 

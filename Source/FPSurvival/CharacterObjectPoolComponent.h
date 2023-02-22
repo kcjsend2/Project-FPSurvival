@@ -27,11 +27,13 @@ public:
 	int InitialPoolSize;
 
 	UFUNCTION()
-	void OnPooledActorDespawn(APoolableCharacter* PooledCharacter);
+	void OnPooledCharacterDespawn(APoolableCharacter* PooledCharacter);
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	APoolableCharacter* LoadPoolableCharacter();
 
-	TQueue<APoolableCharacter*> ObjectPool;
+	UPROPERTY()
+	TArray<APoolableCharacter*> ObjectPool;
 };

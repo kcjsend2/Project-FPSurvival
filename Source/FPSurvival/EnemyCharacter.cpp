@@ -17,6 +17,7 @@ void AEnemyCharacter::SetDropItem(AItemPickup* Item)
 	if(DropItem != nullptr)
 	{
 		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		DropItem->SetDefault();
 		DropItem->AttachToActor(this, AttachmentRules);
 		DropItem->SetActorRelativeLocation(FVector(0, 0, 0));
 		DropItem->SetActorRelativeRotation(FRotator(0, 0, 0));

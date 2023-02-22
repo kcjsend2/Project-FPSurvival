@@ -22,6 +22,9 @@ void AZombieCharacter::SetDefault()
 {
 	Super::SetDefault();
 	BeginWalk();
+	
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	GetMesh()->AttachToComponent(GetCapsuleComponent(), AttachmentRules);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterCollision"));
 	GetMesh()->SetSimulatePhysics(false);
 	GetMesh()->SetRelativeTransform(DefaultMeshRelativeTransform);
@@ -73,7 +76,15 @@ float AZombieCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent
 		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		GetMesh()->SetSimulatePhysics(true);
 		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
-		SetActive(false);
+
+		FTimerHandle DeactivateTimerHandle;
+		GetWorldTimerManager().SetTimer(DeactivateTimerHandle, FTimerDelegate::CreateLambda(
+	[&]()
+		{
+			SetDefault();
+			Deactivate();
+		}
+	),DeactivateCoolDown, false);
 	}
 
 	return Result;
@@ -124,10 +135,13 @@ void AZombieCharacter::SetActive(bool Active)
 	Super::SetActive(Active);
 
 	if(Active)
+	{
 		SpawnDefaultController();
+	}
 	else
+	{
 		DetachFromControllerPendingDestroy();
-	
+	}
 	
 	SetActorEnableCollision(Active);
 	SetActorTickEnabled(Active);

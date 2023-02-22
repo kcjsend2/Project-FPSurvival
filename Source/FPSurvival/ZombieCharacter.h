@@ -25,6 +25,9 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	float SprintWalkSpeed;
+	
+	UPROPERTY(EditAnywhere)
+	float DeactivateCoolDown = 3.0f;
 
 	virtual void SetDefault() override;
 	virtual void SetActive(bool Active) override;
