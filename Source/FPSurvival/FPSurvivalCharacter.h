@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CrossHairWidget.h"
 #include "HudWidget.h"
+#include "ItemPickup.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -86,6 +87,7 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Jump() override;
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void SetItemHoming(AItemPickup* Item) const;
 
 	UFUNCTION()
 	void OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -194,6 +196,7 @@ public:
 
 	float SprintMultiplier;
 	float CrouchMultiplier;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float MaxHP = 200;
@@ -203,6 +206,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float CurrentHP;
+	float GetCurrentHP() const { return CurrentHP; }
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float CurrentStamina;
@@ -312,7 +316,7 @@ public:
 	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION()
-	void DamageToOtherActor(bool Headshot);
+	void DamageToOtherActor(bool Headshot, bool Dead);
 
 	UFUNCTION(BlueprintCallable)
 	EMovementState GetCurrentMovementState() const { return StateMachine->GetCurrentState(); }

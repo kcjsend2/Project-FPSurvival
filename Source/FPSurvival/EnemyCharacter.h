@@ -36,7 +36,8 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float CurrentHP;
-
+	float GetCurrentHP() const { return CurrentHP; }
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	float AttackRange;
 	

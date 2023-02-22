@@ -380,6 +380,15 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
     return Damage;
 }
 
+void AFPSurvivalCharacter::SetItemHoming(AItemPickup* Item) const
+{
+	if(Item == nullptr)
+		return;
+
+	if(!Item->IsHoming)
+		Item->SetHomingTarget(ItemPickupRange);
+}
+
 void AFPSurvivalCharacter::OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -387,8 +396,7 @@ void AFPSurvivalCharacter::OnItemHomingRangeBeginOverlap(UPrimitiveComponent* Ov
 	if(Item == nullptr)
 		return;
 
-	if(!Item->IsHoming && !Item->HomingHot)
-		Item->SetHomingTarget(ItemPickupRange);
+	SetItemHoming(Item);
 }
 
 void AFPSurvivalCharacter::OnItemPickupRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -1195,7 +1203,7 @@ void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitCompone
 	}
 }
 
-void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot)
+void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot, bool Dead)
 {
 	if(CrosshairWidget == nullptr)
 	{

@@ -2,6 +2,8 @@
 
 
 #include "ItemPickup.h"
+
+#include "FPSurvivalCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -38,7 +40,6 @@ void AItemPickup::SetDefault()
 	DeactivateItem();
 	
 	IsHoming = false;
-	HomingHot = true;
 	
 	ProjectileMovementComponent->bIsHomingProjectile = false;
 	ProjectileMovementComponent->HomingTargetComponent = nullptr;
@@ -60,8 +61,6 @@ void AItemPickup::SetHomingTarget(USceneComponent* Target)
 	IsHoming = true;
 	
 	PhysicsBoxComponent->SetSimulatePhysics(false);
-	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemHoming"));
-	
 	ProjectileMovementComponent->Activate();
 	ProjectileMovementComponent->bIsHomingProjectile = true;
 	ProjectileMovementComponent->HomingTargetComponent = Target;
@@ -72,18 +71,17 @@ void AItemPickup::SetHomingTarget(USceneComponent* Target)
 void AItemPickup::ActivateItem()
 {
 	SetActorHiddenInGame(false);
-	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemDropped"));
-	PhysicsBoxComponent->SetSimulatePhysics(true);
-	PhysicsBoxComponent->AddImpulse(ActivateImpulse, NAME_None, true);
 
-	FTimerHandle HomingTimer;
-	GetWorldTimerManager().SetTimer(HomingTimer, FTimerDelegate::CreateLambda(
-	[&]()
-		{
-			HomingHot = false;
-		}
-	),HomingCooldown, false);
-
+	TArray<AActor*> OverlappingActors;
+	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemHoming"));
+	PhysicsBoxComponent->GetOverlappingActors(OverlappingActors, AFPSurvivalCharacter::StaticClass());
+	
+	if(OverlappingActors.Num() == 0)
+	{
+		PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemDropped"));
+		PhysicsBoxComponent->SetSimulatePhysics(true);
+		PhysicsBoxComponent->AddImpulse(ActivateImpulse, NAME_None, true);
+	}
 }
 
 void AItemPickup::DeactivateItem()

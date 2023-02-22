@@ -51,9 +51,6 @@ public:
 	FVector ActivateImpulse;
 	
 	bool IsHoming = false;
-
-	float HomingCooldown = 0.1;
-	bool HomingHot = true;
 	
 	EItemType ItemType;
 

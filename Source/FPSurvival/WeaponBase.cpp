@@ -118,16 +118,19 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 	if(Hit)
 	{
 		//DrawDebugLine(GetWorld(), HitResult.TraceStart, HitResult.TraceEnd, FColor(255, 0, 0), false, 2.f, 0.f, 1.f);
-		AActor* HitCharacter = Cast<AFPSurvivalCharacter>(HitResult.GetActor());
-		AActor* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor());
+		AFPSurvivalCharacter* HitCharacter = Cast<AFPSurvivalCharacter>(HitResult.GetActor());
+		AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor());
 
 		AActor* HitActor = nullptr;
+		float CurrentHP;
 		if(HitCharacter != nullptr)
 		{
+			CurrentHP = HitCharacter->GetCurrentHP();
 			HitActor = HitCharacter;
 		}
 		else if(HitEnemy != nullptr)
 		{
+			CurrentHP = HitEnemy->GetCurrentHP();
 			HitActor = HitEnemy;
 		}
 		
@@ -135,7 +138,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 		{
 			FVector HitDirection = Character->GetActorLocation() - HitActor->GetActorLocation();
 			HitDirection.Normalize();
-			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false);
+			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false, CurrentHP <= 0 ? true : false);
 
 			float ResultDamage = BulletDamage;
 			if(HitResult.BoneName == "head")
