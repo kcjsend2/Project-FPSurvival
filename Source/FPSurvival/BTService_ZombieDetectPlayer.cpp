@@ -22,21 +22,22 @@ void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, 
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 	
-	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();
-	if(ControllingPawn == nullptr)
+	AZombieCharacter* ControllingCharacter = Cast<AZombieCharacter>(OwnerComp.GetAIOwner()->GetCharacter());
+	
+	if(ControllingCharacter == nullptr)
 		return;
 
-	FVector Center = ControllingPawn->GetActorLocation();
+	FVector Center = ControllingCharacter->GetActorLocation();
 	OwnerComp.GetBlackboardComponent()->SetValueAsVector(AZombieAIController::ForwardKey,
-		Center + ControllingPawn->GetActorForwardVector() * 100);
+		Center + ControllingCharacter->GetActorForwardVector() * 100);
 	
 	if(GetWorld() == nullptr)
 		return;
 	
 	TArray<FOverlapResult> OverlapResults;
-	FCollisionQueryParams CollisionQueryParams(NAME_None, false, ControllingPawn);
+	FCollisionQueryParams CollisionQueryParams(NAME_None, false, ControllingCharacter);
 	
-	AFPSurvivalCharacter* Character = nullptr;
+	AFPSurvivalCharacter* Character = ControllingCharacter->GetTargetCharacter();
 	// 코옵 플레이 감안
 	if(GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity,
 		ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams))
@@ -48,7 +49,7 @@ void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, 
 			{
 				if(Character != nullptr)
 				{
-					if(Character->GetDistanceTo(ControllingPawn) > NewCharacter->GetDistanceTo(ControllingPawn))
+					if(Character->GetDistanceTo(ControllingCharacter) > NewCharacter->GetDistanceTo(ControllingCharacter))
 					{
 						Character = NewCharacter;
 					}
@@ -60,10 +61,11 @@ void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, 
 			}
 		}
 	}
+	ControllingCharacter->SetTargetCharacter(Character);
 	
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(AZombieAIController::PlayerCharacterKey, Character);
 	
-	AZombieCharacter* ControllingZombie = Cast<AZombieCharacter>(ControllingPawn);
+	AZombieCharacter* ControllingZombie = Cast<AZombieCharacter>(ControllingCharacter);
 
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::IsAttackingKey, ControllingZombie->IsAttacking);
 	
