@@ -122,7 +122,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 		AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor());
 
 		AActor* HitActor = nullptr;
-		float CurrentHP;
+		float CurrentHP = -999;
 		if(HitCharacter != nullptr)
 		{
 			CurrentHP = HitCharacter->GetCurrentHP();
@@ -138,7 +138,6 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 		{
 			FVector HitDirection = Character->GetActorLocation() - HitActor->GetActorLocation();
 			HitDirection.Normalize();
-			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false, CurrentHP <= 0 ? true : false);
 
 			float ResultDamage = BulletDamage;
 			if(HitResult.BoneName == "head")
@@ -157,6 +156,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 				}
 			}
 			UGameplayStatics::ApplyPointDamage(HitActor, ResultDamage, HitDirection, HitResult, GetInstigatorController(), this, nullptr);
+			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false, CurrentHP == 0 ? true : false);
 		}
 	}
 

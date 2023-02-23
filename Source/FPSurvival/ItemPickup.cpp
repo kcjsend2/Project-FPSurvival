@@ -61,6 +61,7 @@ void AItemPickup::SetHomingTarget(USceneComponent* Target)
 	IsHoming = true;
 	
 	PhysicsBoxComponent->SetSimulatePhysics(false);
+	PhysicsBoxComponent->SetCollisionProfileName(TEXT("ItemHoming"));
 	ProjectileMovementComponent->Activate();
 	ProjectileMovementComponent->bIsHomingProjectile = true;
 	ProjectileMovementComponent->HomingTargetComponent = Target;
