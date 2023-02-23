@@ -36,6 +36,7 @@ void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, 
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParams(NAME_None, false, ControllingPawn);
 	
+	AFPSurvivalCharacter* Character = nullptr;
 	// 코옵 플레이 감안
 	if(GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity,
 		ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams))
