@@ -49,6 +49,9 @@ APoolableCharacter* UCharacterObjectPoolComponent::SpawnPoolableCharacter()
 	if(ObjectPool.Num() == 0)
 	{
 		PoolableCharacter = LoadPoolableCharacter();
+		if(PoolableCharacter == nullptr)
+			return nullptr;
+		
 		PoolableCharacter->SetDefault();
 		return PoolableCharacter;
 	}

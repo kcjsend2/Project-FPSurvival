@@ -4,6 +4,7 @@
 #include "ZombieSpawner.h"
 
 #include "ZombieCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AZombieSpawner::AZombieSpawner()
@@ -24,8 +25,12 @@ void AZombieSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FTimerHandle SpawnTimerHandle;
 	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this,
 		&AZombieSpawner::SpawnZombieAtCurrentLocation, 3, true);
+
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("SpawnPoint"), SpawnPoint);
+	
 }
 
 // Called every frame
@@ -36,10 +41,18 @@ void AZombieSpawner::Tick(float DeltaTime)
 
 void AZombieSpawner::SpawnZombieAtCurrentLocation()
 {
+	SpawnZombie(GetActorLocation(), GetActorRotation());
+}
+
+void AZombieSpawner::SpawnZombie(FVector Location, FRotator Rotation)
+{
 	AZombieCharacter* Zombie = Cast<AZombieCharacter>(ZombieObjectPool->SpawnPoolableCharacter());
+	if(Zombie == nullptr)
+		return;
+	
 	Zombie->SetDefault();
-	Zombie->SetActorLocation(GetActorLocation());
-	Zombie->SetActorRotation(GetActorRotation());
+	Zombie->SetActorLocation(Location);
+	Zombie->SetActorRotation(Rotation);
 
 	float CurrentDropRange = 0;
 	const int RandomValue = RandomStream.RandRange(1, 100);
@@ -68,36 +81,30 @@ void AZombieSpawner::SpawnZombieAtCurrentLocation()
 	}
 
 	Zombie->SetActive(true);
+	Zombie->OnPoolableActorDespawn.AddDynamic(this, &AZombieSpawner::OnZombieDespawn);
+	SpawnedZombieCounter++;
 }
 
-
-
-void AZombieSpawner::SpawnZombie(FVector Location, FRotator Rotation)
+void AZombieSpawner::OnZombieDespawn(APoolableCharacter* PoolableCharacter)
 {
-	AZombieCharacter* Zombie = Cast<AZombieCharacter>(ZombieObjectPool->SpawnPoolableCharacter());
-	Zombie->SetActorLocation(Location);
-	Zombie->SetActorRotation(Rotation);
+	SpawnedZombieCounter--;
+}
 
-	float CurrentDropRange = 0;
-	const int RandomValue = RandomStream.RandRange(1, 100);
+void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, int Interval)
+{
+	if(ZombieNum == 0)
+		return;
 
-	APoolableActor* DropItem = nullptr;
+	if(SpawnPoint.Num() == 0)
+		return;
 	
-	//구간 별 확률, 어떻게 개선해야할지 감이 잘 안온다...
-	if(RandomValue <= RifleAmmoDropChance)
-		DropItem = RifleAmmoObjectPool->SpawnPooledActor();
-	else
-		CurrentDropRange += RifleAmmoDropChance;
+	const int RandomValue = RandomStream.RandRange(0, SpawnPoint.Num() - 1);
 	
-	if(RandomValue <= CurrentDropRange + PistolAmmoDropChance)
-		DropItem = PistolAmmoObjectPool->SpawnPooledActor();
-	else
-		CurrentDropRange += PistolAmmoDropChance;
-
-	if(RandomValue <= CurrentDropRange + HealthPickupDropChance)
-		DropItem = HealthPickupObjectPool->SpawnPooledActor();
-
-	if(DropItem != nullptr)
-		Zombie->SetDropItem(Cast<AItemPickup>(DropItem));
+	SpawnZombie(SpawnPoint[RandomValue]->GetActorLocation(), SpawnPoint[RandomValue]->GetActorRotation());
+	
+	FTimerDelegate TimerDelegate;
+	FTimerHandle SpawnTimerHandle;
+	TimerDelegate.BindUFunction(this, FName("SpawnZombieAtSpawnPoint"), ZombieNum - 1, Interval);
+	GetWorldTimerManager().SetTimer(SpawnTimerHandle, TimerDelegate, Interval, false);
 }
 

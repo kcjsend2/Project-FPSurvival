@@ -22,6 +22,7 @@ void AZombieCharacter::SetDefault()
 {
 	Super::SetDefault();
 	BeginWalk();
+	TargetCharacter = nullptr;
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	GetMesh()->AttachToComponent(GetCapsuleComponent(), AttachmentRules);

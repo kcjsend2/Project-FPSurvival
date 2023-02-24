@@ -32,8 +32,10 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UCharacterObjectPoolComponent* ZombieObjectPool;
-
-
+	
+	UPROPERTY(EditAnywhere)
+	TArray<AActor*> SpawnPoint;
+	
 	// 모두 합쳐 100이하여야 함.
 	// 합치고 남은 값이 아무것도 드랍하지 않을 확률
 	UPROPERTY(EditAnywhere)
@@ -47,11 +49,13 @@ protected:
 	
 	FRandomStream RandomStream;
 	
-	FTimerHandle SpawnTimerHandle;
+	int SpawnedZombieCounter = 0;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
 	void SpawnZombieAtCurrentLocation();
-
 	void SpawnZombie(FVector Location, FRotator Rotation);
+	void OnZombieDespawn(APoolableCharacter* PoolableCharacter);
+	void SpawnZombieAtSpawnPoint(int ZombieNum, int Interval = 0.8f);
 };

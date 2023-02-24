@@ -9,6 +9,7 @@
 #include "ZombieAIController.h"
 #include "ZombieCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 class AZombieCharacter;
 
@@ -26,10 +27,6 @@ void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, 
 	
 	if(ControllingCharacter == nullptr)
 		return;
-
-	FVector Center = ControllingCharacter->GetActorLocation();
-	OwnerComp.GetBlackboardComponent()->SetValueAsVector(AZombieAIController::ForwardKey,
-		Center + ControllingCharacter->GetActorForwardVector() * 100);
 	
 	if(GetWorld() == nullptr)
 		return;
@@ -38,46 +35,61 @@ void UBTService_ZombieDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, 
 	FCollisionQueryParams CollisionQueryParams(NAME_None, false, ControllingCharacter);
 	
 	AFPSurvivalCharacter* Character = ControllingCharacter->GetTargetCharacter();
-	// 코옵 플레이 감안
-	if(GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity,
-		ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams))
+	FVector Center = ControllingCharacter->GetActorLocation();
+	
+	if(Character == nullptr)
 	{
-		for(auto const& OverlapResult : OverlapResults)
+		// 코옵 플레이 감안
+		if(GetWorld()->OverlapMultiByChannel(OverlapResults, Center, FQuat::Identity,
+			ECC_GameTraceChannel1, FCollisionShape::MakeSphere(DetectRadius), CollisionQueryParams))
 		{
-			AFPSurvivalCharacter* NewCharacter = Cast<AFPSurvivalCharacter>(OverlapResult.GetActor());
-			if(NewCharacter && NewCharacter->GetController()->IsPlayerController())
+			for(auto const& OverlapResult : OverlapResults)
 			{
-				if(Character != nullptr)
+				AFPSurvivalCharacter* NewCharacter = Cast<AFPSurvivalCharacter>(OverlapResult.GetActor());
+				if(NewCharacter && NewCharacter->GetController()->IsPlayerController())
 				{
-					if(Character->GetDistanceTo(ControllingCharacter) > NewCharacter->GetDistanceTo(ControllingCharacter))
+					if(Character != nullptr)
+					{
+						if(Character->GetDistanceTo(ControllingCharacter) > NewCharacter->GetDistanceTo(ControllingCharacter))
+						{
+							Character = NewCharacter;
+						}
+					}
+					else
 					{
 						Character = NewCharacter;
 					}
 				}
-				else
-				{
-					Character = NewCharacter;
-				}
 			}
 		}
+		ControllingCharacter->SetTargetCharacter(Character);
 	}
-	ControllingCharacter->SetTargetCharacter(Character);
-	
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(AZombieAIController::PlayerCharacterKey, Character);
 	
 	AZombieCharacter* ControllingZombie = Cast<AZombieCharacter>(ControllingCharacter);
 
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::IsAttackingKey, ControllingZombie->IsAttacking);
-	
-	// 공격 가능한 사거리 안에 있는가?
+
+	// 벽에 부딪히면 반사각의 방향으로 전진
 	if(Character == nullptr)
+	{
+		FVector ForwardTarget = Center + ControllingCharacter->GetActorForwardVector() * 100;
+		FHitResult HitResult;
+		GetWorld()->LineTraceSingleByChannel(HitResult, Center, ForwardTarget, ECC_Visibility, CollisionQueryParams);
+
+		FVector ReflectionVector = FMath::GetReflectionVector(ControllingCharacter->GetActorForwardVector(), HitResult.ImpactNormal);
+		ForwardTarget = Center + ReflectionVector * 100;
+		
+		OwnerComp.GetBlackboardComponent()->SetValueAsVector(AZombieAIController::ForwardKey, ForwardTarget);
 		return;
+	}
 
 	if(ControllingZombie == nullptr)
 		return;
 
 	ControllingZombie->BeginSprint();
 	
+	// 공격 가능한 사거리 안에 있는가?
 	float Distance = Character->GetDistanceTo(ControllingZombie);
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(AZombieAIController::CanAttackKey,
 		Distance <= ControllingZombie->AttackRange && !ControllingZombie->IsAttacking);
