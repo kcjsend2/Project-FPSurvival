@@ -56,6 +56,10 @@ public:
 	
 	void SpawnZombieAtCurrentLocation();
 	void SpawnZombie(FVector Location, FRotator Rotation);
+
+	UFUNCTION()
+	void SpawnZombieAtSpawnPoint(int ZombieNum, float Interval = 0.8f);
+
+	UFUNCTION()
 	void OnZombieDespawn(APoolableCharacter* PoolableCharacter);
-	void SpawnZombieAtSpawnPoint(int ZombieNum, int Interval = 0.8f);
 };

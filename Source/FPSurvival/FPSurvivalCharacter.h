@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CrossHairWidget.h"
+#include "GameStateWidget.h"
 #include "HudWidget.h"
 #include "ItemPickup.h"
 #include "Components/TimelineComponent.h"
@@ -180,8 +181,11 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UHudWidget* HudWidget;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category="UI")
 	UPickUpWidget* PickUpWidget;
+	
+	UPROPERTY(VisibleAnywhere, Category="UI")
+	UGameStateWidget* GameStateWidget;
 
 	UPROPERTY(EditAnywhere, Category="Mesh")
 	float TPMeshCrouchingZOffset;
@@ -197,6 +201,11 @@ public:
 	float SprintMultiplier;
 	float CrouchMultiplier;
 
+	void OnWaveStart() const;
+	void OnWaveReady();
+	void SetMaxWaveInfo(int MaxWaveInfo);
+	void SetWaveReadyRemainTime(FTimespan RemainTime, int CurrentWave);
+	void SetWaveProgressRemainTime(FTimespan RemainTime);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float MaxHP = 200;
@@ -437,11 +446,20 @@ protected:
 	UPROPERTY()
 	EWallRunningSide WallRunningSide;
 
+	
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCrossHairWidget> CrossHairWidgetClass;
+	
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UHudWidget> HudWidgetClass;
+	
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UHitIndicator> HitIndicatorClass;
 	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGameStateWidget> GameStateWidgetClass;
+	
 	UPROPERTY()
-	FVector TPMeshBaseRelativeLocation;
+	FVector MeshDefaultRelativeLocation;
 };
 

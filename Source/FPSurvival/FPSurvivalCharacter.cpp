@@ -92,15 +92,6 @@ AFPSurvivalCharacter::AFPSurvivalCharacter()
 	
 	SlideCoolDown = SlideInterval;
 	
-	static ConstructorHelpers::FClassFinder<UUserWidget> UI_CrossHair(TEXT("/Game/FirstPerson/Widgets/WBCrosshair.WBCrosshair_C"));
-	CrossHairWidgetClass = UI_CrossHair.Class;
-	
-	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/FirstPerson/Widgets/WBHud.WBHud_C"));
-	HudWidgetClass = UI_HUD.Class;
-	
-	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HitIndicator(TEXT("/Game/FirstPerson/Widgets/WBHitIndicator.WBHitIndicator_C"));
-	HitIndicatorClass = UI_HitIndicator.Class;
-	
 	CurrentHP = MaxHP;
 	CurrentStamina = MaxStamina;
 }
@@ -110,7 +101,7 @@ void AFPSurvivalCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	TPMeshBaseRelativeLocation = GetMesh()->GetRelativeLocation();
+	MeshDefaultRelativeLocation = GetMesh()->GetRelativeLocation();
 	
 	//Mesh1P->SetOwnerNoSee(true);
 	GetMesh()->SetOwnerNoSee(true);
@@ -133,7 +124,12 @@ void AFPSurvivalCharacter::BeginPlay()
 		if(CrosshairWidget != nullptr)
 			CrosshairWidget->AddToViewport();
 		
+		GameStateWidget = CreateWidget<UGameStateWidget>(GetWorld(), GameStateWidgetClass, TEXT("GameState"));
+		if(GameStateWidget != nullptr)
+			GameStateWidget->AddToViewport();
+		
 		PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
+
 	}
 	
 	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
@@ -821,7 +817,7 @@ void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
 	const auto CrouchedHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
 	GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(CrouchedHeight, StandingCapsuleHalfHeight, Value));
 
-	GetMesh()->SetRelativeLocation(FVector(TPMeshBaseRelativeLocation.X, TPMeshBaseRelativeLocation.Y, TPMeshBaseRelativeLocation.Z + (1 - Value) * TPMeshCrouchingZOffset));
+	GetMesh()->SetRelativeLocation(FVector(MeshDefaultRelativeLocation.X, MeshDefaultRelativeLocation.Y, MeshDefaultRelativeLocation.Z + (1 - Value) * TPMeshCrouchingZOffset));
 	
 	const auto RelativeLocation = FirstPersonCameraComponent->GetRelativeLocation();
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(RelativeLocation.X, RelativeLocation.Y, (FMath::Lerp(CrouchedEyeHeight, StandingCameraZOffset, Value))));
@@ -1403,4 +1399,43 @@ bool AFPSurvivalCharacter::IsCrouching() const
 		return true;
 	}
 	return false;
+}
+
+void AFPSurvivalCharacter::OnWaveStart() const
+{
+	UWidget* WaveReadyTextBox = GameStateWidget->GetWidgetFromName(TEXT("WaveReadyTextBox"));
+	WaveReadyTextBox->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void AFPSurvivalCharacter::OnWaveReady()
+{
+	UWidget* WaveReadyTextBox = GameStateWidget->GetWidgetFromName(TEXT("WaveReadyTextBox"));
+	WaveReadyTextBox->SetVisibility(ESlateVisibility::Visible);
+}
+
+void AFPSurvivalCharacter::SetMaxWaveInfo(int MaxWaveInfo)
+{
+	if(GameStateWidget != nullptr)
+	{
+		GameStateWidget->MaxWave = MaxWaveInfo;
+	}
+}
+
+void AFPSurvivalCharacter::SetWaveReadyRemainTime(FTimespan RemainTime, int CurrentWave)
+{
+	GameStateWidget->ReadyRemainTime = RemainTime;
+	if(GameStateWidget != nullptr)
+	{
+		GameStateWidget->WaveReadyString = FString::Printf(TEXT("Wave %d\n"), CurrentWave);
+
+		FString TimeString =  FString(GameStateWidget->ReadyRemainTime.ToString(TEXT("%s.%f")));
+		TimeString.RemoveAt(0);
+		
+		GameStateWidget->WaveReadyString += TimeString;
+	}
+}
+
+void AFPSurvivalCharacter::SetWaveProgressRemainTime(FTimespan RemainTime)
+{
+	GameStateWidget->WaveProgressRemainTime = RemainTime;
 }

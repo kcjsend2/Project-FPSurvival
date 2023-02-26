@@ -25,9 +25,9 @@ void AZombieSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FTimerHandle SpawnTimerHandle;
-	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this,
-		&AZombieSpawner::SpawnZombieAtCurrentLocation, 3, true);
+	// FTimerHandle SpawnTimerHandle;
+	// GetWorldTimerManager().SetTimer(SpawnTimerHandle, this,
+	// 	&AZombieSpawner::SpawnZombieAtCurrentLocation, 3, true);
 
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("SpawnPoint"), SpawnPoint);
 	
@@ -90,7 +90,7 @@ void AZombieSpawner::OnZombieDespawn(APoolableCharacter* PoolableCharacter)
 	SpawnedZombieCounter--;
 }
 
-void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, int Interval)
+void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, float Interval)
 {
 	if(ZombieNum == 0)
 		return;
