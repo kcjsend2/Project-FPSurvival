@@ -50,6 +50,8 @@ protected:
 	FRandomStream RandomStream;
 	
 	int AliveZombieCounter = 0;
+
+	bool IsSpawning = false;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -58,10 +60,11 @@ public:
 	void SpawnZombie(FVector Location, FRotator Rotation);
 
 	UFUNCTION()
-	void SpawnZombieAtSpawnPoint(int ZombieNum, float Interval = 0.2f);
+	void SpawnZombieAtSpawnPoint(int ZombieNum, float Interval = 0.1f);
 
 	UFUNCTION()
 	void OnZombieDead();
 
 	int GetZombieCounter() const { return AliveZombieCounter; }
+	bool GetIsSpawning() const { return IsSpawning; }
 };
