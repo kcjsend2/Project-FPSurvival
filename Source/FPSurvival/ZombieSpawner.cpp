@@ -81,13 +81,13 @@ void AZombieSpawner::SpawnZombie(FVector Location, FRotator Rotation)
 	}
 
 	Zombie->SetActive(true);
-	Zombie->OnPoolableActorDespawn.AddDynamic(this, &AZombieSpawner::OnZombieDespawn);
-	SpawnedZombieCounter++;
+	Zombie->OnZombieDead.BindUFunction(this, TEXT("OnZombieDead"));
+	AliveZombieCounter++;
 }
 
-void AZombieSpawner::OnZombieDespawn(APoolableCharacter* PoolableCharacter)
+void AZombieSpawner::OnZombieDead()
 {
-	SpawnedZombieCounter--;
+	AliveZombieCounter--;
 }
 
 void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, float Interval)

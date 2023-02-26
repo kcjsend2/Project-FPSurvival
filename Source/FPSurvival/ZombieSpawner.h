@@ -49,7 +49,7 @@ protected:
 	
 	FRandomStream RandomStream;
 	
-	int SpawnedZombieCounter = 0;
+	int AliveZombieCounter = 0;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -58,8 +58,10 @@ public:
 	void SpawnZombie(FVector Location, FRotator Rotation);
 
 	UFUNCTION()
-	void SpawnZombieAtSpawnPoint(int ZombieNum, float Interval = 0.8f);
+	void SpawnZombieAtSpawnPoint(int ZombieNum, float Interval = 0.2f);
 
 	UFUNCTION()
-	void OnZombieDespawn(APoolableCharacter* PoolableCharacter);
+	void OnZombieDead();
+
+	int GetZombieCounter() const { return AliveZombieCounter; }
 };

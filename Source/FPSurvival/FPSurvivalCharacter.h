@@ -202,10 +202,11 @@ public:
 	float CrouchMultiplier;
 
 	void OnWaveStart() const;
-	void OnWaveReady();
+	void OnWaveReady(int CurrentWave);
 	void SetMaxWaveInfo(int MaxWaveInfo);
-	void SetWaveReadyRemainTime(FTimespan RemainTime, int CurrentWave);
+	void SetWaveReadyRemainTime(FTimespan RemainTime);
 	void SetWaveProgressRemainTime(FTimespan RemainTime);
+	void SetZombieCounter(int ZombieCounter);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	float MaxHP = 200;

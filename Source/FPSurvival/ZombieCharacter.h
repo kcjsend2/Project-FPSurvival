@@ -9,6 +9,8 @@
 #include "GameFramework/Character.h"
 #include "ZombieCharacter.generated.h"
 
+DECLARE_DELEGATE(FOnZombieDead);
+
 UCLASS()
 class FPSURVIVAL_API AZombieCharacter : public AEnemyCharacter
 {
@@ -32,6 +34,8 @@ public:
 
 	virtual void SetDefault() override;
 	virtual void SetActive(bool Active) override;
+
+	FOnZombieDead OnZombieDead;
 	
 	void BeginWalk();
 	void BeginSprint();

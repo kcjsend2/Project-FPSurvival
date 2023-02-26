@@ -78,6 +78,8 @@ float AZombieCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent
 		GetMesh()->SetSimulatePhysics(true);
 		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
 
+		OnZombieDead.ExecuteIfBound();
+		
 		FTimerHandle DeactivateTimerHandle;
 		GetWorldTimerManager().SetTimer(DeactivateTimerHandle, FTimerDelegate::CreateLambda(
 	[&]()

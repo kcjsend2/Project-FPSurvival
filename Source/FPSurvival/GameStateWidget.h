@@ -17,12 +17,18 @@ class FPSURVIVAL_API UGameStateWidget : public UUserWidget
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString WaveReadyString;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString CurrentWaveString;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString WaveRemainTimeString;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ZombieLeftString;
+
 	int MaxWave;
+	int CurrentWave;
 
 	FTimespan WaveProgressRemainTime;
 	FTimespan ReadyRemainTime;

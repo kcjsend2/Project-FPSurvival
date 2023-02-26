@@ -1405,12 +1405,34 @@ void AFPSurvivalCharacter::OnWaveStart() const
 {
 	UWidget* WaveReadyTextBox = GameStateWidget->GetWidgetFromName(TEXT("WaveReadyTextBox"));
 	WaveReadyTextBox->SetVisibility(ESlateVisibility::Hidden);
+
+	UWidget* CurrentWaveTextBox = GameStateWidget->GetWidgetFromName(TEXT("CurrentWaveTextBox"));
+	CurrentWaveTextBox->SetVisibility(ESlateVisibility::Visible);
+
+	UWidget* WaveRemainTimeTextBox = GameStateWidget->GetWidgetFromName(TEXT("WaveRemainTimeTextBox"));
+	WaveRemainTimeTextBox->SetVisibility(ESlateVisibility::Visible);
+
+	UWidget* ZombieLeftTextBox = GameStateWidget->GetWidgetFromName(TEXT("ZombieLeftTextBox"));
+	ZombieLeftTextBox->SetVisibility(ESlateVisibility::Visible);
+	
+	GameStateWidget->CurrentWaveString = FString::Printf(TEXT("Current Wave : %d/%d"), GameStateWidget->CurrentWave, GameStateWidget->MaxWave);
 }
 
-void AFPSurvivalCharacter::OnWaveReady()
+void AFPSurvivalCharacter::OnWaveReady(int CurrentWave)
 {
 	UWidget* WaveReadyTextBox = GameStateWidget->GetWidgetFromName(TEXT("WaveReadyTextBox"));
 	WaveReadyTextBox->SetVisibility(ESlateVisibility::Visible);
+	
+	UWidget* CurrentWaveTextBox = GameStateWidget->GetWidgetFromName(TEXT("CurrentWaveTextBox"));
+	CurrentWaveTextBox->SetVisibility(ESlateVisibility::Hidden);
+	
+	UWidget* WaveRemainTimeTextBox = GameStateWidget->GetWidgetFromName(TEXT("WaveRemainTimeTextBox"));
+	WaveRemainTimeTextBox->SetVisibility(ESlateVisibility::Hidden);
+
+	UWidget* ZombieLeftTextBox = GameStateWidget->GetWidgetFromName(TEXT("ZombieLeftTextBox"));
+	ZombieLeftTextBox->SetVisibility(ESlateVisibility::Hidden);
+    	
+	GameStateWidget->CurrentWave = CurrentWave;
 }
 
 void AFPSurvivalCharacter::SetMaxWaveInfo(int MaxWaveInfo)
@@ -1421,21 +1443,39 @@ void AFPSurvivalCharacter::SetMaxWaveInfo(int MaxWaveInfo)
 	}
 }
 
-void AFPSurvivalCharacter::SetWaveReadyRemainTime(FTimespan RemainTime, int CurrentWave)
+void AFPSurvivalCharacter::SetWaveReadyRemainTime(FTimespan RemainTime)
 {
-	GameStateWidget->ReadyRemainTime = RemainTime;
 	if(GameStateWidget != nullptr)
 	{
-		GameStateWidget->WaveReadyString = FString::Printf(TEXT("Wave %d\n"), CurrentWave);
+		GameStateWidget->ReadyRemainTime = RemainTime;
+		GameStateWidget->WaveReadyString = FString::Printf(TEXT("Wave %d\n"), GameStateWidget->CurrentWave);
 
-		FString TimeString =  FString(GameStateWidget->ReadyRemainTime.ToString(TEXT("%s.%f")));
-		TimeString.RemoveAt(0);
+		FString TimeString = FString::FromInt(GameStateWidget->ReadyRemainTime.GetTotalSeconds());
+		FString MilliSecondString =  FString(GameStateWidget->ReadyRemainTime.ToString(TEXT(".%f")));
+		MilliSecondString.RemoveAt(0);
 		
-		GameStateWidget->WaveReadyString += TimeString;
+		GameStateWidget->WaveReadyString += TimeString + MilliSecondString;
 	}
 }
 
 void AFPSurvivalCharacter::SetWaveProgressRemainTime(FTimespan RemainTime)
 {
-	GameStateWidget->WaveProgressRemainTime = RemainTime;
+	if(GameStateWidget != nullptr)
+	{
+		GameStateWidget->WaveProgressRemainTime = RemainTime;
+		
+		FString TimeString = FString::FromInt(GameStateWidget->WaveProgressRemainTime.GetTotalSeconds());
+		FString MilliSecondString = FString(GameStateWidget->WaveProgressRemainTime.ToString(TEXT(".%f")));
+		MilliSecondString.RemoveAt(0);
+		
+		GameStateWidget->WaveRemainTimeString = TimeString + MilliSecondString;
+	}
+}
+
+void AFPSurvivalCharacter::SetZombieCounter(int ZombieCounter)
+{
+	if(GameStateWidget != nullptr)
+	{
+		GameStateWidget->ZombieLeftString = FString::Printf(TEXT("Zombie Left: %d"), ZombieCounter);
+	}
 }

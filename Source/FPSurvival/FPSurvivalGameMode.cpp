@@ -42,8 +42,8 @@ void AFPSurvivalGameMode::InitCharacter()
 	{
 		AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(It->Get()->GetCharacter());
 		Character->SetMaxWaveInfo(MaxWave);
-		Character->SetWaveReadyRemainTime(WaveReadyRemainTime, CurrentWave);
-		Character->OnWaveReady();
+		Character->SetWaveReadyRemainTime(WaveReadyRemainTime);
+		Character->OnWaveReady(CurrentWave);
 	}
 }
 
@@ -57,7 +57,7 @@ void AFPSurvivalGameMode::Tick(float DeltaSeconds)
 		for(FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 		{
 			AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(It->Get()->GetCharacter());
-			Character->SetWaveReadyRemainTime(WaveReadyRemainTime, CurrentWave);
+			Character->SetWaveReadyRemainTime(WaveReadyRemainTime);
 		}
 
 		if(WaveReadyRemainTime <= FTimespan::FromSeconds(0))
@@ -73,6 +73,7 @@ void AFPSurvivalGameMode::Tick(float DeltaSeconds)
 		{
 			AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(It->Get()->GetCharacter());
 			Character->SetWaveProgressRemainTime(WaveProgressRemainTime);
+			Character->SetZombieCounter(ZombieSpawner->GetZombieCounter());
 		}
 
 		if(WaveProgressRemainTime <= FTimespan::FromSeconds(0))
@@ -124,7 +125,7 @@ void AFPSurvivalGameMode::WaveEnd()
 		for(FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 		{
 			AFPSurvivalCharacter* Character = Cast<AFPSurvivalCharacter>(It->Get()->GetCharacter());
-			Character->OnWaveReady();
+			Character->OnWaveReady(CurrentWave);
 		}
 	}
 }
