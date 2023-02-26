@@ -51,7 +51,7 @@ protected:
 	
 	int AliveZombieCounter = 0;
 
-	bool IsSpawning = false;
+	bool bIsSpawning = false;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -66,5 +66,5 @@ public:
 	void OnZombieDead();
 
 	int GetZombieCounter() const { return AliveZombieCounter; }
-	bool GetIsSpawning() const { return IsSpawning; }
+	bool IsSpawning() const { return bIsSpawning; }
 };

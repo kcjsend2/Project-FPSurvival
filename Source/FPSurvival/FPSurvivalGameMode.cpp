@@ -76,7 +76,7 @@ void AFPSurvivalGameMode::Tick(float DeltaSeconds)
 			Character->SetZombieCounter(ZombieSpawner->GetZombieCounter());
 		}
 
-		if(WaveProgressRemainTime <= FTimespan::FromSeconds(0) || !ZombieSpawner->GetIsSpawning() && ZombieSpawner->GetZombieCounter() == 0)
+		if(WaveProgressRemainTime <= FTimespan::FromSeconds(0) || !ZombieSpawner->IsSpawning() && ZombieSpawner->GetZombieCounter() == 0)
 		{
 			WaveProgressRemainTime = FTimespan::FromSeconds(0);
 			WaveEnd();

@@ -36,7 +36,7 @@ class UHitIndicator;
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
 DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
-
+DECLARE_MULTICAST_DELEGATE(FOnDead);
 UENUM()
 enum class EWallRunningSide : uint8
 {
@@ -88,8 +88,10 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Jump() override;
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
 	void SetItemHoming(AItemPickup* Item) const;
-
+	void OnPlayerDead();
+	
 	UFUNCTION()
 	void OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
@@ -370,6 +372,8 @@ public:
 
 	UPROPERTY()
 	UAudioComponent* AudioComponent;
+
+	FOnDead OnDead;
 	
 protected:
 	/** Fires a projectile. */
@@ -446,7 +450,6 @@ protected:
 	
 	UPROPERTY()
 	EWallRunningSide WallRunningSide;
-
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCrossHairWidget> CrossHairWidgetClass;
@@ -462,5 +465,7 @@ protected:
 	
 	UPROPERTY()
 	FVector MeshDefaultRelativeLocation;
+
+	bool bIsDead = false;
 };
 

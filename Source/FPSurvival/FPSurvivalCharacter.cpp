@@ -347,9 +347,17 @@ void AFPSurvivalCharacter::Jump()
 	}
 }
 
+void AFPSurvivalCharacter::OnPlayerDead()
+{
+	DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+}
+
 float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	
+	if(bIsDead)
+		return 0;
 	
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
@@ -372,6 +380,15 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 	CurrentHP -= Damage;
 
 	//SoundManager->PlaySound(TEXT("PlayerHit"), GetActorLocation());
+
+	if(CurrentHP <= 0)
+	{
+		CurrentHP = 0;
+		bIsDead = true;
+		OnPlayerDead();
+		
+		OnDead.Broadcast();
+	}
 	
     return Damage;
 }
@@ -385,8 +402,9 @@ void AFPSurvivalCharacter::SetItemHoming(AItemPickup* Item) const
 		Item->SetHomingTarget(ItemPickupRange);
 }
 
+
 void AFPSurvivalCharacter::OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AItemPickup* Item = Cast<AItemPickup>(OtherActor);
 	if(Item == nullptr)

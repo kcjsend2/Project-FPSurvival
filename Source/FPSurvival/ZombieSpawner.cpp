@@ -94,13 +94,13 @@ void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, float Interval)
 {
 	if(ZombieNum == 0)
 	{
-		IsSpawning = false;
+		bIsSpawning = false;
 		return;
 	}
 	if(SpawnPoint.Num() == 0)
 		return;
 
-	IsSpawning = true;
+	bIsSpawning = true;
 	
 	const int RandomValue = RandomStream.RandRange(0, SpawnPoint.Num() - 1);
 	
