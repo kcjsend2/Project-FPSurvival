@@ -22,8 +22,6 @@ protected:
 	void OnStartButtonClicked();
 
 public:
-	bool bIsLoading = false;
-	
 	UPROPERTY(BlueprintReadWrite)
 	UButton* StartButton;
 	

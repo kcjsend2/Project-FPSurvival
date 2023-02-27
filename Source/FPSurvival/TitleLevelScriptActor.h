@@ -34,4 +34,9 @@ protected:
 
 	UFUNCTION()
 	void OnStartButtonClicked();
+
+	UFUNCTION()
+	void OnExitButtonClicked();
+	
+	bool bIsLoading = false;
 };

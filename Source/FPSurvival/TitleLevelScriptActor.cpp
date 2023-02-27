@@ -20,13 +20,15 @@ void ATitleLevelScriptActor::BeginPlay()
 	Super::BeginPlay();
 
 	SetActorTickEnabled(true);
+
+	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	
-	const UWorld* World = GetWorld();
 	TitleScreenWidget = CreateWidget<UTitleScreenWidget>(GetWorld(), TitleScreenClass);
 	if(TitleScreenWidget != nullptr)
 	{
 		TitleScreenWidget->AddToViewport();
 		TitleScreenWidget->StartButton->OnClicked.AddDynamic(this, &ATitleLevelScriptActor::OnStartButtonClicked);
+		TitleScreenWidget->ExitButton->OnClicked.AddDynamic(this, &ATitleLevelScriptActor::OnExitButtonClicked);
 	}
 	
 	LoadingScreenWidget = CreateWidget<ULoadingScreenWidget>(GetWorld(), LoadingScreenClass);
@@ -41,7 +43,7 @@ void ATitleLevelScriptActor::BeginPlay()
 void ATitleLevelScriptActor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if(TitleScreenWidget->bIsLoading)
+	if(bIsLoading)
 	{
 		LoadingScreenWidget->LoadingProgress =
 		GetGameInstance()->GetSubsystem<ULevelLoadingGameInstanceSubsystem>()->GetLevelLoadProgress();
@@ -50,6 +52,12 @@ void ATitleLevelScriptActor::Tick(float DeltaSeconds)
 
 void ATitleLevelScriptActor::OnStartButtonClicked()
 {
+	bIsLoading = true;
 	LoadingScreenWidget->SetVisibility(ESlateVisibility::Visible);
 	TitleScreenWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ATitleLevelScriptActor::OnExitButtonClicked()
+{
+	GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
 }
