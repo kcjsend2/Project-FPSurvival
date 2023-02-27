@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Button.h"
 #include "TitleScreenWidget.generated.h"
 
 /**
@@ -14,4 +15,18 @@ class FPSURVIVAL_API UTitleScreenWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void OnStartButtonClicked();
+
+public:
+	bool bIsLoading = false;
+	
+	UPROPERTY(BlueprintReadWrite)
+	UButton* StartButton;
+	
+	UPROPERTY(BlueprintReadWrite)
+	UButton* ExitButton;
 };
