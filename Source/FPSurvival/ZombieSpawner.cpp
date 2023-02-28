@@ -61,17 +61,17 @@ void AZombieSpawner::SpawnZombie(FVector Location, FRotator Rotation)
 	
 	//구간 별 확률, 어떻게 개선해야할지 감이 잘 안온다...
 	if(RandomValue <= RifleAmmoDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
-		DropItem = RifleAmmoObjectPool->SpawnPooledActor();
+		DropItem = RifleAmmoObjectPool->SpawnPoolableActor();
 	else
 		CurrentDropRange += RifleAmmoDropChance;
 	
 	if(RandomValue <= CurrentDropRange + PistolAmmoDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
-		DropItem = PistolAmmoObjectPool->SpawnPooledActor();
+		DropItem = PistolAmmoObjectPool->SpawnPoolableActor();
 	else
 		CurrentDropRange += PistolAmmoDropChance;
 
 	if(RandomValue <= CurrentDropRange + HealthPickupDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
-		DropItem = HealthPickupObjectPool->SpawnPooledActor();
+		DropItem = HealthPickupObjectPool->SpawnPoolableActor();
 
 	if(DropItem != nullptr)
 	{
@@ -82,12 +82,22 @@ void AZombieSpawner::SpawnZombie(FVector Location, FRotator Rotation)
 
 	Zombie->SetActive(true);
 	Zombie->OnZombieDead.BindUFunction(this, TEXT("OnZombieDead"));
+	OnDeactivateAll.AddUFunction(Zombie, "OnDespawnCall");
 	AliveZombieCounter++;
 }
 
 void AZombieSpawner::OnZombieDead()
 {
 	AliveZombieCounter--;
+}
+
+void AZombieSpawner::DeactivateAllZombies()
+{
+	AliveZombieCounter = 0;
+	bIsSpawning = false;
+	if(SpawnTimerHandle.IsValid())
+		GetWorldTimerManager().ClearTimer(SpawnTimerHandle);
+	OnDeactivateAll.Broadcast();
 }
 
 void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, float Interval)
@@ -107,7 +117,6 @@ void AZombieSpawner::SpawnZombieAtSpawnPoint(int ZombieNum, float Interval)
 	SpawnZombie(SpawnPoint[RandomValue]->GetActorLocation(), SpawnPoint[RandomValue]->GetActorRotation());
 	
 	FTimerDelegate TimerDelegate;
-	FTimerHandle SpawnTimerHandle;
 	TimerDelegate.BindUFunction(this, FName("SpawnZombieAtSpawnPoint"), ZombieNum - 1, Interval);
 	GetWorldTimerManager().SetTimer(SpawnTimerHandle, TimerDelegate, Interval, false);
 }

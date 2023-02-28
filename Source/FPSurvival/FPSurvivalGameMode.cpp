@@ -16,6 +16,18 @@ AFPSurvivalGameMode::AFPSurvivalGameMode() : Super()
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 }
 
+void AFPSurvivalGameMode::RestartGame()
+{
+	ZombieSpawner->DeactivateAllZombies();
+	CurrentWave = 1;
+	
+	WaveReadyRemainTime = FTimespan::FromSeconds(WaveReadyDefaultTime);
+	WaveProgressRemainTime = FTimespan::FromSeconds(WaveProgressDefaultTime);
+
+	InitCharacter();
+	
+}
+
 void AFPSurvivalGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CrossHairWidget.h"
+#include "DeadMenuWidget.h"
 #include "GameStateWidget.h"
 #include "HudWidget.h"
 #include "ItemPickup.h"
@@ -462,6 +463,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameStateWidget> GameStateWidgetClass;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UDeadMenuWidget> DeadMenuWidgetClass;
 	
 	UPROPERTY()
 	FVector MeshDefaultRelativeLocation;

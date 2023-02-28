@@ -8,6 +8,8 @@
 #include "GameFramework/Actor.h"
 #include "ZombieSpawner.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnDeactivateAll);
+
 UCLASS()
 class FPSURVIVAL_API AZombieSpawner : public AActor
 {
@@ -52,6 +54,9 @@ protected:
 	int AliveZombieCounter = 0;
 
 	bool bIsSpawning = false;
+
+	FOnDeactivateAll OnDeactivateAll;
+	FTimerHandle SpawnTimerHandle;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -67,4 +72,6 @@ public:
 
 	int GetZombieCounter() const { return AliveZombieCounter; }
 	bool IsSpawning() const { return bIsSpawning; }
+
+	void DeactivateAllZombies();
 };

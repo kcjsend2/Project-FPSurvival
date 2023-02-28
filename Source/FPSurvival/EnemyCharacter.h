@@ -25,6 +25,8 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	virtual void DetachDropItem(bool bActivateItem, bool bSetDropItemNull);
+	
 	UPROPERTY(EditAnywhere, Category="Item")
 	AItemPickup* DropItem;
 	

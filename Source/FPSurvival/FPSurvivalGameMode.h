@@ -26,6 +26,9 @@ class AFPSurvivalGameMode : public AGameModeBase
 public:
 	AFPSurvivalGameMode();
 	EWaveState GetWaveState() const { return WaveState; }
+
+	UFUNCTION()
+	void RestartGame();
 	
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;

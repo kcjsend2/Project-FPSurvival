@@ -42,12 +42,7 @@ float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent,
 		CurrentHP = 0;
 		if(DropItem != nullptr)
 		{
-			const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
-			DropItem->DetachFromActor(DetachmentRules);
-			DropItem->ActivateItem();
-			
-			DropItem = nullptr;
-			
+			DetachDropItem(true, true);
 		}
 	}
 	
@@ -66,5 +61,17 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AEnemyCharacter::DetachDropItem(bool bActivateItem, bool bSetDropItemNull)
+{
+	const FDetachmentTransformRules DetachmentRules(EDetachmentRule::KeepWorld, false);
+	DropItem->DetachFromActor(DetachmentRules);
+	
+	if(bActivateItem)
+		DropItem->ActivateItem();
+
+	if(bSetDropItemNull)
+		DropItem = nullptr;
 }
 

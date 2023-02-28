@@ -41,6 +41,10 @@ public:
 	void BeginSprint();
 	AFPSurvivalCharacter* GetTargetCharacter() const { return TargetCharacter; }
 	void SetTargetCharacter(AFPSurvivalCharacter* Character) { TargetCharacter = Character; }
+
+	UFUNCTION()
+	void OnDespawnCall();
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -11,6 +11,8 @@
 #include "VaultingComponent.h"
 #include "Components/WidgetComponent.h"
 #include "CrossHairWidget.h"
+#include "DeadMenuWidget.h"
+#include "FPSurvivalGameMode.h"
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
 #include "HitIndicator.h"
@@ -130,6 +132,15 @@ void AFPSurvivalCharacter::BeginPlay()
 		
 		PickUpWidget = Cast<UPickUpWidget>(HudWidget->GetWidgetFromName(TEXT("WBPickUp")));
 
+		UDeadMenuWidget* DeadMenuWidget = CreateWidget<UDeadMenuWidget>(GetWorld(), DeadMenuWidgetClass, TEXT("DeadMenu"));
+		if(DeadMenuWidget != nullptr)
+		{
+			DeadMenuWidget->AddToViewport();
+			DeadMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+			OnDead.AddUFunction(DeadMenuWidget, "SetVisible");
+			AFPSurvivalGameMode* GameMode = Cast<AFPSurvivalGameMode>(UGameplayStatics::GetGameMode(this));
+			DeadMenuWidget->OnGameRestart.AddUFunction(GameMode, TEXT("RestartGame"));
+		}
 	}
 	
 	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
@@ -349,6 +360,15 @@ void AFPSurvivalCharacter::Jump()
 
 void AFPSurvivalCharacter::OnPlayerDead()
 {
+	CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+	HudWidget->SetVisibility(ESlateVisibility::Hidden);
+	PickUpWidget->SetVisibility(ESlateVisibility::Hidden);
+	GameStateWidget->SetVisibility(ESlateVisibility::Hidden);
+	
+	UGameplayStatics::SetGamePaused(this, true);
+
+	
+	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
@@ -386,7 +406,6 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 		CurrentHP = 0;
 		bIsDead = true;
 		OnPlayerDead();
-		
 		OnDead.Broadcast();
 	}
 	
@@ -702,6 +721,7 @@ void AFPSurvivalCharacter::RegenStamina(float DeltaSeconds)
 		}
 	}
 }
+
 
 //////////////////////////////////////////////////////////////////////////// Input
 

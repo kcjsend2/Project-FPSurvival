@@ -18,7 +18,7 @@ public:
 	UActorObjectPoolComponent();
 
 	UFUNCTION()
-	APoolableActor* SpawnPooledActor();
+	APoolableActor* SpawnPoolableActor();
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APoolableActor> PoolableActorSubclass;
@@ -27,7 +27,7 @@ public:
 	int InitialPoolSize;
 
 	UFUNCTION()
-	void OnPooledActorDespawn(APoolableActor* PooledActor);
+	void OnPoolableActorDespawn(APoolableActor* PoolableActor);
 	
 protected:
 	// Called when the game starts

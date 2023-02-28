@@ -43,6 +43,17 @@ void AZombieCharacter::BeginSprint()
 	GetCharacterMovement()->MaxWalkSpeed = SprintWalkSpeed;
 }
 
+void AZombieCharacter::OnDespawnCall()
+{
+	DropItem->SetDefault();
+	DetachDropItem(false, false);
+	DropItem->Deactivate();
+	DropItem = nullptr;
+	
+	SetDefault();
+	Deactivate();
+}
+
 // Called when the game starts or when spawned
 void AZombieCharacter::BeginPlay()
 {

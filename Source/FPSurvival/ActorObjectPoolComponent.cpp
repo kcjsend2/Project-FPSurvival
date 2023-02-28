@@ -30,20 +30,20 @@ APoolableActor* UActorObjectPoolComponent::LoadPoolableActor()
 	{
 		SpawnedActor->SetActive(false);
 		SpawnedActor->SetDefault();
-		SpawnedActor->OnPoolableActorDespawn.AddDynamic(this, &UActorObjectPoolComponent::OnPooledActorDespawn);
+		SpawnedActor->OnPoolableActorDespawn.AddDynamic(this, &UActorObjectPoolComponent::OnPoolableActorDespawn);
 	}
 	return SpawnedActor;
 }
 
-void UActorObjectPoolComponent::OnPooledActorDespawn(APoolableActor* PooledActor)
+void UActorObjectPoolComponent::OnPoolableActorDespawn(APoolableActor* PoolableActor)
 {
-	PooledActor->SetActorLocation(FVector().ZeroVector);
-	PooledActor->SetActorRotation(FRotator().ZeroRotator);
-	PooledActor->SetDefault();
-	ObjectPool.Push(PooledActor);
+	PoolableActor->SetActorLocation(FVector().ZeroVector);
+	PoolableActor->SetActorRotation(FRotator().ZeroRotator);
+	PoolableActor->SetDefault();
+	ObjectPool.Push(PoolableActor);
 }
 
-APoolableActor* UActorObjectPoolComponent::SpawnPooledActor()
+APoolableActor* UActorObjectPoolComponent::SpawnPoolableActor()
 {
 	APoolableActor* PoolableActor;
 	if(ObjectPool.Num() == 0)
