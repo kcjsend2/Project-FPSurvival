@@ -52,7 +52,7 @@ FVaultingInfo UVaultingComponent::CheckCanVault() const
 	
 	CollisionParams.TraceTag = TraceTag;*/
 	
-	GetWorld()->LineTraceSingleByChannel(HitResult, LineStart, LineEnd, ECC_Visibility, CollisionParams);
+	GetWorld()->LineTraceSingleByChannel(HitResult, LineStart, LineEnd, ECC_GameTraceChannel2, CollisionParams);
 
 	
 	if(HitResult.bBlockingHit)
@@ -94,7 +94,7 @@ FVaultingInfo UVaultingComponent::CanVaultToHit(const FHitResult HitResult) cons
 
 	const auto Center = EndingLocation + FVector(0, 0, CapsuleRadius);
 
-	if(CheckCapsuleCollision(Center, CapsuleHalfHeight, CapsuleRadius, true))
+	if(CheckCapsuleCollision(Center, CapsuleHalfHeight, CapsuleRadius, false))
 	{
 		return FVaultingInfo();
 	}
