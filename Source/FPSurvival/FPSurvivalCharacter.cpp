@@ -13,6 +13,7 @@
 #include "CrossHairWidget.h"
 #include "DeadMenuWidget.h"
 #include "FPSurvivalGameMode.h"
+#include "FPSurvivalPlayerState.h"
 #include "PickUpWidget.h"
 #include "WeaponBase.h"
 #include "HitIndicator.h"
@@ -140,6 +141,34 @@ void AFPSurvivalCharacter::BeginPlay()
 			OnDead.AddUFunction(DeadMenuWidget, "SetVisible");
 			AFPSurvivalGameMode* GameMode = Cast<AFPSurvivalGameMode>(UGameplayStatics::GetGameMode(this));
 			DeadMenuWidget->OnGameRestart.AddUFunction(GameMode, TEXT("RestartGame"));
+			GameMode->OnWaveFailed.AddUFunction(DeadMenuWidget, TEXT("SetVisible"));
+			GameMode->OnWaveFailed.AddUFunction(this, TEXT("OnPlayerDisable"));
+		}
+
+		UWinMenuWidget* WinMenuWidget = CreateWidget<UWinMenuWidget>(GetWorld(), WinMenuWidgetClass, TEXT("WinMenu"));
+		if(WinMenuWidget != nullptr)
+		{
+			WinMenuWidget->AddToViewport();
+			WinMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+			const AFPSurvivalPlayerState* CurrentPlayerState = Cast<AFPSurvivalPlayerState>(GetPlayerState());
+			AFPSurvivalGameMode* GameMode = Cast<AFPSurvivalGameMode>(UGameplayStatics::GetGameMode(this));
+			GameMode->OnGameWin.AddLambda([=]()
+			{
+				WinMenuWidget->SetKillCount(CurrentPlayerState->GetKillScore());
+				
+			});
+			GameMode->OnGameWin.AddLambda([=]()
+			{
+				WinMenuWidget->SetDamageDealt(CurrentPlayerState->GetDamageDealt());
+				
+			});
+			GameMode->OnGameWin.AddLambda([=]()
+			{
+				WinMenuWidget->SetDamageTaken(CurrentPlayerState->GetDamageTaken());
+				
+			});
+			GameMode->OnGameWin.AddUFunction(WinMenuWidget, "SetVisible");
+			GameMode->OnGameWin.AddUFunction(this, TEXT("OnPlayerDisable"));
 		}
 	}
 	
@@ -358,7 +387,7 @@ void AFPSurvivalCharacter::Jump()
 	}
 }
 
-void AFPSurvivalCharacter::OnPlayerDead()
+void AFPSurvivalCharacter::OnPlayerDisable()
 {
 	CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 	HudWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -366,7 +395,6 @@ void AFPSurvivalCharacter::OnPlayerDead()
 	GameStateWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	UGameplayStatics::SetGamePaused(this, true);
-
 	
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -398,14 +426,17 @@ float AFPSurvivalCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 	}
 
 	CurrentHP -= Damage;
-
+	
+	AFPSurvivalPlayerState* CurrentPlayerState = Cast<AFPSurvivalPlayerState>(GetPlayerState());
+	CurrentPlayerState->AddDamageTaken(Damage);
+	
 	//SoundManager->PlaySound(TEXT("PlayerHit"), GetActorLocation());
 
 	if(CurrentHP <= 0)
 	{
 		CurrentHP = 0;
 		bIsDead = true;
-		OnPlayerDead();
+		OnPlayerDisable();
 		OnDead.Broadcast();
 	}
 	
@@ -1237,7 +1268,7 @@ void AFPSurvivalCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitCompone
 	}
 }
 
-void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot, bool Dead)
+void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot, bool Dead, float Damage)
 {
 	if(CrosshairWidget == nullptr)
 	{
@@ -1254,6 +1285,12 @@ void AFPSurvivalCharacter::DamageToOtherActor(bool Headshot, bool Dead)
 		SoundManager->PlaySound(TEXT("EnemyHit"), GetActorLocation());
 		CrosshairWidget->HitIndicatorColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
+	AFPSurvivalPlayerState* CurrentPlayerState = Cast<AFPSurvivalPlayerState>(GetPlayerState());
+
+	if(Dead)
+		CurrentPlayerState->AddKillScore();
+
+	CurrentPlayerState->AddDamageDealt(Damage);
 }
 
 FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)

@@ -13,6 +13,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MovementStateMachine.h"
 #include "SoundManager.h"
+#include "WinMenuWidget.h"
 #include "Components/SphereComponent.h"
 #include "FPSurvivalCharacter.generated.h"
 
@@ -34,10 +35,11 @@ class UHitIndicator;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
-DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
-DECLARE_MULTICAST_DELEGATE(FOnDead);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character)
+DECLARE_DYNAMIC_DELEGATE(FOnFireEnd)
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance)
+DECLARE_MULTICAST_DELEGATE(FOnDead)
+
 UENUM()
 enum class EWallRunningSide : uint8
 {
@@ -91,7 +93,9 @@ protected:
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 	void SetItemHoming(AItemPickup* Item) const;
-	void OnPlayerDead();
+
+	UFUNCTION()
+	void OnPlayerDisable();
 	
 	UFUNCTION()
 	void OnItemHomingRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -329,7 +333,7 @@ public:
 	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION()
-	void DamageToOtherActor(bool Headshot, bool Dead);
+	void DamageToOtherActor(bool Headshot, bool Dead, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	EMovementState GetCurrentMovementState() const { return StateMachine->GetCurrentState(); }
@@ -466,6 +470,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UDeadMenuWidget> DeadMenuWidgetClass;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWinMenuWidget> WinMenuWidgetClass;
 	
 	UPROPERTY()
 	FVector MeshDefaultRelativeLocation;

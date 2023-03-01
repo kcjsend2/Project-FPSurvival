@@ -4,6 +4,7 @@
 #include "FPSurvivalCharacter.h"
 #include "ZombieSpawner.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 
 AFPSurvivalGameMode::AFPSurvivalGameMode() : Super()
@@ -88,12 +89,28 @@ void AFPSurvivalGameMode::Tick(float DeltaSeconds)
 			Character->SetZombieCounter(ZombieSpawner->GetZombieCounter());
 		}
 
-		if(WaveProgressRemainTime <= FTimespan::FromSeconds(0) || !ZombieSpawner->IsSpawning() && ZombieSpawner->GetZombieCounter() == 0)
+		if(!ZombieSpawner->IsSpawning() && ZombieSpawner->GetZombieCounter() == 0)
 		{
 			WaveProgressRemainTime = FTimespan::FromSeconds(0);
 			WaveEnd();
 		}
+
+		if(WaveProgressRemainTime <= FTimespan::FromSeconds(0) && (ZombieSpawner->IsSpawning() || ZombieSpawner->GetZombieCounter() != 0))
+		{
+			WaveProgressRemainTime = FTimespan::FromSeconds(0);
+			WaveFailed();
+		}
 	}
+}
+
+void AFPSurvivalGameMode::WaveFailed()
+{
+	OnWaveFailed.Broadcast();
+}
+
+void AFPSurvivalGameMode::GameWin()
+{
+	OnGameWin.Broadcast();
 }
 
 void AFPSurvivalGameMode::WaveStart()
@@ -129,7 +146,7 @@ void AFPSurvivalGameMode::WaveEnd()
 	// 모든 웨이브를 클리어
 	if(CurrentWave > MaxWave)
 	{
-		// YOU WIN 표시, 최종 점수 표시, 타이틀로 돌아가기 버튼 표시
+		GameWin();
 	}
 	else
 	{

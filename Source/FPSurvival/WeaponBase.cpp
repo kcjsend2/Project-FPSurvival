@@ -156,7 +156,7 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 				}
 			}
 			UGameplayStatics::ApplyPointDamage(HitActor, ResultDamage, HitDirection, HitResult, GetInstigatorController(), this, nullptr);
-			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false, CurrentHP == 0 ? true : false);
+			Character->DamageToOtherActor(HitResult.BoneName == "head" ? true : false, CurrentHP - ResultDamage <= 0 ? true : false, ResultDamage);
 		}
 	}
 

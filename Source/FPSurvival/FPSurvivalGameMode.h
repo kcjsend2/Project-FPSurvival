@@ -17,6 +17,8 @@ enum class EWaveState : uint8
 	Pause
 };
 
+DECLARE_MULTICAST_DELEGATE(FOnWaveFailed)
+DECLARE_MULTICAST_DELEGATE(FOnGameWin)
 
 UCLASS(minimalapi)
 class AFPSurvivalGameMode : public AGameModeBase
@@ -29,11 +31,17 @@ public:
 
 	UFUNCTION()
 	void RestartGame();
+
+	FOnWaveFailed OnWaveFailed;
+	FOnGameWin OnGameWin;
 	
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+
+	void WaveFailed();
+	void GameWin();
 
 	UPROPERTY(EditAnywhere)
 	int MaxWave;

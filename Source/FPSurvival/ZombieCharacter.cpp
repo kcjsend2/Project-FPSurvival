@@ -65,6 +65,16 @@ void AZombieCharacter::BeginPlay()
 	MeleeAttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AZombieCharacter::OnSphereBeginOverlap);
 }
 
+void AZombieCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	if(DeactivateTimerHandle.IsValid())
+	{
+		GetWorldTimerManager().ClearTimer(DeactivateTimerHandle);
+	}
+}
+
 // Called every frame
 void AZombieCharacter::Tick(float DeltaTime)
 {
@@ -91,7 +101,6 @@ float AZombieCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent
 
 		OnZombieDead.ExecuteIfBound();
 		
-		FTimerHandle DeactivateTimerHandle;
 		GetWorldTimerManager().SetTimer(DeactivateTimerHandle, FTimerDelegate::CreateLambda(
 	[&]()
 		{
