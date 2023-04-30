@@ -30,7 +30,7 @@ APoolableCharacter* UCharacterObjectPoolComponent::LoadPoolableCharacter()
 	{
 		SpawnedCharacter->SetActive(false);
 		SpawnedCharacter->SetDefault();
-		SpawnedCharacter->OnPoolableActorDespawn.AddDynamic(this, &UCharacterObjectPoolComponent::OnPoolableCharacterDespawn);
+		SpawnedCharacter->OnPoolableCharacterDespawn.AddDynamic(this, &UCharacterObjectPoolComponent::OnPoolableCharacterDespawn);
 	}
 	return SpawnedCharacter;
 }

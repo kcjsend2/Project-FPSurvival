@@ -31,8 +31,6 @@ FVaultingInfo UVaultingComponent::CheckCanVault() const
 		return FVaultingInfo{false, FVector(0, 0, 0)};
 	}
 
-	const auto CapsuleComponent = OwningCharacter->GetCapsuleComponent();
-
 	constexpr float VaultingDistance = 70.0f;
 	
 	FHitResult HitResult;

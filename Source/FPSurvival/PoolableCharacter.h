@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	APoolableCharacter();
 	
-	FOnPoolableCharacterDespawn OnPoolableActorDespawn;
+	FOnPoolableCharacterDespawn OnPoolableCharacterDespawn;
 	
 	UFUNCTION()
 	void Deactivate();

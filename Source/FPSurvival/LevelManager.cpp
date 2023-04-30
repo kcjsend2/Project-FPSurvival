@@ -9,7 +9,7 @@
 void ULevelManager::LoadLevelAsync(const FString LevelName)
 {
 	auto& StreamableManager = UAssetManager::GetStreamableManager();
-	const FSoftObjectPath LevelPath = LevelDir + LevelName;
+	const FSoftObjectPath LevelPath = LevelDir.ToString() + LevelName;
 	StreamableHandle = StreamableManager.RequestAsyncLoad(LevelPath, FStreamableDelegate::CreateUFunction(this, "OnLevelLoadComplete", LevelName));
 }
 

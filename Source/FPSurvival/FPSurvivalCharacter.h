@@ -35,10 +35,10 @@ class UHitIndicator;
 
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character)
-DECLARE_DYNAMIC_DELEGATE(FOnFireEnd)
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance)
-DECLARE_MULTICAST_DELEGATE(FOnDead)
+DECLARE_DYNAMIC_DELEGATE(FOnFireEnd);
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FOnReload, UAnimInstance*, CharacterAnimInstance);
+DECLARE_MULTICAST_DELEGATE(FOnDead);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnFire, AFPSurvivalCharacter*, Character);
 
 UENUM()
 enum class EWallRunningSide : uint8
@@ -429,6 +429,7 @@ protected:
 	bool CanSurfaceBeWallRan(FVector SurfaceNormal) const;
 	FVector FindLaunchDirection() const;
 	bool IsWallRunningKeysDown() const;
+	
 	void ClampHorizontalVelocity() const;
 	void SetHorizontalVelocity(float VelocityX, float VelocityY) const;
 	

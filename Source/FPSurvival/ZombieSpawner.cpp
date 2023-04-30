@@ -59,7 +59,6 @@ void AZombieSpawner::SpawnZombie(FVector Location, FRotator Rotation)
 
 	APoolableActor* DropItem = nullptr;
 	
-	//구간 별 확률, 어떻게 개선해야할지 감이 잘 안온다...
 	if(RandomValue <= RifleAmmoDropChance && RandomValue > CurrentDropRange && DropItem == nullptr)
 		DropItem = RifleAmmoObjectPool->SpawnPoolableActor();
 	else

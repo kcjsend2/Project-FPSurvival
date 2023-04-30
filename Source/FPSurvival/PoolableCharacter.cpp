@@ -14,7 +14,7 @@ APoolableCharacter::APoolableCharacter()
 void APoolableCharacter::Deactivate()
 {
 	SetActive(false);
-	OnPoolableActorDespawn.Broadcast(this);
+	OnPoolableCharacterDespawn.Broadcast(this);
 }
 
 void APoolableCharacter::SetActive(bool Active)

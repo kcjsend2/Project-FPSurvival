@@ -140,9 +140,12 @@ void AFPSurvivalCharacter::BeginPlay()
 			DeadMenuWidget->SetVisibility(ESlateVisibility::Hidden);
 			OnDead.AddUFunction(DeadMenuWidget, "SetVisible");
 			AFPSurvivalGameMode* GameMode = Cast<AFPSurvivalGameMode>(UGameplayStatics::GetGameMode(this));
-			DeadMenuWidget->OnGameRestart.AddUFunction(GameMode, TEXT("RestartGame"));
-			GameMode->OnWaveFailed.AddUFunction(DeadMenuWidget, TEXT("SetVisible"));
-			GameMode->OnWaveFailed.AddUFunction(this, TEXT("OnPlayerDisable"));
+			if(GameMode != nullptr)
+			{
+				DeadMenuWidget->OnGameRestart.AddUFunction(GameMode, TEXT("RestartGame"));
+				GameMode->OnWaveFailed.AddUFunction(DeadMenuWidget, TEXT("SetVisible"));
+				GameMode->OnWaveFailed.AddUFunction(this, TEXT("OnPlayerDisable"));
+			}
 		}
 
 		UWinMenuWidget* WinMenuWidget = CreateWidget<UWinMenuWidget>(GetWorld(), WinMenuWidgetClass, TEXT("WinMenu"));
@@ -152,23 +155,27 @@ void AFPSurvivalCharacter::BeginPlay()
 			WinMenuWidget->SetVisibility(ESlateVisibility::Hidden);
 			const AFPSurvivalPlayerState* CurrentPlayerState = Cast<AFPSurvivalPlayerState>(GetPlayerState());
 			AFPSurvivalGameMode* GameMode = Cast<AFPSurvivalGameMode>(UGameplayStatics::GetGameMode(this));
-			GameMode->OnGameWin.AddLambda([=]()
+
+			if(GameMode != nullptr)
+			{
+				GameMode->OnGameWin.AddLambda([=]()
 			{
 				WinMenuWidget->SetKillCount(CurrentPlayerState->GetKillScore());
 				
 			});
-			GameMode->OnGameWin.AddLambda([=]()
-			{
-				WinMenuWidget->SetDamageDealt(CurrentPlayerState->GetDamageDealt());
+				GameMode->OnGameWin.AddLambda([=]()
+				{
+					WinMenuWidget->SetDamageDealt(CurrentPlayerState->GetDamageDealt());
 				
-			});
-			GameMode->OnGameWin.AddLambda([=]()
-			{
-				WinMenuWidget->SetDamageTaken(CurrentPlayerState->GetDamageTaken());
+				});
+				GameMode->OnGameWin.AddLambda([=]()
+				{
+					WinMenuWidget->SetDamageTaken(CurrentPlayerState->GetDamageTaken());
 				
-			});
-			GameMode->OnGameWin.AddUFunction(WinMenuWidget, "SetVisible");
-			GameMode->OnGameWin.AddUFunction(this, TEXT("OnPlayerDisable"));
+				});
+				GameMode->OnGameWin.AddUFunction(WinMenuWidget, "SetVisible");
+				GameMode->OnGameWin.AddUFunction(this, TEXT("OnPlayerDisable"));
+			}
 		}
 	}
 	
@@ -900,10 +907,10 @@ void AFPSurvivalCharacter::SlideTimelineReturn()
 
 	if(GetVelocity().Length() > SpeedMap[EMovementState::Sprinting] && GetCharacterMovement()->IsFalling())
 	{
-		auto velocity = GetVelocity();
-		velocity.Normalize();
+		auto Velocity = GetVelocity();
+		Velocity.Normalize();
 		
-		GetCharacterMovement()->Velocity = velocity * SpeedMap[EMovementState::Sprinting];
+		GetCharacterMovement()->Velocity = Velocity * SpeedMap[EMovementState::Sprinting];
 	}
 	
 	if((GetVelocity().Length() <= SpeedMap[EMovementState::Crouching] || GetCharacterMovement()->IsFalling()) && StateMachine->GetCurrentState() == EMovementState::Sliding)
@@ -1304,7 +1311,7 @@ FVector AFPSurvivalCharacter::CalculateFloorInfluence(FVector FloorNormal)
 	const auto FloorInfluence = FMath::Clamp(1 - FVector::DotProduct(FloorNormal, UpVector), 0, 1) * SlideFloorInfluence;
 	
 	FVector NormalizedResult = FloorNormal.Cross(FloorNormal.Cross(UpVector));
-	NormalizedResult.Normalize(0.001);
+	NormalizedResult.Normalize();
 	
 	return NormalizedResult * FloorInfluence;
 }

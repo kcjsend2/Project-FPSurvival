@@ -17,7 +17,7 @@ class FPSURVIVAL_API ULevelManager : public UObject
 
 protected:
 	UPROPERTY(EditAnywhere)
-	FString LevelDir = FString(TEXT("/Game/FirstPerson/Maps/"));
+	FSoftObjectPath LevelDir = FSoftObjectPath(TEXT("/Game/FirstPerson/Maps/"));
 
 	TSharedPtr<FStreamableHandle, ESPMode::ThreadSafe> StreamableHandle;
 
