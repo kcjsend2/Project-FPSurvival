@@ -3,12 +3,12 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class FPSurvivalTarget : TargetRules
+public class FPSurvivalServerTarget : TargetRules
 {
-	public FPSurvivalTarget(TargetInfo Target) : base(Target)
+	public FPSurvivalServerTarget(TargetInfo Target) : base(Target)
 	{
 		CppStandard = CppStandardVersion.Cpp20;
-		Type = TargetType.Game;
+		Type = TargetType.Server;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("FPSurvival");
 	}

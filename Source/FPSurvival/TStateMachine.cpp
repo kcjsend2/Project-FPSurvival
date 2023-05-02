@@ -3,32 +3,32 @@
 
 #include "TStateMachine.h"
 
-template <typename T>
-TStateMachine<T>::TStateMachine()
+template<typename T>
+TStateMachine<T>::TStateMachine(T InitialState)
 {
-	CurrentState = T();
-	PrevState = T();
+	CurrentState = InitialState;
+	PrevState = InitialState;
 }
 
-template <typename T>
+template<typename T>
 void TStateMachine<T>::AddTransitionFunc(std::function<void(AFPSurvivalCharacter&, bool)> TransitionFunc, T StateFrom, T StateTo)
 {
 	TransitionFuncTable.Add(TPair<T, T>(StateFrom, StateTo), TransitionFunc);
 }
 
-template <typename T>
+template<typename T>
 void TStateMachine<T>::AddInitFunc(std::function<void(AFPSurvivalCharacter&)> InitFunc, T State)
 {
 	StateInitFuncTable.Add(State, InitFunc);
 }
 
-template <typename T>
+template<typename T>
 void TStateMachine<T>::AddEndFunc(std::function<void(AFPSurvivalCharacter&)> EndFunc, T State)
 {
 	StateEndFuncTable.Add(State, EndFunc);
 }
 
-template <typename T>
+template<typename T>
 bool TStateMachine<T>::CheckStateTransition(T StateTo)
 {
 	if(CurrentState == StateTo)

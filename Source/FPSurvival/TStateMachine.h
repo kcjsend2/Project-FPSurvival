@@ -2,12 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "FPSurvivalCharacter.h"
+#include <type_traits>
 
+// T는 반드시 enum이어야 함
 template<typename T>
 class TStateMachine
 {
+	static_assert(std::is_enum_v<T>, "T must be enum type.");
+	
 public:
-	TStateMachine();
+	TStateMachine() = delete;
+	explicit TStateMachine(T InitialState);
 
 	// 매 프레임 TransitionFunc를 검사하여 CurrentState가 StateFrom일 때,
 	// TransitionFunc의 반환값이 True이면 StateTo로 CurrentState를 변경
