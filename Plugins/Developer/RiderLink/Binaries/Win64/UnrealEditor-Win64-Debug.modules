@@ -1,0 +1,12 @@
+{
+	"BuildId": "f217058a-5149-4d57-9ebe-09dbef0eba74",
+	"Modules": 
+	{
+		"RD": "UnrealEditor-RD-Win64-Debug.dll",
+		"RiderBlueprint": "UnrealEditor-RiderBlueprint-Win64-Debug.dll",
+		"RiderGameControl": "UnrealEditor-RiderGameControl-Win64-Debug.dll",
+		"RiderLink": "UnrealEditor-RiderLink-Win64-Debug.dll",
+		"RiderLogging": "UnrealEditor-RiderLogging-Win64-Debug.dll",
+		"RiderShaderInfo": "UnrealEditor-RiderShaderInfo-Win64-Debug.dll"
+	}
+}

@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{5F444666-4E8F-7DEC-2285-DFBC39A38E89}",
+	"EngineAssociation": "{555140BC-4727-805F-A899-71AE351D2668}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -32,10 +32,6 @@
 				"Mac",
 				"Linux"
 			]
-		},
-		{
-			"Name": "RiderLink",
-			"Enabled": false
 		}
 	]
 }

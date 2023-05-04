@@ -1,0 +1,11 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-RiderLogging-Win64-Debug.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Debug\RiderLogging\Module.RiderLogging.cpp.obj"
+"..\Intermediate\Build\Win64\UnrealEditor\Debug\Default.rc2.res"
+/OUT:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Debug\RiderLogging\UnrealEditor-RiderLogging-Win64-Debug.lib"
