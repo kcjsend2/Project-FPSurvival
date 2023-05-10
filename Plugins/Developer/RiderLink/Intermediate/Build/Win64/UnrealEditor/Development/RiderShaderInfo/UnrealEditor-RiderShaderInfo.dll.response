@@ -33,7 +33,7 @@
 /NODEFAULTLIB:"LIBCD"
 /NODEFAULTLIB:"LIBCPD"
 /FUNCTIONPADMIN:6
-"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfo\RiderShaderInfo.cpp.obj"
+"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfo\RiderShaderInfo.cpp.obj"
 "..\Intermediate\Build\Win64\UnrealEditor\Development\Default.rc2.res"
 "..\Intermediate\Build\Win64\UnrealEditor\Development\Core\UnrealEditor-Core.lib"
 "..\Intermediate\Build\Win64\UnrealEditor\Development\Projects\UnrealEditor-Projects.lib"
@@ -62,7 +62,7 @@
 "setupapi.lib"
 "dwmapi.lib"
 "imm32.lib"
-/OUT:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderShaderInfo.dll"
-/IMPLIB:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfo\UnrealEditor-RiderShaderInfo.suppressed.lib"
-/PDB:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderShaderInfo.pdb"
+/OUT:"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderShaderInfo.dll"
+/IMPLIB:"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfo\UnrealEditor-RiderShaderInfo.suppressed.lib"
+/PDB:"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderShaderInfo.pdb"
 /ignore:4078

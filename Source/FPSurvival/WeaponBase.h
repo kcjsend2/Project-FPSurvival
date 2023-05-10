@@ -140,7 +140,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* TPWeaponPullUpMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* IdlePose;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* AimPose;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* LoopRunPose;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	EFireMode FireMode;
 	

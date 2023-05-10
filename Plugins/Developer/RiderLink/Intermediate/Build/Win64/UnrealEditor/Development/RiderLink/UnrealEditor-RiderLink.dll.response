@@ -33,10 +33,10 @@
 /NODEFAULTLIB:"LIBCD"
 /NODEFAULTLIB:"LIBCPD"
 /FUNCTIONPADMIN:6
-"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLink\Module.RiderLink.cpp.obj"
+"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLink\Module.RiderLink.cpp.obj"
 "..\Intermediate\Build\Win64\UnrealEditor\Development\Default.rc2.res"
 "..\Intermediate\Build\Win64\UnrealEditor\Development\Core\UnrealEditor-Core.lib"
-"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RD\UnrealEditor-RD.lib"
+"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RD\UnrealEditor-RD.lib"
 "delayimp.lib"
 "wininet.lib"
 "rpcrt4.lib"
@@ -61,7 +61,7 @@
 "setupapi.lib"
 "dwmapi.lib"
 "imm32.lib"
-/OUT:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderLink.dll"
-/IMPLIB:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLink\UnrealEditor-RiderLink.suppressed.lib"
-/PDB:"C:\Users\kcjse\Desktop\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderLink.pdb"
+/OUT:"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderLink.dll"
+/IMPLIB:"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLink\UnrealEditor-RiderLink.suppressed.lib"
+/PDB:"E:\Project-FPSurvival\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderLink.pdb"
 /ignore:4078

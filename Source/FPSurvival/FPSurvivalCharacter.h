@@ -335,6 +335,12 @@ public:
 	UFUNCTION()
 	void DamageToOtherActor(bool Headshot, bool Dead, float Damage);
 
+	UFUNCTION()
+	float GetForwardAxis() { return ForwardAxis; }
+	
+	UFUNCTION()
+	float GetRightAxis() { return RightAxis; }
+	
 	UFUNCTION(BlueprintCallable)
 	EMovementState GetCurrentMovementState() const { return StateMachine->GetCurrentState(); }
 	

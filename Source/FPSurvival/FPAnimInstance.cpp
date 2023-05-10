@@ -31,6 +31,9 @@ void UFPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		}
 		IsSprinting = OwningPlayer->IsSprinting();
 		IsInSight = OwningPlayer->IsInSight;
+
+		VerticalVelocity = OwningPlayer->GetForwardAxis();
+		HorizontalVelocity = OwningPlayer->GetRightAxis();
 	}
 }
 

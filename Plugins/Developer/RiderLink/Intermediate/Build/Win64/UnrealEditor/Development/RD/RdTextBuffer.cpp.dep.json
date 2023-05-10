@@ -1,11 +1,11 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "c:\\users\\kcjse\\desktop\\project-fpsurvival\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_gen_cpp\\src\\rdtextbuffer.cpp",
+        "Source": "e:\\project-fpsurvival\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_gen_cpp\\src\\rdtextbuffer.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "c:\\users\\kcjse\\desktop\\project-fpsurvival\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
-            "c:\\users\\kcjse\\desktop\\project-fpsurvival\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_gen_cpp\\src\\rdtextbuffer.h"
+            "e:\\project-fpsurvival\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\project-fpsurvival\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_gen_cpp\\src\\rdtextbuffer.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

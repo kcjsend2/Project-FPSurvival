@@ -50,7 +50,22 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	bool IsInSight = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Player")
+	float VerticalVelocity;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Player")
+	float HorizontalVelocity;
 
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	FVector AimDownSightOffset;
+	
+	UPROPERTY(BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* IdlePose;
+	
+	UPROPERTY(BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* AimPose;
+
+	UPROPERTY(BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* LoopRunPose;
 };
