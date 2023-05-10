@@ -24,6 +24,9 @@ public:
 	UFUNCTION()
 	void AnimNotify_Reload();
 
+	UFUNCTION()
+	void AnimNotify_FireEnd();
+	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	AFPSurvivalCharacter* OwningPlayer;
 	

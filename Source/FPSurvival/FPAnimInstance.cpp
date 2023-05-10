@@ -41,3 +41,9 @@ void UFPAnimInstance::AnimNotify_Reload()
 {
     OwningPlayer->CurrentWeapon->ResolveReload(false, OwningPlayer);
 }
+
+void UFPAnimInstance::AnimNotify_FireEnd()
+{
+	if(OwningPlayer->OnFireEnd->ExecuteIfBound())
+		OwningPlayer->ActionCheck();
+}

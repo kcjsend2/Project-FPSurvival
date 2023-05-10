@@ -1228,7 +1228,7 @@ void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted
 	{
 		OnWeaponChangeEnd();
 	}
-	else if(Montage == CurrentWeapon->ArmFireMontage || Montage == CurrentWeapon->ArmAimDownSightFireMontage)
+	else if(Montage == CurrentWeapon->ArmFireMontage)
 	{
 		if(CurrentWeapon->FireMode == EFireMode::FullAuto)
 		{

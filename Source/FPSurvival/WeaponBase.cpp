@@ -29,6 +29,9 @@ AWeaponBase::AWeaponBase()
 	FPWeaponMesh->bCastDynamicShadow = false;
 	FPWeaponMesh->CastShadow = false;
 	FPWeaponMesh->SetSimulatePhysics(true);
+	
+	MagazineMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MagazineMesh"));
+	MagazineMesh->SetupAttachment(FPWeaponMesh, TEXT("SOCKET_Magazine"));
 
 	TPWeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TPWeaponMesh"));
 	TPWeaponMesh->SetupAttachment(DefaultSceneComponent);
@@ -83,11 +86,8 @@ void AWeaponBase::Fire(AFPSurvivalCharacter* Character)
 
 	Character->CrosshairWidget->FireSpreadValue += SpreadPerShot;
 	
-	if(ArmFireMontage != nullptr && !Character->IsInSight)
+	if(ArmFireMontage != nullptr)
 		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmFireMontage);
-	
-	else if(ArmAimDownSightFireMontage != nullptr&& Character->IsInSight)
-		Character->GetMesh1P()->GetAnimInstance()->Montage_Play(ArmAimDownSightFireMontage);
 	
 	if(WeaponFireMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
 		FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponFireMontage);
@@ -216,7 +216,7 @@ void AWeaponBase::ResolveReload(bool bInterrupted, AFPSurvivalCharacter* Charact
 
 void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if(Montage == ArmFireMontage || Montage == ArmAimDownSightFireMontage)
+	if(Montage == ArmFireMontage)
 	{
 		if(FireMode == EFireMode::Single)
 		{
@@ -238,8 +238,11 @@ bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 	{
 		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 		if(WeaponReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
+		{
 			FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
-
+			
+			UE_LOG(LogTemp, Log, TEXT("ReloadMontagePlayed"));
+		}
 		SoundManager->PlaySound(TEXT("Reload"), GetActorLocation());
 		
 		UE_LOG(LogTemp, Log, TEXT("Reload"));

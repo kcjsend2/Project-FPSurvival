@@ -109,9 +109,6 @@ public:
 	UAnimMontage* ArmFireMontage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	UAnimMontage* ArmAimDownSightFireMontage;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponFireMontage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
@@ -119,6 +116,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponReloadMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* ArmEmptyReloadMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimMontage* WeaponEmptyReloadMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* WeaponPullDownMontage;
@@ -203,10 +206,12 @@ private:
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* FPWeaponMesh;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* MagazineMesh;
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* TPWeaponMesh;
-	
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapon", meta = (AllowPrivateAccess = "true"))
 	UWeaponPickUpComponent* PickUpComponent;
