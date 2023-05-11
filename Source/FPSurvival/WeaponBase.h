@@ -152,6 +152,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	UAnimSequenceBase* LoopRunPose;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* SlideStop;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UAnimSequenceBase* WeaponRefPose;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	EFireMode FireMode;
@@ -209,7 +215,10 @@ private:
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* MagazineMesh;
-
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* DefaultScope;
+	
 	UPROPERTY(VisibleDefaultsOnly, Category="Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* TPWeaponMesh;
 	
@@ -231,7 +240,9 @@ private:
 	FOnActionCheck OnActionCheck;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	USkeletalMeshComponent* GetMesh() const { return FPWeaponMesh; }
+	
 	bool GetIsFiring() const { return IsFiring; }
 	bool GetIsAttached() const { return IsAttached; }
 };

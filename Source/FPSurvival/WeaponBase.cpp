@@ -33,6 +33,9 @@ AWeaponBase::AWeaponBase()
 	MagazineMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MagazineMesh"));
 	MagazineMesh->SetupAttachment(FPWeaponMesh, TEXT("SOCKET_Magazine"));
 
+	DefaultScope = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DefaultScopeMesh"));
+	DefaultScope->SetupAttachment(FPWeaponMesh, TEXT("SOCKET_Default"));
+	
 	TPWeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TPWeaponMesh"));
 	TPWeaponMesh->SetupAttachment(DefaultSceneComponent);
 	TPWeaponMesh->SetVisibility(false);
@@ -225,7 +228,7 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 			OnActionCheck.Execute();
 		}
 	}
-	else if(Montage == ArmReloadMontage && !bInterrupted)
+	else if((Montage == ArmReloadMontage || Montage == WeaponEmptyReloadMontage) && !bInterrupted)
 	{
 		OnActionCheck.Execute();
 	}
@@ -236,12 +239,16 @@ bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 	if(ArmReloadMontage != nullptr && CurrentAmmo < MagazineLimit
 		&& !CharacterAnimInstance->Montage_IsPlaying(nullptr))
 	{
-		CharacterAnimInstance->Montage_Play(ArmReloadMontage);
-		if(WeaponReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
+
+		if(WeaponEmptyReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance() && CurrentAmmo == 0)
 		{
+			CharacterAnimInstance->Montage_Play(ArmEmptyReloadMontage);
+			FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponEmptyReloadMontage);
+		}
+		else if(WeaponReloadMontage != nullptr && FPWeaponMesh->HasValidAnimationInstance())
+		{
+			CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 			FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
-			
-			UE_LOG(LogTemp, Log, TEXT("ReloadMontagePlayed"));
 		}
 		SoundManager->PlaySound(TEXT("Reload"), GetActorLocation());
 		
