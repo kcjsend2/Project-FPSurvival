@@ -34,8 +34,6 @@ void UFPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		VerticalVelocity = OwningPlayer->GetForwardAxis();
 		HorizontalVelocity = OwningPlayer->GetRightAxis();
-
-		IsWeaponChanging = OwningPlayer->IsWeaponChanging;
 	}
 }
 

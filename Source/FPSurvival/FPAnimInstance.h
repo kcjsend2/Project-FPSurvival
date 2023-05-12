@@ -55,7 +55,7 @@ public:
 	bool IsInSight = false;
 
 	UPROPERTY(BlueprintReadOnly, Category="Player")
-	bool IsWeaponChanging = false;
+	bool IsChangeDelayOn = false;
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	float VerticalVelocity;
