@@ -1178,6 +1178,11 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			ChangeFlag = true;
 			CurrentWeaponSlot = WeaponNum;
 			CurrentWeapon = CollectedWeapon[WeaponNum];
+
+			CurrentWeapon->SetActorHiddenInGame(false); 
+			CurrentWeapon->SetActorEnableCollision(true); 
+			CurrentWeapon->SetActorTickEnabled(true);
+			
 			Mesh1P->GetAnimInstance()->Montage_Play(CurrentWeapon->WeaponPullUpMontage);
 		}
 

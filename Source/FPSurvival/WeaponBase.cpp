@@ -276,10 +276,8 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	FPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh1P(), AttachmentRules, FPSocketName);
-	//FPWeaponMesh->SetVisibility(false);
-
+	
 	TPWeaponMesh->SetVisibility(false);
-	//TPWeaponMesh->SetOwnerNoSee(true);
 	TPWeaponMesh->AttachToComponent(TargetCharacter->GetMesh(), AttachmentRules, TPSocketName);
 	
 	const int WeaponSlot = TargetCharacter->CollectedWeapon.Num();
@@ -294,7 +292,11 @@ void AWeaponBase::AttachWeapon(AFPSurvivalCharacter* TargetCharacter)
 	TargetCharacter->OnReload[WeaponSlot].BindDynamic(this, &AWeaponBase::Reload);
 	
 	TargetCharacter->CollectedWeapon.Add(this);
-
+	
+	SetActorHiddenInGame(true); 
+	SetActorEnableCollision(false); 
+	SetActorTickEnabled(false);
+	
 	SoundManager->PlaySound("Equip", GetActorLocation());
 	TargetCharacter->OnWeaponChange(TargetCharacter->CollectedWeapon.Num() - 1);
 	
