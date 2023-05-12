@@ -44,6 +44,13 @@ void UFPAnimInstance::AnimNotify_Reload()
 
 void UFPAnimInstance::AnimNotify_FireEnd()
 {
-	if(OwningPlayer->OnFireEnd->ExecuteIfBound())
-		OwningPlayer->ActionCheck();
+	if(OwningPlayer->CurrentWeapon->FireMode == EFireMode::FullAuto)
+	{
+		OwningPlayer->FullAutoFireEnded();
+	}
+	else
+	{
+		if(OwningPlayer->OnFireEnd->ExecuteIfBound())
+			OwningPlayer->ActionCheck();
+	}
 }

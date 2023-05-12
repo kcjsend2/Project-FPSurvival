@@ -182,6 +182,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	void FullAutoFireEnded();
+	
 	UPROPERTY(VisibleAnywhere, Category="UI")
 	UCrossHairWidget* CrosshairWidget;
 
