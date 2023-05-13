@@ -1229,10 +1229,6 @@ void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted
 		
 		ActionCheck();
 	}
-	else if(Montage == CurrentWeapon->WeaponPullDownMontage && !bInterrupted)
-	{
-		OnWeaponChangeEnd();
-	}
 	else if(Montage == CurrentWeapon->ArmFireMontage)
 	{
 		if(CurrentWeapon->FireMode == EFireMode::Single)

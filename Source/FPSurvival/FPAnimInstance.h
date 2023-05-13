@@ -27,6 +27,9 @@ public:
 	UFUNCTION()
 	void AnimNotify_FireEnd();
 	
+	UFUNCTION()
+	void AnimNotify_PullDownEnd();
+	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	AFPSurvivalCharacter* OwningPlayer;
 	
@@ -62,7 +65,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="Player")
 	float HorizontalVelocity;
-
+	
 	UPROPERTY(BlueprintReadOnly, Category="Weapon")
 	FVector AimDownSightOffset;
 	

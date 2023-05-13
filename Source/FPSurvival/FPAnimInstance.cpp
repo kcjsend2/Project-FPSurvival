@@ -54,3 +54,8 @@ void UFPAnimInstance::AnimNotify_FireEnd()
 			OwningPlayer->ActionCheck();
 	}
 }
+
+void UFPAnimInstance::AnimNotify_PullDownEnd()
+{
+	OwningPlayer->OnWeaponChangeEnd();
+}

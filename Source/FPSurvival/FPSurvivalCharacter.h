@@ -279,6 +279,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sliding")
 	float SlidePower = 5;
 	
+	bool IsWeaponChangeDelay = false;
+	
 	TMap<EMovementState, float> SpeedMap;
 	TMap<FName, bool> ButtonPressed;
 	TMap<FName, int> AmmoMap;
