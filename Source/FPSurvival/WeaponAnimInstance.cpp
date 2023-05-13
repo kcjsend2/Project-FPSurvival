@@ -15,5 +15,5 @@ void UWeaponAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	IsReloading = Montage_IsPlaying(OwningWeapon->WeaponReloadMontage)
 					|| Montage_IsPlaying(OwningWeapon->WeaponEmptyReloadMontage);
-	IsSlideStopValid = OwningWeapon->SlideStop == nullptr || OwningWeapon->WeaponRefPose == nullptr;
+	IsSlideStopValid = OwningWeapon->SlideStop != nullptr && OwningWeapon->WeaponRefPose != nullptr;
 }

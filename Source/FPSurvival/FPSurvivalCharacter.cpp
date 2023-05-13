@@ -1179,6 +1179,9 @@ void AFPSurvivalCharacter::OnWeaponChange(int WeaponNum)
 			CurrentWeaponSlot = WeaponNum;
 			CurrentWeapon = CollectedWeapon[WeaponNum];
 
+			if(HudWidget != nullptr)
+				HudWidget->CurrentWeaponImage = CurrentWeapon->WeaponImage;
+			
 			CurrentWeapon->SetActorHiddenInGame(false); 
 			CurrentWeapon->SetActorEnableCollision(true); 
 			CurrentWeapon->SetActorTickEnabled(true);
@@ -1212,6 +1215,9 @@ void AFPSurvivalCharacter::OnWeaponChangeEnd()
 
 	CurrentWeapon = CollectedWeapon[ChangingWeaponSlot];
 
+	if(HudWidget != nullptr)
+		HudWidget->CurrentWeaponImage = CurrentWeapon->WeaponImage;
+	
 	CurrentWeapon->SoundManager->PlaySound(TEXT("Equip"), GetActorLocation());
 	
 	CurrentWeaponSlot = ChangingWeaponSlot;
@@ -1223,8 +1229,6 @@ void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted
 {
 	if(Montage == CurrentWeapon->WeaponPullUpMontage && !bInterrupted)
 	{
-		if(HudWidget != nullptr)
-			HudWidget->CurrentWeaponImage = CurrentWeapon->WeaponImage;
 		IsWeaponChanging = false;
 		
 		ActionCheck();
