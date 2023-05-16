@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BulletProjectile.h"
-#include "CustomDataTables.h"
 #include "Sound/SoundCue.h"
 #include "Engine/DataTable.h"
 #include "WeaponBase.generated.h"
@@ -204,7 +203,7 @@ protected:
 
 	UFUNCTION()
 	virtual void BeginPlay() override;
-	void SetWeaponData(const FWeaponData* WeaponData);
+	void SetWeaponData(const struct FWeaponData* WeaponData);
 
 	UFUNCTION()
 	virtual void Tick(float DeltaSeconds) override;
