@@ -10,12 +10,4 @@ UCLASS()
 class FPSURVIVAL_API AMultiPlayGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
-public:
-	AMultiPlayGameMode();
-	virtual void BeginPlay() override;
-	
-private:
-	UPROPERTY()
-	class UDataTable* WeaponInitDataTable;
 };

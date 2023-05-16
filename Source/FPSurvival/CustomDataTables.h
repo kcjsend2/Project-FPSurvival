@@ -31,6 +31,9 @@ public:
 	float RecoilPitch;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	float RecoilPitchADS;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	FName FPSocketName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")

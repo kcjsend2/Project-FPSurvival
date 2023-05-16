@@ -5,6 +5,7 @@
 #include "FPSurvivalCharacter.h"
 #include "FPSurvivalProjectile.h"
 #include "BulletProjectile.h"
+#include "DataTableManageSubsystem.h"
 #include "EnemyCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "WeaponPickUpComponent.h"
@@ -59,6 +60,9 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
     Super::BeginPlay();
+
+    const FWeaponData* WeaponData = GetGameInstance()->GetSubsystem<UDataTableManageSubsystem>()->GetWeaponInitData(WeaponID);
+	SetWeaponData(WeaponData);
 	
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
 
@@ -67,6 +71,19 @@ void AWeaponBase::BeginPlay()
 	if(FPWeaponMesh->HasValidAnimationInstance())
 		FPWeaponMesh->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeaponBase::MontageEnded);
 
+}
+
+void AWeaponBase::SetWeaponData(const FWeaponData* WeaponData)
+{
+	MagazineLimit = WeaponData->MagazineLimit;
+	FPSocketName = WeaponData->FPSocketName;
+	TPSocketName = WeaponData->TPSocketName;
+	BulletDamage = WeaponData->BulletDamage;
+	RecoilYaw = WeaponData->RecoilYaw;
+	RecoilPitch = WeaponData->RecoilPitch;
+	RecoilPitchADS = WeaponData->RecoilPitchADS;
+	FireMode = WeaponData->FireMode;
+	ReloadType = WeaponData->ReloadType;
 }
 
 void AWeaponBase::Tick(float DeltaSeconds)
