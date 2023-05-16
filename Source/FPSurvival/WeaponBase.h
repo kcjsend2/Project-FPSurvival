@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BulletProjectile.h"
 #include "Sound/SoundCue.h"
+#include "Engine/DataTable.h"
 #include "WeaponBase.generated.h"
 
 class UCameraComponent;

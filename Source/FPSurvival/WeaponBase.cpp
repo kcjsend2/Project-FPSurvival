@@ -59,7 +59,7 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
     Super::BeginPlay();
-
+	
 	PickUpComponent->OnPickUp.AddDynamic(this, &AWeaponBase::AttachWeapon);
 
 	SoundManager->SetAudioComponent(AudioComponent);
