@@ -13,7 +13,7 @@ UDataTableManageSubsystem::UDataTableManageSubsystem()
 	}
 }
 
-FWeaponData* UDataTableManageSubsystem::GetWeaponInitData(int WeaponID)
+FWeaponData* UDataTableManageSubsystem::GetWeaponInitData(int WeaponID) const
 {
 	FWeaponData* WeaponData = WeaponInitDataTable->FindRow<FWeaponData>(FName(*FString::FromInt(WeaponID)), FString(""));
 	return WeaponData;

@@ -52,6 +52,9 @@ void UFPAnimInstance::AnimNotify_FireEnd()
 	{
 		if(OwningPlayer->OnFireEnd->ExecuteIfBound())
 			OwningPlayer->ActionCheck();
+
+		if(OwningPlayer->CurrentWeapon->FireMode == EFireMode::Single)
+			OwningPlayer->ReverseRecoil();
 	}
 }
 

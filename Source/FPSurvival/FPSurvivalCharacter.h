@@ -313,6 +313,9 @@ public:
 	void RecoilTimelineReturn(float Value);
 	
 	UFUNCTION()
+	void ReverseRecoil();
+	
+	UFUNCTION()
 	void SmoothCrouchTimelineReturn(float Value);
 	
 	UFUNCTION()

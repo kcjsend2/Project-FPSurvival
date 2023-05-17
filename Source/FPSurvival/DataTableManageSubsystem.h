@@ -18,7 +18,7 @@ class FPSURVIVAL_API UDataTableManageSubsystem : public UGameInstanceSubsystem
 	UDataTableManageSubsystem();
 
 public:
-	FWeaponData* GetWeaponInitData(int WeaponID);
+	FWeaponData* GetWeaponInitData(int WeaponID) const;
 	
 protected:
 	UPROPERTY()

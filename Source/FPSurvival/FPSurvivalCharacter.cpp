@@ -887,6 +887,12 @@ void AFPSurvivalCharacter::RecoilTimelineReturn(float Value)
 	}	
 }
 
+void AFPSurvivalCharacter::ReverseRecoil()
+{
+	if(CurrentWeapon->RecoilOn)
+		RecoilTimeline->ReverseFromEnd();
+}
+
 
 void AFPSurvivalCharacter::SmoothCrouchTimelineReturn(float Value)
 {
@@ -934,8 +940,9 @@ void AFPSurvivalCharacter::ActionCheck()
 	{
 		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 		OnSprintAction(true);
+
 	}
-	if(ButtonPressed["Sight"])
+	else if(ButtonPressed["Sight"])
 	{
 		OnSightAction(true);
 	}
@@ -1233,14 +1240,15 @@ void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted
 		
 		ActionCheck();
 	}
-	else if(Montage == CurrentWeapon->ArmFireMontage)
+
+	/*if (Montage == CurrentWeapon->ArmFireMontage && bInterrupted)
 	{
-		if(CurrentWeapon->FireMode == EFireMode::Single)
+		if (CurrentWeapon->GetIsFiring() && CurrentWeapon->FireMode == EFireMode::FullAuto)
 		{
-			if(CurrentWeapon->RecoilOn)
-				RecoilTimeline->ReverseFromEnd();
+			FullAutoEndFlag = true;
+			FullAutoFireEnded();
 		}
-	}
+	}*/
 }
 
 void AFPSurvivalCharacter::FullAutoFireEnded()
@@ -1249,11 +1257,9 @@ void AFPSurvivalCharacter::FullAutoFireEnded()
 	{
 		FullAutoEndFlag = false;
 		    		
-		if(CurrentWeapon->RecoilOn)
-			RecoilTimeline->ReverseFromEnd();
+		ReverseRecoil();
 					
 		OnFireEnd[CurrentWeaponSlot].ExecuteIfBound();
-		ActionCheck();
 	}
 	else
 	{
