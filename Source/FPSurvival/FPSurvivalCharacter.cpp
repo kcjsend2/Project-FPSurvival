@@ -1240,15 +1240,6 @@ void AFPSurvivalCharacter::MontageEnded(UAnimMontage* Montage, bool bInterrupted
 		
 		ActionCheck();
 	}
-
-	/*if (Montage == CurrentWeapon->ArmFireMontage && bInterrupted)
-	{
-		if (CurrentWeapon->GetIsFiring() && CurrentWeapon->FireMode == EFireMode::FullAuto)
-		{
-			FullAutoEndFlag = true;
-			FullAutoFireEnded();
-		}
-	}*/
 }
 
 void AFPSurvivalCharacter::FullAutoFireEnded()
@@ -1256,7 +1247,7 @@ void AFPSurvivalCharacter::FullAutoFireEnded()
 	if(FullAutoEndFlag || CurrentWeapon->CurrentAmmo <= 0)
 	{
 		FullAutoEndFlag = false;
-		    		
+
 		ReverseRecoil();
 					
 		OnFireEnd[CurrentWeaponSlot].ExecuteIfBound();
