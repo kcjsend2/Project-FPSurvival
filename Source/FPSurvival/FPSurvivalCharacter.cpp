@@ -938,7 +938,6 @@ void AFPSurvivalCharacter::ActionCheck()
 {
 	if(ButtonPressed["Sprint"])
 	{
-		Mesh1P->GetAnimInstance()->Montage_Stop(0.1f);
 		OnSprintAction(true);
 
 	}

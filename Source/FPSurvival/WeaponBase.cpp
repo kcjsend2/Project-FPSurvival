@@ -241,8 +241,6 @@ void AWeaponBase::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		if(FireMode == EFireMode::Single)
 		{
 			IsFiring = false;
-		
-			OnActionCheck.Execute();
 		}
 	}
 	else if((Montage == ArmReloadMontage || Montage == WeaponEmptyReloadMontage) && !bInterrupted)
