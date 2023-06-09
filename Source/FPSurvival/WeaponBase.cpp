@@ -265,7 +265,11 @@ bool AWeaponBase::Reload(UAnimInstance* CharacterAnimInstance)
 			CharacterAnimInstance->Montage_Play(ArmReloadMontage);
 			FPWeaponMesh->GetAnimInstance()->Montage_Play(WeaponReloadMontage);
 		}
-		SoundManager->PlaySound(TEXT("Reload"), GetActorLocation());
+		
+		if(CurrentAmmo != 0)
+			SoundManager->PlaySound(TEXT("Reload"), GetActorLocation());
+		else
+			SoundManager->PlaySound(TEXT("ReloadEmpty"), GetActorLocation());
 		
 		UE_LOG(LogTemp, Log, TEXT("Reload"));
 
